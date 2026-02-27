@@ -218,17 +218,17 @@ export function CreateJobDialog() {
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-3">
+                      <div className="grid grid-cols-[1fr_130px_120px_80px_90px_90px] gap-3 items-end">
                         <div className="space-y-1.5">
                           <Label className="text-xs">Description *</Label>
                           <Input
                             value={line.description}
                             onChange={(e) => updateWorkLine(line.id, "description", e.target.value)}
-                            placeholder="e.g. Indicator repair, Tyre replacement, Full service..."
+                            placeholder="e.g. Indicator repair, Tyre replacement..."
                             className="text-sm"
                           />
                         </div>
-                        <div className="space-y-1.5 w-[130px]">
+                        <div className="space-y-1.5">
                           <Label className="text-xs">Job Type</Label>
                           <Select
                             value={line.jobType}
@@ -244,7 +244,7 @@ export function CreateJobDialog() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5 w-[120px]">
+                        <div className="space-y-1.5">
                           <Label className="text-xs">Line Type</Label>
                           <Select
                             value={line.type}
@@ -258,8 +258,6 @@ export function CreateJobDialog() {
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs">Qty</Label>
                           <Input
@@ -271,7 +269,7 @@ export function CreateJobDialog() {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs">Unit Price (£)</Label>
+                          <Label className="text-xs">Unit £</Label>
                           <Input
                             type="number"
                             min={0}
@@ -282,7 +280,7 @@ export function CreateJobDialog() {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs">Line Total</Label>
+                          <Label className="text-xs">Total</Label>
                           <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">
                             £{lineTotal(line).toFixed(2)}
                           </div>
