@@ -1,7 +1,6 @@
 import { useAppContext } from "@/contexts/AppContext";
 import { UserRole } from "@/lib/navigation";
-import { Bell, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Bell, User, Moon, Sun } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 const roleLabels: Record<UserRole, string> = {
   "fleet-manager": "Fleet Manager",
@@ -17,7 +17,7 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 export function TopBar() {
-  const { currentRole, setCurrentRole } = useAppContext();
+  const { currentRole, setCurrentRole, darkMode, setDarkMode } = useAppContext();
 
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-6 shrink-0">
@@ -39,9 +39,20 @@ export function TopBar() {
           </SelectContent>
         </Select>
 
+        {/* Dark mode toggle */}
+        <div className="flex items-center gap-2">
+          <Sun className="w-3.5 h-3.5 text-muted-foreground" />
+          <Switch
+            checked={darkMode}
+            onCheckedChange={setDarkMode}
+            className="scale-75"
+          />
+          <Moon className="w-3.5 h-3.5 text-muted-foreground" />
+        </div>
+
         <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
           <Bell className="w-4 h-4 text-muted-foreground" />
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent" />
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
         </button>
 
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
