@@ -61,6 +61,27 @@ export type Database = {
           },
         ]
       }
+      fleets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -191,6 +212,7 @@ export type Database = {
           company_name: string | null
           created_at: string
           email: string | null
+          fleet_id: string | null
           full_name: string
           id: string
           updated_at: string
@@ -200,6 +222,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           email?: string | null
+          fleet_id?: string | null
           full_name?: string
           id: string
           updated_at?: string
@@ -209,11 +232,20 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           email?: string | null
+          fleet_id?: string | null
           full_name?: string
           id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_fleet_id_fkey"
+            columns: ["fleet_id"]
+            isOneToOne: false
+            referencedRelation: "fleets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recharges: {
         Row: {
@@ -320,6 +352,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_id: string | null
+          fleet_id: string | null
           fleet_manager_id: string | null
           id: string
           make: string
@@ -336,6 +369,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_id?: string | null
+          fleet_id?: string | null
           fleet_manager_id?: string | null
           id?: string
           make: string
@@ -352,6 +386,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_id?: string | null
+          fleet_id?: string | null
           fleet_manager_id?: string | null
           id?: string
           make?: string
@@ -365,7 +400,15 @@ export type Database = {
           vin?: string | null
           year?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_fleet_id_fkey"
+            columns: ["fleet_id"]
+            isOneToOne: false
+            referencedRelation: "fleets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

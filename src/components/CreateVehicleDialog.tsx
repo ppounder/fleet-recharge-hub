@@ -17,7 +17,7 @@ export function CreateVehicleDialog() {
   const [vin, setVin] = useState("");
   const [mileage, setMileage] = useState("");
   const createVehicle = useCreateVehicle();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,6 +33,7 @@ export function CreateVehicleDialog() {
         vin: vin || null,
         mileage: mileage ? parseInt(mileage) : null,
         fleet_manager_id: user?.id ?? null,
+        fleet_id: profile?.fleet_id ?? null,
       });
       toast({ title: "Vehicle added", description: `${registration.toUpperCase()} added to fleet` });
       setOpen(false);
