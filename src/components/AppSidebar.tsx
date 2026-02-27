@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const roleLabels: Record<UserRole, string> = {
   "fleet-manager": "Fleet Manager",
   "service-provider": "Service Provider",
-  "customer": "Customer",
+  customer: "Customer",
 };
 
 export function AppSidebar() {
@@ -20,7 +20,7 @@ export function AppSidebar() {
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 flex flex-col",
-        sidebarOpen ? "w-64" : "w-16"
+        sidebarOpen ? "w-64" : "w-16",
       )}
     >
       {/* Logo */}
@@ -30,7 +30,7 @@ export function AppSidebar() {
         </div>
         {sidebarOpen && (
           <div className="animate-fade-in">
-            <h1 className="text-sm font-bold tracking-tight">FleetLink SMR</h1>
+            <h1 className="text-sm font-bold tracking-tight">Jaama SMR</h1>
             <p className="text-[10px] text-sidebar-muted">{roleLabels[currentRole]}</p>
           </div>
         )}
@@ -48,7 +48,7 @@ export function AppSidebar() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative group",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50",
               )}
             >
               <item.icon className="w-4 h-4 shrink-0" />
