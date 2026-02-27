@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { UserRole } from "@/lib/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AppContextType {
   currentRole: UserRole;
@@ -13,7 +14,12 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { userRole } = useAuth();
   const [currentRole, setCurrentRole] = useState<UserRole>("fleet-manager");
+
+  useEffect(() => {
+    if (userRole) setCurrentRole(userRole);
+  }, [userRole]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
