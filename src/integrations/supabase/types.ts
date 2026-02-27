@@ -14,16 +14,345 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      estimate_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          job_id: string
+          quantity: number
+          recharge_reason: string | null
+          rechargeable: boolean
+          total: number
+          type: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          job_id: string
+          quantity?: number
+          recharge_reason?: string | null
+          rechargeable?: boolean
+          total?: number
+          type?: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          job_id?: string
+          quantity?: number
+          recharge_reason?: string | null
+          rechargeable?: boolean
+          total?: number
+          type?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          fleet_manager_id: string | null
+          id: string
+          invoice_number: string
+          issued_at: string | null
+          job_id: string
+          paid_at: string | null
+          provider_id: string
+          status: string
+          total: number
+          vat: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          fleet_manager_id?: string | null
+          id?: string
+          invoice_number: string
+          issued_at?: string | null
+          job_id: string
+          paid_at?: string | null
+          provider_id: string
+          status?: string
+          total?: number
+          vat?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fleet_manager_id?: string | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string | null
+          job_id?: string
+          paid_at?: string | null
+          provider_id?: string
+          status?: string
+          total?: number
+          vat?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          estimate_total: number
+          fleet_manager_id: string | null
+          has_recharge: boolean
+          id: string
+          invoice_total: number
+          job_number: string
+          priority: string
+          provider_id: string | null
+          recharge_amount: number | null
+          status: string
+          type: string
+          updated_at: string
+          vehicle_id: string | null
+          vehicle_make_model: string | null
+          vehicle_reg: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          estimate_total?: number
+          fleet_manager_id?: string | null
+          has_recharge?: boolean
+          id?: string
+          invoice_total?: number
+          job_number: string
+          priority?: string
+          provider_id?: string | null
+          recharge_amount?: number | null
+          status?: string
+          type?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          vehicle_make_model?: string | null
+          vehicle_reg: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          estimate_total?: number
+          fleet_manager_id?: string | null
+          has_recharge?: boolean
+          id?: string
+          invoice_total?: number
+          job_number?: string
+          priority?: string
+          provider_id?: string | null
+          recharge_amount?: number | null
+          status?: string
+          type?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          vehicle_make_model?: string | null
+          vehicle_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company_name: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recharges: {
+        Row: {
+          cost: number
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          evidence: string[] | null
+          id: string
+          job_id: string
+          reason_code: string
+          status: string
+          updated_at: string
+          vehicle_reg: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          evidence?: string[] | null
+          id?: string
+          job_id: string
+          reason_code: string
+          status?: string
+          updated_at?: string
+          vehicle_reg: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          evidence?: string[] | null
+          id?: string
+          job_id?: string
+          reason_code?: string
+          status?: string
+          updated_at?: string
+          vehicle_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recharges_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          fleet_manager_id: string | null
+          id: string
+          make: string
+          mileage: number | null
+          model: string
+          mot_due: string | null
+          next_service: string | null
+          registration: string
+          status: string
+          updated_at: string
+          vin: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          fleet_manager_id?: string | null
+          id?: string
+          make: string
+          mileage?: number | null
+          model: string
+          mot_due?: string | null
+          next_service?: string | null
+          registration: string
+          status?: string
+          updated_at?: string
+          vin?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          fleet_manager_id?: string | null
+          id?: string
+          make?: string
+          mileage?: number | null
+          model?: string
+          mot_due?: string | null
+          next_service?: string | null
+          registration?: string
+          status?: string
+          updated_at?: string
+          vin?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "fleet-manager" | "service-provider" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +479,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["fleet-manager", "service-provider", "customer"],
+    },
   },
 } as const
