@@ -15,6 +15,7 @@ import { Plus, Trash2, PlusCircle } from "lucide-react";
 
 interface WorkLine {
   id: string;
+  jobType: string;
   type: "labour" | "parts" | "sundries";
   description: string;
   quantity: number;
@@ -25,6 +26,7 @@ interface WorkLine {
 
 const emptyWorkLine = (): WorkLine => ({
   id: crypto.randomUUID(),
+  jobType: "maintenance",
   type: "labour",
   description: "",
   quantity: 1,
@@ -37,7 +39,7 @@ export function CreateJobDialog() {
   const [open, setOpen] = useState(false);
   const [vehicleReg, setVehicleReg] = useState("");
   const [vehicleMakeModel, setVehicleMakeModel] = useState("");
-  const [jobType, setJobType] = useState("maintenance");
+  
   const [priority, setPriority] = useState("normal");
   const [description, setDescription] = useState("");
   const [workLines, setWorkLines] = useState<WorkLine[]>([emptyWorkLine()]);
@@ -65,7 +67,7 @@ export function CreateJobDialog() {
   const resetForm = () => {
     setVehicleReg("");
     setVehicleMakeModel("");
-    setJobType("maintenance");
+    
     setPriority("normal");
     setDescription("");
     setWorkLines([emptyWorkLine()]);
@@ -82,7 +84,7 @@ export function CreateJobDialog() {
         job_number: jobNumber,
         vehicle_reg: vehicleReg.toUpperCase(),
         vehicle_make_model: vehicleMakeModel || null,
-        type: jobType,
+        type: workLines[0]?.jobType || "maintenance",
         priority,
         description: description || null,
         fleet_manager_id: user?.id ?? null,
@@ -96,7 +98,7 @@ export function CreateJobDialog() {
         const items = validLines.map((l) => ({
           job_id: jobData.id,
           type: l.type,
-          description: `[${jobType.toUpperCase()}] ${l.description}`,
+          description: `[${l.jobType.toUpperCase()}] ${l.description}`,
           quantity: l.quantity,
           unit_price: l.unitPrice,
           total: l.quantity * l.unitPrice,
@@ -144,32 +146,17 @@ export function CreateJobDialog() {
                   <Input value={vehicleMakeModel} onChange={(e) => setVehicleMakeModel(e.target.value)} placeholder="BMW 3 Series" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Job Type</Label>
-                  <Select value={jobType} onValueChange={setJobType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="maintenance">Maintenance</SelectItem>
-                      <SelectItem value="repair">Repair</SelectItem>
-                      <SelectItem value="mot">MOT</SelectItem>
-                      <SelectItem value="tyres">Tyres</SelectItem>
-                      <SelectItem value="bodywork">Bodywork</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Priority</Label>
-                  <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Select value={priority} onValueChange={setPriority}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
@@ -196,7 +183,7 @@ export function CreateJobDialog() {
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono text-muted-foreground">
-                          Line {idx + 1} · <span className="capitalize">{jobType}</span>
+                          Line {idx + 1} · <span className="capitalize">{line.jobType}</span>
                         </span>
                         <Button
                           type="button"
@@ -209,7 +196,7 @@ export function CreateJobDialog() {
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
-                      <div className="grid grid-cols-[1fr_auto] gap-3">
+                      <div className="grid grid-cols-[1fr_auto_auto] gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs">Description *</Label>
                           <Input
@@ -218,6 +205,22 @@ export function CreateJobDialog() {
                             placeholder="e.g. Indicator repair, Tyre replacement, Full service..."
                             className="text-sm"
                           />
+                        </div>
+                        <div className="space-y-1.5 w-[130px]">
+                          <Label className="text-xs">Job Type</Label>
+                          <Select
+                            value={line.jobType}
+                            onValueChange={(v) => updateWorkLine(line.id, "jobType", v)}
+                          >
+                            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="maintenance">Maintenance</SelectItem>
+                              <SelectItem value="repair">Repair</SelectItem>
+                              <SelectItem value="mot">MOT</SelectItem>
+                              <SelectItem value="tyres">Tyres</SelectItem>
+                              <SelectItem value="bodywork">Bodywork</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-1.5 w-[120px]">
                           <Label className="text-xs">Line Type</Label>
