@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCreateJob } from "@/hooks/useJobs";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
+import { useVehicles } from "@/hooks/useVehicles";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,8 +39,7 @@ const emptyWorkLine = (): WorkLine => ({
 
 export function CreateJobDialog() {
   const [open, setOpen] = useState(false);
-  const [vehicleReg, setVehicleReg] = useState("");
-  const [vehicleMakeModel, setVehicleMakeModel] = useState("");
+  const [vehicleId, setVehicleId] = useState("");
   const [providerId, setProviderId] = useState("");
   const [priority, setPriority] = useState("normal");
   const [description, setDescription] = useState("");
@@ -48,6 +48,9 @@ export function CreateJobDialog() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { data: serviceProviders, isLoading: loadingProviders } = useServiceProviders();
+  const { data: vehicles, isLoading: loadingVehicles } = useVehicles();
+
+  const selectedVehicle = vehicles?.find((v) => v.id === vehicleId);
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
 
@@ -67,8 +70,7 @@ export function CreateJobDialog() {
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
 
   const resetForm = () => {
-    setVehicleReg("");
-    setVehicleMakeModel("");
+    setVehicleId("");
     setProviderId("");
     setPriority("normal");
     setDescription("");
@@ -77,15 +79,16 @@ export function CreateJobDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!vehicleReg.trim()) return;
+    if (!vehicleId) return;
 
     const jobNumber = `J-${Date.now().toString().slice(-4)}`;
 
     try {
       const jobData = await createJob.mutateAsync({
         job_number: jobNumber,
-        vehicle_reg: vehicleReg.toUpperCase(),
-        vehicle_make_model: vehicleMakeModel || null,
+        vehicle_reg: selectedVehicle?.registration.toUpperCase() ?? "",
+        vehicle_make_model: selectedVehicle ? `${selectedVehicle.make} ${selectedVehicle.model}` : null,
+        vehicle_id: vehicleId,
         type: workLines[0]?.jobType || "maintenance",
         priority,
         description: description || null,
@@ -138,14 +141,24 @@ export function CreateJobDialog() {
             {/* Vehicle & Job Details */}
             <section className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vehicle & Job Details</h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Vehicle Reg *</Label>
-                  <Input value={vehicleReg} onChange={(e) => setVehicleReg(e.target.value)} placeholder="AB21 XYZ" required />
-                </div>
-                <div className="space-y-2">
-                  <Label>Make / Model</Label>
-                  <Input value={vehicleMakeModel} onChange={(e) => setVehicleMakeModel(e.target.value)} placeholder="BMW 3 Series" />
+                  <Label>Vehicle *</Label>
+                  <Select value={vehicleId} onValueChange={setVehicleId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingVehicles ? "Loading..." : "Select a vehicle"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vehicles?.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.registration} — {v.make} {v.model}
+                        </SelectItem>
+                      ))}
+                      {(!vehicles || vehicles.length === 0) && !loadingVehicles && (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No vehicles in fleet</div>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Priority</Label>
