@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, PlusCircle } from "lucide-react";
+import { Plus, Trash2, PlusCircle, Sparkles, Loader2 } from "lucide-react";
 
 interface WorkLine {
   id: string;
@@ -51,6 +51,39 @@ export function CreateJobDialog() {
   const { data: vehicles, isLoading: loadingVehicles } = useVehicles();
 
   const selectedVehicle = vehicles?.find((v) => v.id === vehicleId);
+  const [aiLoading, setAiLoading] = useState(false);
+  const lastParsedDesc = useRef("");
+
+  const parseDescriptionWithAI = async (text: string) => {
+    if (!text.trim() || text.trim() === lastParsedDesc.current) return;
+    lastParsedDesc.current = text.trim();
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("parse-work-lines", {
+        body: { description: text },
+      });
+      if (error) throw error;
+      if (data?.lines?.length) {
+        const parsed: WorkLine[] = data.lines.map((l: any) => ({
+          id: crypto.randomUUID(),
+          jobType: l.jobType || "maintenance",
+          type: l.lineType || "labour",
+          description: l.description || "",
+          quantity: l.quantity || 1,
+          unitPrice: l.unitPrice || 0,
+          rechargeable: false,
+          rechargeReason: "",
+        }));
+        setWorkLines(parsed);
+        toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
+      }
+    } catch (err: any) {
+      console.error("AI parse error:", err);
+      toast({ title: "AI parsing failed", description: err.message || "Could not parse description", variant: "destructive" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
 
@@ -193,8 +226,27 @@ export function CreateJobDialog() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the overall job..." rows={2} />
+                  <div className="flex items-center justify-between">
+                    <Label>Description</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs gap-1"
+                      disabled={aiLoading || !description.trim()}
+                      onClick={() => parseDescriptionWithAI(description)}
+                    >
+                      {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                      Generate Lines
+                    </Button>
+                  </div>
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    onBlur={() => { if (description.trim()) parseDescriptionWithAI(description); }}
+                    placeholder="Describe the work needed — AI will auto-generate work lines..."
+                    rows={3}
+                  />
                 </div>
               </div>
             </section>
