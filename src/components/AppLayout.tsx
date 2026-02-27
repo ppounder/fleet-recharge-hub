@@ -8,7 +8,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { sidebarOpen } = useAppContext();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      style={{ "--sidebar-width": sidebarOpen ? "16rem" : "4rem" } as React.CSSProperties}
+    >
       <AppSidebar />
       <div className={cn("transition-all duration-300", sidebarOpen ? "ml-64" : "ml-16")}>
         <TopBar />

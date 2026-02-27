@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCreateJob } from "@/hooks/useJobs";
+import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,13 +40,14 @@ export function CreateJobDialog() {
   const [open, setOpen] = useState(false);
   const [vehicleReg, setVehicleReg] = useState("");
   const [vehicleMakeModel, setVehicleMakeModel] = useState("");
-  
+  const [providerId, setProviderId] = useState("");
   const [priority, setPriority] = useState("normal");
   const [description, setDescription] = useState("");
   const [workLines, setWorkLines] = useState<WorkLine[]>([emptyWorkLine()]);
   const createJob = useCreateJob();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { data: serviceProviders, isLoading: loadingProviders } = useServiceProviders();
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
 
@@ -67,7 +69,7 @@ export function CreateJobDialog() {
   const resetForm = () => {
     setVehicleReg("");
     setVehicleMakeModel("");
-    
+    setProviderId("");
     setPriority("normal");
     setDescription("");
     setWorkLines([emptyWorkLine()]);
@@ -88,11 +90,11 @@ export function CreateJobDialog() {
         priority,
         description: description || null,
         fleet_manager_id: user?.id ?? null,
+        provider_id: providerId || null,
         status: "booked",
         estimate_total: grandTotal,
       });
 
-      // Insert work lines as estimate_items
       const validLines = workLines.filter((l) => l.description.trim());
       if (validLines.length > 0) {
         const items = validLines.map((l) => ({
@@ -124,7 +126,7 @@ export function CreateJobDialog() {
           <Plus className="w-4 h-4 mr-1" /> New Job
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-0">
+      <SheetContent side="right" className="!w-[calc(100vw-var(--sidebar-width))] !max-w-none overflow-y-auto p-0">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
           <SheetHeader className="p-6 pb-4 border-b border-border">
@@ -136,7 +138,7 @@ export function CreateJobDialog() {
             {/* Vehicle & Job Details */}
             <section className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vehicle & Job Details</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Vehicle Reg *</Label>
                   <Input value={vehicleReg} onChange={(e) => setVehicleReg(e.target.value)} placeholder="AB21 XYZ" required />
@@ -145,22 +147,42 @@ export function CreateJobDialog() {
                   <Label>Make / Model</Label>
                   <Input value={vehicleMakeModel} onChange={(e) => setVehicleMakeModel(e.target.value)} placeholder="BMW 3 Series" />
                 </div>
+                <div className="space-y-2">
+                  <Label>Priority</Label>
+                  <Select value={priority} onValueChange={setPriority}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Priority</Label>
-                <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the overall job..." rows={2} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Service Provider</Label>
+                  <Select value={providerId} onValueChange={setProviderId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingProviders ? "Loading..." : "Select a provider"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceProviders?.map((sp) => (
+                        <SelectItem key={sp.id} value={sp.id}>
+                          {sp.name}
+                        </SelectItem>
+                      ))}
+                      {(!serviceProviders || serviceProviders.length === 0) && !loadingProviders && (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No providers found</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the overall job..." rows={2} />
+                </div>
               </div>
             </section>
 
