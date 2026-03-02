@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCommercialTerms, useCreateCommercialTerm, useDeleteCommercialTerm } from "@/hooks/useCommercialTerms";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -103,8 +104,18 @@ export default function CommercialTerms() {
             </div>
           </div>
 
-          <MenuPricesPanel providerId={selectedTerm.provider_id} fleetId={selectedTerm.fleet_id} />
-          <LabourRatesPanel providerId={selectedTerm.provider_id} fleetId={selectedTerm.fleet_id} />
+          <Tabs defaultValue="prices" className="w-full">
+            <TabsList>
+              <TabsTrigger value="prices">Prices</TabsTrigger>
+              <TabsTrigger value="labour-rates">Labour Rates</TabsTrigger>
+            </TabsList>
+            <TabsContent value="prices" className="mt-4">
+              <MenuPricesPanel providerId={selectedTerm.provider_id} fleetId={selectedTerm.fleet_id} />
+            </TabsContent>
+            <TabsContent value="labour-rates" className="mt-4">
+              <LabourRatesPanel providerId={selectedTerm.provider_id} fleetId={selectedTerm.fleet_id} />
+            </TabsContent>
+          </Tabs>
         </div>
       </AppLayout>
     );
