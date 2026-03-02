@@ -6,6 +6,7 @@ export interface MenuItemRow {
   provider_id: string;
   fleet_id: string;
   job_type: string;
+  work_code_id: string | null;
   description: string;
   unit_price: number;
   created_at: string;
@@ -45,7 +46,7 @@ export function useMenuItemsByProviderAndFleet(providerId: string | undefined, f
 export function useCreateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: Omit<MenuItemRow, "id" | "created_at" | "updated_at">) => {
+    mutationFn: async (item: { provider_id: string; fleet_id: string; job_type: string; work_code_id?: string | null; description: string; unit_price: number }) => {
       const { data, error } = await supabase.from("provider_menu_items").insert(item).select().single();
       if (error) throw error;
       return data;
@@ -57,7 +58,7 @@ export function useCreateMenuItem() {
 export function useUpdateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; unit_price?: number; description?: string; job_type?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; unit_price?: number; description?: string; job_type?: string; work_code_id?: string | null }) => {
       const { data, error } = await supabase.from("provider_menu_items").update(updates).eq("id", id).select().single();
       if (error) throw error;
       return data;

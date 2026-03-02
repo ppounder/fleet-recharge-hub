@@ -92,13 +92,28 @@ export function CreateJobDialog() {
     [workCategories, workCodes, vatBands]
   );
 
+  // Find best menu price: work-code-level first, then category-level fallback
+  const findMenuPrice = useCallback(
+    (categoryId: string, codeId: string, items: typeof menuItems) => {
+      if (!items?.length) return undefined;
+      // Try code-level match first
+      if (codeId) {
+        const codeMatch = items.find((mi) => mi.job_type === categoryId && mi.work_code_id === codeId);
+        if (codeMatch) return codeMatch;
+      }
+      // Fall back to category-level (no work_code_id)
+      return items.find((mi) => mi.job_type === categoryId && !mi.work_code_id);
+    },
+    []
+  );
+
   // Helper: apply menu item prices to work lines
   const applyMenuPrices = useCallback(
     (lines: WorkLine[], items: typeof menuItems): WorkLine[] => {
       if (!items?.length) return lines;
       return lines.map((l) => {
         if (!l.jobTypeId) return l;
-        const match = items.find((mi) => mi.job_type === l.jobTypeId);
+        const match = findMenuPrice(l.jobTypeId, l.workCodeId, items);
         if (match && l.unitPrice === 0) {
           return {
             ...l,
@@ -109,7 +124,7 @@ export function CreateJobDialog() {
         return l;
       });
     },
-    [getVatPercent]
+    [getVatPercent, findMenuPrice]
   );
 
   const parseDescriptionWithAI = async (text: string) => {
@@ -188,25 +203,30 @@ export function CreateJobDialog() {
           if (field === "jobTypeId") {
             updated.workCodeId = "";
             updated.vatPercent = getVatPercent(value, "");
-            if (menuItems?.length) {
-              const match = menuItems.find((mi) => mi.job_type === value);
-              if (match) {
-                updated.unitPrice = Number(match.unit_price);
-                if (match.description && !l.description) {
-                  updated.description = match.description;
-                }
+            const match = findMenuPrice(value, "", menuItems);
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              if (match.description && !l.description) {
+                updated.description = match.description;
               }
             }
           }
-          // When work code changes, recalculate VAT
+          // When work code changes, recalculate VAT and re-check price
           if (field === "workCodeId") {
             updated.vatPercent = getVatPercent(l.jobTypeId, value);
+            const match = findMenuPrice(l.jobTypeId, value, menuItems);
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              if (match.description && !l.description) {
+                updated.description = match.description;
+              }
+            }
           }
           return updated;
         })
       );
     },
-    [menuItems, getVatPercent]
+    [menuItems, getVatPercent, findMenuPrice]
   );
 
   const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
