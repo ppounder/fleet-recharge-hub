@@ -35,6 +35,9 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
   const [newDescription, setNewDescription] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editJobType, setEditJobType] = useState("");
+  const [editWorkCodeId, setEditWorkCodeId] = useState("");
+  const [editDescription, setEditDescription] = useState("");
   const [editPrice, setEditPrice] = useState("");
 
   const codesForNewCategory = workCodes?.filter((c) => c.work_category_id === newJobType) || [];
@@ -65,13 +68,21 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await updateItem.mutateAsync({ id, unit_price: Number(editPrice) });
+      await updateItem.mutateAsync({
+        id,
+        job_type: editJobType,
+        work_code_id: editWorkCodeId || null,
+        description: editDescription,
+        unit_price: Number(editPrice),
+      });
       setEditingId(null);
       toast({ title: "Price updated" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
+
+  const codesForEditCategory = workCodes?.filter((c) => c.work_category_id === editJobType) || [];
 
   return (
     <div className="space-y-4">
@@ -158,26 +169,52 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
                   const codeLabel = item.work_code_id ? workCodes?.find((c) => c.id === item.work_code_id)?.name || "—" : "—";
                   const isEditing = editingId === item.id;
 
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell className="capitalize font-medium">{catLabel}</TableCell>
-                      <TableCell className="text-muted-foreground">{codeLabel}</TableCell>
-                      <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
-                      <TableCell className="text-right font-mono">
-                        {isEditing ? (
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            value={editPrice}
-                            onChange={(e) => setEditPrice(e.target.value)}
-                            className="w-24 ml-auto text-right text-sm"
-                            autoFocus
-                          />
-                        ) : (
-                          `£${Number(item.unit_price).toFixed(2)}`
-                        )}
-                      </TableCell>
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="capitalize font-medium">
+                          {isEditing ? (
+                            <Select value={editJobType} onValueChange={(v) => { setEditJobType(v); setEditWorkCodeId(""); }}>
+                              <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {workCategories?.map((wc) => (
+                                  <SelectItem key={wc.id} value={wc.id}>{wc.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : catLabel}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {isEditing ? (
+                            <Select value={editWorkCodeId} onValueChange={setEditWorkCodeId} disabled={codesForEditCategory.length === 0}>
+                              <SelectTrigger className="h-8 text-sm"><SelectValue placeholder={codesForEditCategory.length === 0 ? "No codes" : "Select"} /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">No work code</SelectItem>
+                                {codesForEditCategory.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : codeLabel}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {isEditing ? (
+                            <Input value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="h-8 text-sm" />
+                          ) : (item.description || "—")}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {isEditing ? (
+                            <Input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={editPrice}
+                              onChange={(e) => setEditPrice(e.target.value)}
+                              className="w-24 ml-auto text-right text-sm h-8"
+                            />
+                          ) : (
+                            `£${Number(item.unit_price).toFixed(2)}`
+                          )}
+                        </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           {isEditing ? (
@@ -195,7 +232,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 w-7 p-0"
-                                onClick={() => { setEditingId(item.id); setEditPrice(String(item.unit_price)); }}
+                                onClick={() => { setEditingId(item.id); setEditJobType(item.job_type); setEditWorkCodeId(item.work_code_id || ""); setEditDescription(item.description || ""); setEditPrice(String(item.unit_price)); }}
                               >
                                 <Pencil className="w-3.5 h-3.5" />
                               </Button>
