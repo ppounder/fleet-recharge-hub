@@ -649,7 +649,7 @@ export default function JobDetail() {
                           {line.labourCharges.map((charge) => (
                             <div key={charge.id} className="flex items-center gap-2">
                               <Select value={charge.labourRateId} onValueChange={(v) => updateLabourCharge(line.id, charge.id, "labourRateId", v)}>
-                                <SelectTrigger className="text-sm w-[200px] h-8"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="text-sm w-[280px] h-8"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   {labourRates.map((r) => (
                                     <SelectItem key={r.id} value={r.id}>{r.name} (£{Number(r.cost).toFixed(2)}/unit)</SelectItem>
