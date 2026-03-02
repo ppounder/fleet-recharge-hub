@@ -103,6 +103,7 @@ export const rechargeReasonCodes: Record<string, string> = {
 
 export const jobStatusSteps = [
   "booked",
+  "confirmed",
   "estimated",
   "approved",
   "in-progress",
@@ -113,6 +114,7 @@ export const jobStatusSteps = [
 
 export const statusColors: Record<string, string> = {
   "booked": "bg-info/10 text-info",
+  "confirmed": "bg-primary/10 text-primary",
   "estimated": "bg-warning/10 text-warning",
   "approved": "bg-success/10 text-success",
   "in-progress": "bg-accent/10 text-accent-foreground",

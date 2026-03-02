@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
 import Fleet from "./pages/Fleet";
 import Approvals from "./pages/Approvals";
 import Recharges from "./pages/Recharges";
@@ -42,6 +43,7 @@ const AppRoutes = () => (
     <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+    <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
     <Route path="/fleet" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
     <Route path="/approvals" element={<ProtectedRoute><Approvals /></ProtectedRoute>} />
     <Route path="/recharges" element={<ProtectedRoute><Recharges /></ProtectedRoute>} />

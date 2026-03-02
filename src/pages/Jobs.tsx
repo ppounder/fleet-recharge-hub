@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Jobs() {
   const { data: jobs, isLoading } = useJobs();
+  const navigate = useNavigate();
   const updateJob = useUpdateJob();
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -89,7 +91,7 @@ export default function Jobs() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((job) => (
-                    <TableRow key={job.id}>
+                    <TableRow key={job.id} className="cursor-pointer" onClick={() => navigate(`/jobs/${job.id}`)}>
                       <TableCell className="font-mono text-xs font-medium">{job.job_number}</TableCell>
                       <TableCell className="text-xs">
                         <div>
