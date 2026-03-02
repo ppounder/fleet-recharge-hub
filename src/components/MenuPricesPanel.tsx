@@ -13,7 +13,10 @@ import {
 } from "@/hooks/useMenuItems";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
+import { useLabourRates } from "@/hooks/useLabourRates";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, Trash2, Pencil } from "lucide-react";
 import { MenuPriceEditSheet } from "@/components/MenuPriceEditSheet";
 
@@ -27,8 +30,34 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
   const { data: menuItems, isLoading } = useMenuItemsByProviderAndFleet(providerId, fleetId);
   const { data: workCategories } = useWorkCategories(providerId);
   const { data: workCodes } = useWorkCodes(providerId);
+  const { data: labourRates } = useLabourRates(providerId, fleetId);
   const createItem = useCreateMenuItem();
   const deleteItem = useDeleteMenuItem();
+
+  // Fetch all menu_item_labour rows for items in this provider+fleet
+  const menuItemIds = menuItems?.map((i) => i.id) || [];
+  const { data: allMenuItemLabour } = useQuery({
+    queryKey: ["menu_item_labour_bulk", providerId, fleetId, menuItemIds],
+    enabled: menuItemIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("menu_item_labour")
+        .select("*")
+        .in("menu_item_id", menuItemIds);
+      if (error) throw error;
+      return data as { id: string; menu_item_id: string; labour_rate_id: string; units: number }[];
+    },
+  });
+
+  // Calculate total price (unit_price + labour costs) for a menu item
+  const getTotalPrice = (item: MenuItemRow) => {
+    const labourRows = allMenuItemLabour?.filter((l) => l.menu_item_id === item.id) || [];
+    const labourTotal = labourRows.reduce((sum, row) => {
+      const rate = labourRates?.find((r) => r.id === row.labour_rate_id);
+      return sum + (rate ? row.units * rate.cost : 0);
+    }, 0);
+    return Number(item.unit_price) + labourTotal;
+  };
 
   const [newJobType, setNewJobType] = useState("");
   const [newWorkCodeId, setNewWorkCodeId] = useState("");
@@ -158,7 +187,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
                       <TableCell className="capitalize font-medium">{catLabel}</TableCell>
                       <TableCell className="text-muted-foreground">{codeLabel}</TableCell>
                       <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
-                      <TableCell className="text-right font-mono">£{Number(item.unit_price).toFixed(2)}</TableCell>
+                      <TableCell className="text-right font-mono">£{getTotalPrice(item).toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button
