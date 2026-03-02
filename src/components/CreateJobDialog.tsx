@@ -12,6 +12,7 @@ import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
+import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useVatBands } from "@/hooks/useVatBands";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +21,8 @@ import { Plus, Trash2, PlusCircle, Sparkles, Loader2 } from "lucide-react";
 
 interface WorkLine {
   id: string;
-  jobTypeId: string; // job_types.id
+  jobTypeId: string; // work_categories.id
+  workCodeId: string; // work_codes.id
   description: string;
   quantity: number;
   unitPrice: number;
@@ -32,6 +34,7 @@ interface WorkLine {
 const emptyWorkLine = (): WorkLine => ({
   id: crypto.randomUUID(),
   jobTypeId: "",
+  workCodeId: "",
   description: "",
   quantity: 1,
   unitPrice: 0,
@@ -57,24 +60,37 @@ export function CreateJobDialog() {
   const [aiLoading, setAiLoading] = useState(false);
   const lastParsedDesc = useRef("");
 
-  // Fetch work categories & vat bands for selected provider
+  // Fetch work categories, work codes & vat bands for selected provider
   const { data: workCategories } = useWorkCategories(providerId || undefined);
+  const { data: workCodes } = useWorkCodes(providerId || undefined);
   const { data: vatBands } = useVatBands(providerId || undefined);
   // Fetch agreed menu items for this provider + fleet combination
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, profile?.fleet_id || undefined);
 
-  // Build a lookup: job_type_id → vat percentage
-  const vatLookup = useMemo(() => {
-    const map = new Map<string, number>();
-    if (!workCategories || !vatBands) return map;
-    for (const jt of workCategories) {
-      if (jt.vat_band_id) {
-        const vb = vatBands.find((b) => b.id === jt.vat_band_id);
-        if (vb) map.set(jt.id, Number(vb.percentage));
+  // Build VAT lookup: first check work code's vat_band_id, then fall back to category's vat_band_id
+  const getVatPercent = useCallback(
+    (categoryId: string, codeId: string): number => {
+      if (!vatBands) return 0;
+      // Check work code VAT band first
+      if (codeId && workCodes) {
+        const code = workCodes.find((c) => c.id === codeId);
+        if (code?.vat_band_id) {
+          const vb = vatBands.find((b) => b.id === code.vat_band_id);
+          if (vb) return Number(vb.percentage);
+        }
       }
-    }
-    return map;
-  }, [workCategories, vatBands]);
+      // Fall back to category VAT band
+      if (categoryId && workCategories) {
+        const cat = workCategories.find((c) => c.id === categoryId);
+        if (cat?.vat_band_id) {
+          const vb = vatBands.find((b) => b.id === cat.vat_band_id);
+          if (vb) return Number(vb.percentage);
+        }
+      }
+      return 0;
+    },
+    [workCategories, workCodes, vatBands]
+  );
 
   // Helper: apply menu item prices to work lines
   const applyMenuPrices = useCallback(
@@ -87,13 +103,13 @@ export function CreateJobDialog() {
           return {
             ...l,
             unitPrice: Number(match.unit_price),
-            vatPercent: vatLookup.get(l.jobTypeId) ?? 0,
+            vatPercent: getVatPercent(l.jobTypeId, l.workCodeId),
           };
         }
         return l;
       });
     },
-    [vatLookup]
+    [getVatPercent]
   );
 
   const parseDescriptionWithAI = async (text: string) => {
@@ -101,22 +117,35 @@ export function CreateJobDialog() {
     lastParsedDesc.current = text.trim();
     setAiLoading(true);
     try {
+      // Build category and code lists for AI context
+      const categoryNames = workCategories?.map((c) => c.name) || [];
+      const codeList = workCodes?.map((c) => ({
+        name: c.name,
+        category: workCategories?.find((cat) => cat.id === c.work_category_id)?.name || "",
+      })) || [];
+
       const { data, error } = await supabase.functions.invoke("parse-work-lines", {
-        body: { description: text },
+        body: { description: text, categories: categoryNames, codes: codeList },
       });
       if (error) throw error;
       if (data?.lines?.length) {
-        // AI returns jobType as text — try to match to a work_categories record by name
         const parsed: WorkLine[] = data.lines.map((l: any) => {
-          const matchedJt = workCategories?.find((jt) => jt.name.toLowerCase() === (l.jobType || "").toLowerCase());
-          const jtId = matchedJt?.id || "";
+          // Match category by name
+          const matchedCat = workCategories?.find((c) => c.name.toLowerCase() === (l.category || l.jobType || "").toLowerCase());
+          const catId = matchedCat?.id || "";
+          // Match work code by name (within matched category)
+          const matchedCode = workCodes?.find(
+            (c) => c.name.toLowerCase() === (l.workCode || "").toLowerCase() && (!catId || c.work_category_id === catId)
+          );
+          const codeId = matchedCode?.id || "";
           return {
             id: crypto.randomUUID(),
-            jobTypeId: jtId,
+            jobTypeId: catId,
+            workCodeId: codeId,
             description: l.description || "",
             quantity: l.quantity || 1,
             unitPrice: l.unitPrice || 0,
-            vatPercent: jtId ? (vatLookup.get(jtId) ?? 0) : 0,
+            vatPercent: getVatPercent(catId, codeId),
             rechargeable: false,
             rechargeReason: "",
           };
@@ -155,9 +184,10 @@ export function CreateJobDialog() {
         prev.map((l) => {
           if (l.id !== id) return l;
           const updated = { ...l, [field]: value };
-          // Auto-populate price and VAT when work category changes
+          // When category changes, reset work code and recalculate VAT
           if (field === "jobTypeId") {
-            updated.vatPercent = vatLookup.get(value) ?? 0;
+            updated.workCodeId = "";
+            updated.vatPercent = getVatPercent(value, "");
             if (menuItems?.length) {
               const match = menuItems.find((mi) => mi.job_type === value);
               if (match) {
@@ -168,11 +198,15 @@ export function CreateJobDialog() {
               }
             }
           }
+          // When work code changes, recalculate VAT
+          if (field === "workCodeId") {
+            updated.vatPercent = getVatPercent(l.jobTypeId, value);
+          }
           return updated;
         })
       );
     },
-    [menuItems, vatLookup]
+    [menuItems, getVatPercent]
   );
 
   const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
@@ -212,10 +246,12 @@ export function CreateJobDialog() {
       const validLines = workLines.filter((l) => l.description.trim());
       if (validLines.length > 0) {
         const items = validLines.map((l) => {
-          const jtName = workCategories?.find((wc) => wc.id === l.jobTypeId)?.name || "";
+          const catName = workCategories?.find((wc) => wc.id === l.jobTypeId)?.name || "";
+          const codeName = workCodes?.find((c) => c.id === l.workCodeId)?.name || "";
+          const prefix = [catName, codeName].filter(Boolean).join(" > ");
           return {
             job_id: jobData.id,
-            description: jtName ? `[${jtName.toUpperCase()}] ${l.description}` : l.description,
+            description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description,
             quantity: l.quantity,
             unit_price: l.unitPrice,
             total: lineTotal(l),
@@ -346,13 +382,15 @@ export function CreateJobDialog() {
 
               <div className="space-y-3">
                 {workLines.map((line, idx) => {
-                  const jtName = workCategories?.find((wc) => wc.id === line.jobTypeId)?.name;
+                  const catName = workCategories?.find((wc) => wc.id === line.jobTypeId)?.name;
+                  const codeName = workCodes?.find((c) => c.id === line.workCodeId)?.name;
+                  const codesForCategory = workCodes?.filter((c) => c.work_category_id === line.jobTypeId) || [];
                   return (
                     <Card key={line.id} className="border-border">
                       <CardContent className="p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-mono text-muted-foreground">
-                            Line {idx + 1}{jtName ? ` · ${jtName}` : ""}
+                            Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
                           </span>
                           <Button
                             type="button"
@@ -365,7 +403,7 @@ export function CreateJobDialog() {
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
-                        <div className="grid grid-cols-[1fr_150px_60px_90px_90px_90px] gap-3 items-end">
+                        <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
                           <div className="space-y-1.5">
                             <Label className="text-xs">Description *</Label>
                             <Input
@@ -376,7 +414,7 @@ export function CreateJobDialog() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Work Category</Label>
+                            <Label className="text-xs">Category</Label>
                             <Select
                               value={line.jobTypeId}
                               onValueChange={(v) => updateWorkLine(line.id, "jobTypeId", v)}
@@ -388,9 +426,24 @@ export function CreateJobDialog() {
                                 ))}
                                 {!workCategories?.length && (
                                   <SelectItem value="none" disabled>
-                                    {providerId ? "No work categories for this provider" : "Select a provider first"}
+                                    {providerId ? "No categories" : "Select provider"}
                                   </SelectItem>
                                 )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Work Code</Label>
+                            <Select
+                              value={line.workCodeId}
+                              onValueChange={(v) => updateWorkLine(line.id, "workCodeId", v)}
+                              disabled={!line.jobTypeId || codesForCategory.length === 0}
+                            >
+                              <SelectTrigger className="text-sm"><SelectValue placeholder={!line.jobTypeId ? "Select category first" : codesForCategory.length === 0 ? "No codes" : "Select"} /></SelectTrigger>
+                              <SelectContent>
+                                {codesForCategory.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
