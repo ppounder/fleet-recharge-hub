@@ -11,7 +11,7 @@ import {
   useDeleteMenuItem,
   useUpdateMenuItem,
 } from "@/hooks/useMenuItems";
-import { useJobTypes } from "@/hooks/useJobTypes";
+import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
@@ -23,7 +23,7 @@ interface MenuPricesPanelProps {
 export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
   const { toast } = useToast();
   const { data: menuItems, isLoading } = useMenuItemsByProviderAndFleet(providerId, fleetId);
-  const { data: jobTypes } = useJobTypes(providerId);
+  const { data: workCategories } = useWorkCategories(providerId);
   const createItem = useCreateMenuItem();
   const deleteItem = useDeleteMenuItem();
   const updateItem = useUpdateMenuItem();
@@ -44,7 +44,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
         provider_id: providerId,
         fleet_id: fleetId,
         job_type: newJobType,
-        description: newDescription || jobTypes?.find((j) => j.id === newJobType)?.name || newJobType,
+        description: newDescription || workCategories?.find((j) => j.id === newJobType)?.name || newJobType,
         unit_price: Number(newPrice),
       });
       toast({ title: "Menu price added" });
@@ -76,15 +76,15 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
         <CardContent>
           <div className="grid grid-cols-[1fr_1fr_100px_auto] gap-3 items-end">
             <div className="space-y-1.5">
-              <Label className="text-xs">Job Type *</Label>
+              <Label className="text-xs">Work Category *</Label>
               <Select value={newJobType} onValueChange={setNewJobType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {jobTypes?.map((jt) => (
-                    <SelectItem key={jt.id} value={jt.id}>{jt.name}</SelectItem>
+                  {workCategories?.map((wc) => (
+                    <SelectItem key={wc.id} value={wc.id}>{wc.name}</SelectItem>
                   ))}
-                  {!jobTypes?.length && (
-                    <SelectItem value="none" disabled>No job types — add them in Settings</SelectItem>
+                  {!workCategories?.length && (
+                    <SelectItem value="none" disabled>No work categories — add them in Settings</SelectItem>
                   )}
                 </SelectContent>
               </Select>
@@ -126,7 +126,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Job Type</TableHead>
+                  <TableHead>Work Category</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Agreed Price</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
@@ -134,7 +134,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
               </TableHeader>
               <TableBody>
                 {menuItems.map((item) => {
-                  const jobLabel = jobTypes?.find((j) => j.id === item.job_type)?.name || item.job_type;
+                  const jobLabel = workCategories?.find((j) => j.id === item.job_type)?.name || item.job_type;
                   const isEditing = editingId === item.id;
 
                   return (

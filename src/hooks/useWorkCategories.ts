@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface JobTypeRow {
+export interface WorkCategoryRow {
   id: string;
   provider_id: string;
   name: string;
@@ -10,53 +10,53 @@ export interface JobTypeRow {
   updated_at: string;
 }
 
-export function useJobTypes(providerId: string | undefined) {
+export function useWorkCategories(providerId: string | undefined) {
   return useQuery({
-    queryKey: ["job_types", providerId],
+    queryKey: ["work_categories", providerId],
     enabled: !!providerId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("job_types")
+        .from("work_categories")
         .select("*")
         .eq("provider_id", providerId!)
         .order("name");
       if (error) throw error;
-      return data as JobTypeRow[];
+      return data as WorkCategoryRow[];
     },
   });
 }
 
-export function useCreateJobType() {
+export function useCreateWorkCategory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (item: { provider_id: string; name: string; vat_band_id?: string | null }) => {
-      const { data, error } = await supabase.from("job_types").insert(item).select().single();
+      const { data, error } = await supabase.from("work_categories").insert(item).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["job_types"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["work_categories"] }),
   });
 }
 
-export function useUpdateJobType() {
+export function useUpdateWorkCategory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; name?: string; vat_band_id?: string | null }) => {
-      const { data, error } = await supabase.from("job_types").update(updates).eq("id", id).select().single();
+      const { data, error } = await supabase.from("work_categories").update(updates).eq("id", id).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["job_types"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["work_categories"] }),
   });
 }
 
-export function useDeleteJobType() {
+export function useDeleteWorkCategory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("job_types").delete().eq("id", id);
+      const { error } = await supabase.from("work_categories").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["job_types"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["work_categories"] }),
   });
 }

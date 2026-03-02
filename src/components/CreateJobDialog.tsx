@@ -11,7 +11,7 @@ import { useCreateJob } from "@/hooks/useJobs";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
-import { useJobTypes } from "@/hooks/useJobTypes";
+import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useVatBands } from "@/hooks/useVatBands";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -57,8 +57,8 @@ export function CreateJobDialog() {
   const [aiLoading, setAiLoading] = useState(false);
   const lastParsedDesc = useRef("");
 
-  // Fetch job types & vat bands for selected provider
-  const { data: jobTypes } = useJobTypes(providerId || undefined);
+  // Fetch work categories & vat bands for selected provider
+  const { data: workCategories } = useWorkCategories(providerId || undefined);
   const { data: vatBands } = useVatBands(providerId || undefined);
   // Fetch agreed menu items for this provider + fleet combination
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, profile?.fleet_id || undefined);
@@ -66,15 +66,15 @@ export function CreateJobDialog() {
   // Build a lookup: job_type_id → vat percentage
   const vatLookup = useMemo(() => {
     const map = new Map<string, number>();
-    if (!jobTypes || !vatBands) return map;
-    for (const jt of jobTypes) {
+    if (!workCategories || !vatBands) return map;
+    for (const jt of workCategories) {
       if (jt.vat_band_id) {
         const vb = vatBands.find((b) => b.id === jt.vat_band_id);
         if (vb) map.set(jt.id, Number(vb.percentage));
       }
     }
     return map;
-  }, [jobTypes, vatBands]);
+  }, [workCategories, vatBands]);
 
   // Helper: apply menu item prices to work lines
   const applyMenuPrices = useCallback(
@@ -106,9 +106,9 @@ export function CreateJobDialog() {
       });
       if (error) throw error;
       if (data?.lines?.length) {
-        // AI returns jobType as text like "maintenance" — try to match to a job_types record by name
+        // AI returns jobType as text — try to match to a work_categories record by name
         const parsed: WorkLine[] = data.lines.map((l: any) => {
-          const matchedJt = jobTypes?.find((jt) => jt.name.toLowerCase() === (l.jobType || "").toLowerCase());
+          const matchedJt = workCategories?.find((jt) => jt.name.toLowerCase() === (l.jobType || "").toLowerCase());
           const jtId = matchedJt?.id || "";
           return {
             id: crypto.randomUUID(),
@@ -155,7 +155,7 @@ export function CreateJobDialog() {
         prev.map((l) => {
           if (l.id !== id) return l;
           const updated = { ...l, [field]: value };
-          // Auto-populate price and VAT when job type changes
+          // Auto-populate price and VAT when work category changes
           if (field === "jobTypeId") {
             updated.vatPercent = vatLookup.get(value) ?? 0;
             if (menuItems?.length) {
@@ -192,7 +192,7 @@ export function CreateJobDialog() {
     if (!vehicleId) return;
 
     const jobNumber = `J-${Date.now().toString().slice(-4)}`;
-    const firstLineJt = jobTypes?.find((jt) => jt.id === workLines[0]?.jobTypeId);
+    const firstLineWc = workCategories?.find((wc) => wc.id === workLines[0]?.jobTypeId);
 
     try {
       const jobData = await createJob.mutateAsync({
@@ -200,7 +200,7 @@ export function CreateJobDialog() {
         vehicle_reg: selectedVehicle?.registration.toUpperCase() ?? "",
         vehicle_make_model: selectedVehicle ? `${selectedVehicle.make} ${selectedVehicle.model}` : null,
         vehicle_id: vehicleId,
-        type: firstLineJt?.name || "maintenance",
+        type: firstLineWc?.name || "maintenance",
         priority,
         description: description || null,
         fleet_manager_id: user?.id ?? null,
@@ -212,7 +212,7 @@ export function CreateJobDialog() {
       const validLines = workLines.filter((l) => l.description.trim());
       if (validLines.length > 0) {
         const items = validLines.map((l) => {
-          const jtName = jobTypes?.find((jt) => jt.id === l.jobTypeId)?.name || "";
+          const jtName = workCategories?.find((wc) => wc.id === l.jobTypeId)?.name || "";
           return {
             job_id: jobData.id,
             description: jtName ? `[${jtName.toUpperCase()}] ${l.description}` : l.description,
@@ -346,7 +346,7 @@ export function CreateJobDialog() {
 
               <div className="space-y-3">
                 {workLines.map((line, idx) => {
-                  const jtName = jobTypes?.find((jt) => jt.id === line.jobTypeId)?.name;
+                  const jtName = workCategories?.find((wc) => wc.id === line.jobTypeId)?.name;
                   return (
                     <Card key={line.id} className="border-border">
                       <CardContent className="p-4 space-y-3">
@@ -376,19 +376,19 @@ export function CreateJobDialog() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Job Type</Label>
+                            <Label className="text-xs">Work Category</Label>
                             <Select
                               value={line.jobTypeId}
                               onValueChange={(v) => updateWorkLine(line.id, "jobTypeId", v)}
                             >
                               <SelectTrigger className="text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                               <SelectContent>
-                                {jobTypes?.map((jt) => (
-                                  <SelectItem key={jt.id} value={jt.id}>{jt.name}</SelectItem>
+                                {workCategories?.map((wc) => (
+                                  <SelectItem key={wc.id} value={wc.id}>{wc.name}</SelectItem>
                                 ))}
-                                {!jobTypes?.length && (
+                                {!workCategories?.length && (
                                   <SelectItem value="none" disabled>
-                                    {providerId ? "No job types for this provider" : "Select a provider first"}
+                                    {providerId ? "No work categories for this provider" : "Select a provider first"}
                                   </SelectItem>
                                 )}
                               </SelectContent>

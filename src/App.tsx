@@ -16,7 +16,7 @@ import Invoicing from "./pages/Invoicing";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import CommercialTerms from "./pages/CommercialTerms";
-import JobTypesSettings from "./pages/JobTypesSettings";
+import WorkCategoriesSettings from "./pages/JobTypesSettings";
 import VatBandsSettings from "./pages/VatBandsSettings";
 import NotFound from "./pages/NotFound";
 
@@ -48,7 +48,7 @@ const AppRoutes = () => (
     <Route path="/invoicing" element={<ProtectedRoute><Invoicing /></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-    <Route path="/settings/job-types" element={<ProtectedRoute><JobTypesSettings /></ProtectedRoute>} />
+    <Route path="/settings/work-categories" element={<ProtectedRoute><WorkCategoriesSettings /></ProtectedRoute>} />
     <Route path="/settings/vat-bands" element={<ProtectedRoute><VatBandsSettings /></ProtectedRoute>} />
     <Route path="/vehicles" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
     <Route path="/active-work" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />

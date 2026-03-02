@@ -26,8 +26,7 @@ Given a free-text job description, extract individual work lines.
 
 Rules:
 - Each distinct task/item becomes one work line.
-- Infer jobType from: maintenance, repair, mot, tyres, bodywork. Default to "maintenance".
-- Infer lineType from: labour, parts, sundries. Default to "labour".
+- Infer jobType (work category) from: maintenance, repair, mot, tyres, bodywork. Default to "maintenance".
 - If a price is mentioned (e.g. "£120"), use it as unitPrice. Otherwise use 0.
 - If quantity is mentioned use it, otherwise default to 1.
 - Keep descriptions concise and professional.
@@ -62,11 +61,10 @@ Return a JSON array using the suggest_work_lines tool.`;
                       properties: {
                         description: { type: "string" },
                         jobType: { type: "string", enum: ["maintenance", "repair", "mot", "tyres", "bodywork"] },
-                        lineType: { type: "string", enum: ["labour", "parts", "sundries"] },
                         quantity: { type: "number" },
                         unitPrice: { type: "number" },
                       },
-                      required: ["description", "jobType", "lineType", "quantity", "unitPrice"],
+                      required: ["description", "jobType", "quantity", "unitPrice"],
                       additionalProperties: false,
                     },
                   },
