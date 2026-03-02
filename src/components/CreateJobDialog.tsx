@@ -17,13 +17,23 @@ import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useVatBands } from "@/hooks/useVatBands";
+import { useLabourRates } from "@/hooks/useLabourRates";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, Trash2, PlusCircle, Sparkles, Loader2, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
 // ── Work Line Types ──────────────────────────────────────────────
+interface LabourCharge {
+  labour_rate_id: string;
+  labour_rate_name: string;
+  units: number;
+  cost_per_unit: number;
+  total: number;
+}
+
 interface WorkLine {
   id: string;
   jobTypeId: string;
@@ -34,6 +44,8 @@ interface WorkLine {
   vatPercent: number;
   rechargeable: boolean;
   rechargeReason: string;
+  labourCharges: LabourCharge[];
+  menuItemId: string | null;
 }
 
 const emptyWorkLine = (): WorkLine => ({
@@ -46,6 +58,8 @@ const emptyWorkLine = (): WorkLine => ({
   vatPercent: 0,
   rechargeable: false,
   rechargeReason: "",
+  labourCharges: [],
+  menuItemId: null,
 });
 
 // ── Component ────────────────────────────────────────────────────
@@ -85,7 +99,42 @@ export function CreateJobDialog() {
   const { data: workCodes } = useWorkCodes(providerId || undefined);
   const { data: vatBands } = useVatBands(providerId || undefined);
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, profile?.fleet_id || undefined);
+  const { data: labourRates } = useLabourRates(providerId || undefined, profile?.fleet_id || undefined);
 
+  // Bulk fetch menu_item_labour for all menu items of this provider+fleet
+  const menuItemIds = useMemo(() => menuItems?.map((i) => i.id) || [], [menuItems]);
+  const { data: allMenuItemLabour } = useQuery({
+    queryKey: ["menu_item_labour_bulk_create", providerId, profile?.fleet_id, menuItemIds],
+    enabled: menuItemIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("menu_item_labour")
+        .select("*")
+        .in("menu_item_id", menuItemIds);
+      if (error) throw error;
+      return data as { id: string; menu_item_id: string; labour_rate_id: string; units: number }[];
+    },
+  });
+
+  // Helper to build labour charges from a menu item
+  const buildLabourCharges = useCallback(
+    (menuItemId: string): LabourCharge[] => {
+      if (!allMenuItemLabour || !labourRates) return [];
+      return allMenuItemLabour
+        .filter((mil) => mil.menu_item_id === menuItemId)
+        .map((mil) => {
+          const rate = labourRates.find((r) => r.id === mil.labour_rate_id);
+          return {
+            labour_rate_id: mil.labour_rate_id,
+            labour_rate_name: rate?.name || "Unknown",
+            units: mil.units,
+            cost_per_unit: rate ? Number(rate.cost) : 0,
+            total: rate ? mil.units * Number(rate.cost) : 0,
+          };
+        });
+    },
+    [allMenuItemLabour, labourRates]
+  );
   // ── VAT & price helpers (unchanged logic) ──────────────────────
   const getVatPercent = useCallback(
     (categoryId: string, codeId: string): number => {
@@ -152,7 +201,8 @@ export function CreateJobDialog() {
           const catId = matchedCat?.id || "";
           const matchedCode = workCodes?.find((c) => c.name.toLowerCase() === (l.workCode || "").toLowerCase() && (!catId || c.work_category_id === catId));
           const codeId = matchedCode?.id || "";
-          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "" };
+          const menuMatch = findMenuPrice(catId, codeId, menuItems);
+          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", labourCharges: menuMatch ? buildLabourCharges(menuMatch.id) : [], menuItemId: menuMatch?.id || null };
         });
         setWorkLines(applyMenuPrices(parsed, menuItems));
         toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
@@ -186,22 +236,39 @@ export function CreateJobDialog() {
             updated.workCodeId = "";
             updated.vatPercent = getVatPercent(value, "");
             const match = findMenuPrice(value, "", menuItems);
-            if (match) { updated.unitPrice = Number(match.unit_price); if (match.description && !l.description) updated.description = match.description; }
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              updated.menuItemId = match.id;
+              updated.labourCharges = buildLabourCharges(match.id);
+              if (match.description && !l.description) updated.description = match.description;
+            } else {
+              updated.menuItemId = null;
+              updated.labourCharges = [];
+            }
           }
           if (field === "workCodeId") {
             updated.vatPercent = getVatPercent(l.jobTypeId, value);
             const match = findMenuPrice(l.jobTypeId, value, menuItems);
-            if (match) { updated.unitPrice = Number(match.unit_price); if (match.description && !l.description) updated.description = match.description; }
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              updated.menuItemId = match.id;
+              updated.labourCharges = buildLabourCharges(match.id);
+              if (match.description && !l.description) updated.description = match.description;
+            } else {
+              updated.menuItemId = null;
+              updated.labourCharges = [];
+            }
           }
           return updated;
         })
       );
     },
-    [menuItems, getVatPercent, findMenuPrice]
+    [menuItems, getVatPercent, findMenuPrice, buildLabourCharges]
   );
 
+  const lineLabourTotal = (line: WorkLine) => line.labourCharges.reduce((sum, lc) => sum + lc.total, 0);
   const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
-  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineVat(line);
+  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineLabourTotal(line) + lineVat(line);
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
 
   const resetForm = () => {
@@ -258,8 +325,30 @@ export function CreateJobDialog() {
           const prefix = [catName, codeName].filter(Boolean).join(" > ");
           return { job_id: jobData.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: lineTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null };
         });
-        const { error } = await supabase.from("work_items").insert(items);
+        const { data: insertedItems, error } = await supabase.from("work_items").insert(items).select("id");
         if (error) throw error;
+
+        // Insert labour charges for each work item
+        const labourInserts: any[] = [];
+        validLines.forEach((l, idx) => {
+          const workItemId = insertedItems?.[idx]?.id;
+          if (workItemId && l.labourCharges.length > 0) {
+            l.labourCharges.forEach((lc) => {
+              labourInserts.push({
+                work_item_id: workItemId,
+                labour_rate_id: lc.labour_rate_id,
+                labour_rate_name: lc.labour_rate_name,
+                units: lc.units,
+                cost_per_unit: lc.cost_per_unit,
+                total: lc.total,
+              });
+            });
+          }
+        });
+        if (labourInserts.length > 0) {
+          const { error: labourError } = await supabase.from("work_item_labour").insert(labourInserts);
+          if (labourError) throw labourError;
+        }
       }
 
       toast({ title: "Booking created", description: `${jobNumber} created with ${validLines.length} work line(s) — Total: £${grandTotal.toFixed(2)}` });
@@ -474,6 +563,20 @@ export function CreateJobDialog() {
                             <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{lineTotal(line).toFixed(2)}</div>
                           </div>
                         </div>
+                        {/* Labour charges (read-only) */}
+                        {line.labourCharges.length > 0 && (
+                          <div className="border-t border-border pt-2 mt-1">
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Labour Rates</span>
+                            <div className="mt-1 space-y-1">
+                              {line.labourCharges.map((lc, lcIdx) => (
+                                <div key={lcIdx} className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded px-3 py-1.5">
+                                  <span>{lc.labour_rate_name}</span>
+                                  <span className="font-mono">{lc.units} × £{lc.cost_per_unit.toFixed(2)} = £{lc.total.toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   );
