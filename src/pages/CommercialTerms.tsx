@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ export default function CommercialTerms() {
   const deleteTerm = useDeleteCommercialTerm();
 
   const [selectedTermId, setSelectedTermId] = useState<string | null>(null);
+  const [deleteTermId, setDeleteTermId] = useState<string | null>(null);
   const [newFleetId, setNewFleetId] = useState("");
   const [newProviderId, setNewProviderId] = useState("");
   const [newStartDate, setNewStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -246,7 +248,7 @@ export default function CommercialTerms() {
                               variant="ghost"
                               size="sm"
                               className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={(e) => { e.stopPropagation(); deleteTerm.mutate(term.id); }}
+                              onClick={(e) => { e.stopPropagation(); setDeleteTermId(term.id); }}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
@@ -261,6 +263,40 @@ export default function CommercialTerms() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!deleteTermId} onOpenChange={(open) => !open && setDeleteTermId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Commercial Terms?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this agreement along with all associated menu prices and labour rates. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (!deleteTermId) return;
+                try {
+                  const term = terms?.find((t) => t.id === deleteTermId);
+                  if (term) {
+                    await supabase.from("provider_menu_items").delete().eq("provider_id", term.provider_id).eq("fleet_id", term.fleet_id);
+                    await supabase.from("labour_rates").delete().eq("provider_id", term.provider_id).eq("fleet_id", term.fleet_id);
+                  }
+                  await deleteTerm.mutateAsync(deleteTermId);
+                  toast({ title: "Commercial terms deleted" });
+                } catch (err: any) {
+                  toast({ title: "Error", description: err.message, variant: "destructive" });
+                }
+                setDeleteTermId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
