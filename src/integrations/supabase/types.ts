@@ -248,6 +248,54 @@ export type Database = {
           },
         ]
       }
+      labour_rates: {
+        Row: {
+          cost: number
+          created_at: string
+          fleet_id: string
+          id: string
+          is_default: boolean
+          name: string
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          fleet_id: string
+          id?: string
+          is_default?: boolean
+          name: string
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          fleet_id?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labour_rates_fleet_id_fkey"
+            columns: ["fleet_id"]
+            isOneToOne: false
+            referencedRelation: "fleets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labour_rates_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
