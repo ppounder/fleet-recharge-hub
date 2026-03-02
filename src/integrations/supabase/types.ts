@@ -664,6 +664,54 @@ export type Database = {
           },
         ]
       }
+      work_item_labour: {
+        Row: {
+          cost_per_unit: number
+          created_at: string
+          id: string
+          labour_rate_id: string
+          labour_rate_name: string
+          total: number
+          units: number
+          work_item_id: string
+        }
+        Insert: {
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          labour_rate_id: string
+          labour_rate_name?: string
+          total?: number
+          units?: number
+          work_item_id: string
+        }
+        Update: {
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          labour_rate_id?: string
+          labour_rate_name?: string
+          total?: number
+          units?: number
+          work_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_item_labour_labour_rate_id_fkey"
+            columns: ["labour_rate_id"]
+            isOneToOne: false
+            referencedRelation: "labour_rates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_item_labour_work_item_id_fkey"
+            columns: ["work_item_id"]
+            isOneToOne: false
+            referencedRelation: "work_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_items: {
         Row: {
           created_at: string
