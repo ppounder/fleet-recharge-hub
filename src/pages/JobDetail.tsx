@@ -84,32 +84,6 @@ export default function JobDetail() {
   const lastParsedDesc = useRef("");
   const [saving, setSaving] = useState(false);
 
-  // Initialize local state from DB items
-  useEffect(() => {
-    if (!itemsLoading && !initialized) {
-      if (dbWorkItems.length > 0) {
-        setWorkLines(
-          dbWorkItems.map((item) => ({
-            id: crypto.randomUUID(),
-            dbId: item.id,
-            jobTypeId: "",
-            workCodeId: "",
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: Number(item.unit_price),
-            vatPercent: 0,
-            rechargeable: item.rechargeable,
-            rechargeReason: item.recharge_reason || "",
-            dirty: false,
-          }))
-        );
-      } else {
-        setWorkLines([emptyWorkLine()]);
-      }
-      setInitialized(true);
-    }
-  }, [dbWorkItems, itemsLoading, initialized]);
-
   // ── VAT & price helpers (same as CreateJobDialog) ──
   const getVatPercent = useCallback(
     (categoryId: string, codeId: string): number => {
@@ -132,6 +106,57 @@ export default function JobDetail() {
     },
     [workCategories, workCodes, vatBands]
   );
+
+  // Parse "[CATEGORY > CODE] description" or "[CATEGORY] description" from stored text
+  const parseStoredDescription = useCallback(
+    (raw: string) => {
+      const match = raw.match(/^\[([^\]]+)\]\s*(.*)/);
+      if (!match) return { jobTypeId: "", workCodeId: "", description: raw, vatPercent: 0 };
+      const prefix = match[1];
+      const desc = match[2];
+      const parts = prefix.split(">").map((s) => s.trim());
+      const catName = parts[0] || "";
+      const codeName = parts[1] || "";
+      const matchedCat = workCategories?.find((c) => c.name.toLowerCase() === catName.toLowerCase());
+      const catId = matchedCat?.id || "";
+      const matchedCode = catId && codeName
+        ? workCodes?.find((c) => c.name.toLowerCase() === codeName.toLowerCase() && c.work_category_id === catId)
+        : undefined;
+      const codeId = matchedCode?.id || "";
+      const vatPercent = getVatPercent(catId, codeId);
+      return { jobTypeId: catId, workCodeId: codeId, description: desc, vatPercent };
+    },
+    [workCategories, workCodes, getVatPercent]
+  );
+
+  // Initialize local state from DB items (wait for categories/codes to be loaded)
+  useEffect(() => {
+    if (!itemsLoading && !initialized && workCategories !== undefined && workCodes !== undefined) {
+      if (dbWorkItems.length > 0) {
+        setWorkLines(
+          dbWorkItems.map((item) => {
+            const parsed = parseStoredDescription(item.description);
+            return {
+              id: crypto.randomUUID(),
+              dbId: item.id,
+              jobTypeId: parsed.jobTypeId,
+              workCodeId: parsed.workCodeId,
+              description: parsed.description,
+              quantity: item.quantity,
+              unitPrice: Number(item.unit_price),
+              vatPercent: parsed.vatPercent || 0,
+              rechargeable: item.rechargeable,
+              rechargeReason: item.recharge_reason || "",
+              dirty: false,
+            };
+          })
+        );
+      } else {
+        setWorkLines([emptyWorkLine()]);
+      }
+      setInitialized(true);
+    }
+  }, [dbWorkItems, itemsLoading, initialized, workCategories, workCodes, parseStoredDescription]);
 
   const findMenuPrice = useCallback(
     (categoryId: string, codeId: string, items: typeof menuItems) => {
