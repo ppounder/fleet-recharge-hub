@@ -18,6 +18,7 @@ import Settings from "./pages/Settings";
 import CommercialTerms from "./pages/CommercialTerms";
 import WorkCategoriesSettings from "./pages/JobTypesSettings";
 import VatBandsSettings from "./pages/VatBandsSettings";
+import WorkCodesSettings from "./pages/WorkCodesSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const AppRoutes = () => (
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/settings/work-categories" element={<ProtectedRoute><WorkCategoriesSettings /></ProtectedRoute>} />
+    <Route path="/settings/work-codes" element={<ProtectedRoute><WorkCodesSettings /></ProtectedRoute>} />
     <Route path="/settings/vat-bands" element={<ProtectedRoute><VatBandsSettings /></ProtectedRoute>} />
     <Route path="/vehicles" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
     <Route path="/active-work" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />

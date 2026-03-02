@@ -570,6 +570,58 @@ export type Database = {
           },
         ]
       }
+      work_codes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          provider_id: string
+          updated_at: string
+          vat_band_id: string | null
+          work_category_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          provider_id: string
+          updated_at?: string
+          vat_band_id?: string | null
+          work_category_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          provider_id?: string
+          updated_at?: string
+          vat_band_id?: string | null
+          work_category_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_codes_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_codes_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_codes_work_category_id_fkey"
+            columns: ["work_category_id"]
+            isOneToOne: false
+            referencedRelation: "work_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
