@@ -145,7 +145,7 @@ export type Database = {
           depot: string | null
           description: string | null
           estimate_total: number
-          fleet_manager_id: string | null
+          fleet_id: string | null
           fleet_reference: string | null
           has_recharge: boolean
           id: string
@@ -172,7 +172,7 @@ export type Database = {
           depot?: string | null
           description?: string | null
           estimate_total?: number
-          fleet_manager_id?: string | null
+          fleet_id?: string | null
           fleet_reference?: string | null
           has_recharge?: boolean
           id?: string
@@ -199,7 +199,7 @@ export type Database = {
           depot?: string | null
           description?: string | null
           estimate_total?: number
-          fleet_manager_id?: string | null
+          fleet_id?: string | null
           fleet_reference?: string | null
           has_recharge?: boolean
           id?: string
@@ -216,6 +216,13 @@ export type Database = {
           vehicle_reg?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "jobs_fleet_id_fkey"
+            columns: ["fleet_id"]
+            isOneToOne: false
+            referencedRelation: "fleets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "jobs_provider_id_fkey"
             columns: ["provider_id"]

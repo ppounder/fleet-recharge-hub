@@ -237,7 +237,7 @@ export function CreateJobDialog() {
         type: firstLineWc?.name || "maintenance",
         priority,
         description: description || null,
-        fleet_manager_id: user?.id ?? null,
+        fleet_id: profile?.fleet_id ?? null,
         provider_id: providerId || null,
         status: "booked",
         estimate_total: grandTotal,
