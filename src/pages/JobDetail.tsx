@@ -692,11 +692,11 @@ export default function JobDetail() {
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs">Qty</Label>
-                          <Input type="number" min={1} value={line.quantity} onChange={(e) => updateWorkLine(line.id, "quantity", Number(e.target.value) || 1)} className="text-sm" />
+                          <Input type="text" inputMode="numeric" value={line.quantity} onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) updateWorkLine(line.id, "quantity", Number(v) || 1); }} className="text-sm" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs">Unit £</Label>
-                          <Input type="number" min={0} step={0.01} value={line.unitPrice || ""} onChange={(e) => updateWorkLine(line.id, "unitPrice", Number(e.target.value) || 0)} className="text-sm" />
+                          <Input type="text" inputMode="decimal" value={line.unitPrice} onChange={(e) => { const v = e.target.value; if (/^\d*\.?\d{0,2}$/.test(v)) updateWorkLine(line.id, "unitPrice", Number(v) || 0); }} className="text-sm" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs">VAT ({line.vatPercent}%)</Label>
