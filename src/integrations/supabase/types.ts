@@ -299,6 +299,7 @@ export type Database = {
           provider_id: string
           unit_price: number
           updated_at: string
+          work_code_id: string | null
         }
         Insert: {
           created_at?: string
@@ -309,6 +310,7 @@ export type Database = {
           provider_id: string
           unit_price?: number
           updated_at?: string
+          work_code_id?: string | null
         }
         Update: {
           created_at?: string
@@ -319,6 +321,7 @@ export type Database = {
           provider_id?: string
           unit_price?: number
           updated_at?: string
+          work_code_id?: string | null
         }
         Relationships: [
           {
@@ -326,6 +329,13 @@ export type Database = {
             columns: ["fleet_id"]
             isOneToOne: false
             referencedRelation: "fleets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_menu_items_work_code_id_fkey"
+            columns: ["work_code_id"]
+            isOneToOne: false
+            referencedRelation: "work_codes"
             referencedColumns: ["id"]
           },
         ]

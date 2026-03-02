@@ -12,6 +12,7 @@ import {
   useUpdateMenuItem,
 } from "@/hooks/useMenuItems";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
+import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
@@ -24,19 +25,23 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
   const { toast } = useToast();
   const { data: menuItems, isLoading } = useMenuItemsByProviderAndFleet(providerId, fleetId);
   const { data: workCategories } = useWorkCategories(providerId);
+  const { data: workCodes } = useWorkCodes(providerId);
   const createItem = useCreateMenuItem();
   const deleteItem = useDeleteMenuItem();
   const updateItem = useUpdateMenuItem();
 
   const [newJobType, setNewJobType] = useState("");
+  const [newWorkCodeId, setNewWorkCodeId] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
 
+  const codesForNewCategory = workCodes?.filter((c) => c.work_category_id === newJobType) || [];
+
   const handleAdd = async () => {
-    if (!newPrice) {
-      toast({ title: "Missing fields", description: "Please enter a price", variant: "destructive" });
+    if (!newPrice || !newJobType) {
+      toast({ title: "Missing fields", description: "Please select a category and enter a price", variant: "destructive" });
       return;
     }
     try {
@@ -44,11 +49,13 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
         provider_id: providerId,
         fleet_id: fleetId,
         job_type: newJobType,
+        work_code_id: newWorkCodeId || null,
         description: newDescription || workCategories?.find((j) => j.id === newJobType)?.name || newJobType,
         unit_price: Number(newPrice),
       });
       toast({ title: "Menu price added" });
       setNewJobType("");
+      setNewWorkCodeId("");
       setNewDescription("");
       setNewPrice("");
     } catch (err: any) {
@@ -74,11 +81,11 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
           <CardTitle className="text-base">Add Agreed Price</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-[1fr_1fr_100px_auto] gap-3 items-end">
+          <div className="grid grid-cols-[1fr_1fr_1fr_100px_auto] gap-3 items-end">
             <div className="space-y-1.5">
               <Label className="text-xs">Work Category *</Label>
-              <Select value={newJobType} onValueChange={setNewJobType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select value={newJobType} onValueChange={(v) => { setNewJobType(v); setNewWorkCodeId(""); }}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
                   {workCategories?.map((wc) => (
                     <SelectItem key={wc.id} value={wc.id}>{wc.name}</SelectItem>
@@ -86,6 +93,18 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
                   {!workCategories?.length && (
                     <SelectItem value="none" disabled>No work categories — add them in Settings</SelectItem>
                   )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Work Code (optional)</Label>
+              <Select value={newWorkCodeId} onValueChange={setNewWorkCodeId} disabled={!newJobType || codesForNewCategory.length === 0}>
+                <SelectTrigger><SelectValue placeholder={!newJobType ? "Select category first" : codesForNewCategory.length === 0 ? "No codes" : "Select code"} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No work code (category-level)</SelectItem>
+                  {codesForNewCategory.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -127,6 +146,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Work Category</TableHead>
+                  <TableHead>Work Code</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Agreed Price</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
@@ -134,12 +154,14 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
               </TableHeader>
               <TableBody>
                 {menuItems.map((item) => {
-                  const jobLabel = workCategories?.find((j) => j.id === item.job_type)?.name || item.job_type;
+                  const catLabel = workCategories?.find((j) => j.id === item.job_type)?.name || item.job_type;
+                  const codeLabel = item.work_code_id ? workCodes?.find((c) => c.id === item.work_code_id)?.name || "—" : "—";
                   const isEditing = editingId === item.id;
 
                   return (
                     <TableRow key={item.id}>
-                      <TableCell className="capitalize font-medium">{jobLabel}</TableCell>
+                      <TableCell className="capitalize font-medium">{catLabel}</TableCell>
+                      <TableCell className="text-muted-foreground">{codeLabel}</TableCell>
                       <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
                       <TableCell className="text-right font-mono">
                         {isEditing ? (
