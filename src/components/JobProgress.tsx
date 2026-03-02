@@ -8,6 +8,7 @@ interface JobProgressProps {
 
 const stepLabels: Record<string, string> = {
   booked: "Booked",
+  confirmed: "Confirmed",
   estimated: "Estimated",
   approved: "Approved",
   "in-progress": "In Progress",
