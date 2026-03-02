@@ -497,10 +497,9 @@ export default function JobDetail() {
           <CardHeader className="pb-3"><CardTitle className="text-base">Booking Details</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              <div><span className="text-muted-foreground">Type</span><p className="font-medium capitalize">{job.type}</p></div>
-              <div><span className="text-muted-foreground">Booking Date</span><p className="font-medium">{job.booking_date ? new Date(job.booking_date).toLocaleDateString() : "—"}</p></div>
+              <div><span className="text-muted-foreground">Booking Date</span><p className="font-medium">{job.booking_date ? `${new Date(job.booking_date).toLocaleDateString()} ${new Date(job.booking_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "—"}</p></div>
+              <div><span className="text-muted-foreground">Booking Ref</span><p className="font-medium">{job.booking_reference || job.job_number || "—"}</p></div>
               <div><span className="text-muted-foreground">Fleet Ref</span><p className="font-medium">{job.fleet_reference || "—"}</p></div>
-              <div><span className="text-muted-foreground">Booking Ref</span><p className="font-medium">{job.booking_reference || "—"}</p></div>
               <div><span className="text-muted-foreground">Depot</span><p className="font-medium">{job.depot || "—"}</p></div>
               <div><span className="text-muted-foreground">Contact</span><p className="font-medium">{job.contact_name || "—"}</p></div>
             </div>
