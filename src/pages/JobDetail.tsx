@@ -83,23 +83,23 @@ export default function JobDetail() {
   const providerId = job?.provider_id || currentProvider?.id || "";
   const fleetId = profile?.fleet_id || undefined;
 
-  // Resolve the fleet_id for this job (from the fleet manager who created it)
-  // We need the fleet_id linked to the job's fleet_manager_id
+  // Resolve the fleet_id for this job
   const [jobFleetId, setJobFleetId] = useState<string | undefined>(fleetId);
   useEffect(() => {
-    if (job?.fleet_manager_id && !fleetId) {
+    if (fleetId) {
+      setJobFleetId(fleetId);
+    } else if (job?.vehicle_id) {
+      // SP can't read FM profile, so resolve fleet_id via vehicle instead
       supabase
-        .from("profiles")
+        .from("vehicles")
         .select("fleet_id")
-        .eq("id", job.fleet_manager_id)
+        .eq("id", job.vehicle_id)
         .maybeSingle()
         .then(({ data }) => {
           if (data?.fleet_id) setJobFleetId(data.fleet_id);
         });
-    } else if (fleetId) {
-      setJobFleetId(fleetId);
     }
-  }, [job?.fleet_manager_id, fleetId]);
+  }, [job?.vehicle_id, fleetId]);
 
   const { data: workCategories } = useWorkCategories(providerId || undefined);
   const { data: workCodes } = useWorkCodes(providerId || undefined);
