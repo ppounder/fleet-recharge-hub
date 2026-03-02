@@ -287,6 +287,45 @@ export type Database = {
           },
         ]
       }
+      menu_item_labour: {
+        Row: {
+          created_at: string
+          id: string
+          labour_rate_id: string
+          menu_item_id: string
+          units: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          labour_rate_id: string
+          menu_item_id: string
+          units?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          labour_rate_id?: string
+          menu_item_id?: string
+          units?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_labour_labour_rate_id_fkey"
+            columns: ["labour_rate_id"]
+            isOneToOne: false
+            referencedRelation: "labour_rates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_labour_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "provider_menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
