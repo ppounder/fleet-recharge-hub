@@ -247,6 +247,47 @@ export type Database = {
           },
         ]
       }
+      provider_menu_items: {
+        Row: {
+          created_at: string
+          description: string
+          fleet_id: string
+          id: string
+          job_type: string
+          provider_id: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          fleet_id: string
+          id?: string
+          job_type?: string
+          provider_id: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          fleet_id?: string
+          id?: string
+          job_type?: string
+          provider_id?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_menu_items_fleet_id_fkey"
+            columns: ["fleet_id"]
+            isOneToOne: false
+            referencedRelation: "fleets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recharges: {
         Row: {
           cost: number

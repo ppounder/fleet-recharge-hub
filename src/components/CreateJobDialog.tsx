@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useCreateJob } from "@/hooks/useJobs";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useVehicles } from "@/hooks/useVehicles";
+import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,7 +46,7 @@ export function CreateJobDialog() {
   const [description, setDescription] = useState("");
   const [workLines, setWorkLines] = useState<WorkLine[]>([emptyWorkLine()]);
   const createJob = useCreateJob();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const { data: serviceProviders, isLoading: loadingProviders } = useServiceProviders();
   const { data: vehicles, isLoading: loadingVehicles } = useVehicles();
@@ -53,6 +54,11 @@ export function CreateJobDialog() {
   const selectedVehicle = vehicles?.find((v) => v.id === vehicleId);
   const [aiLoading, setAiLoading] = useState(false);
   const lastParsedDesc = useRef("");
+
+  // Look up the service_providers row to get the provider's actual ID (not user_id)
+  const selectedProvider = serviceProviders?.find((sp) => sp.id === providerId);
+  // Fetch agreed menu items for this provider + fleet combination
+  const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, profile?.fleet_id || undefined);
 
   const parseDescriptionWithAI = async (text: string) => {
     if (!text.trim() || text.trim() === lastParsedDesc.current) return;
@@ -93,10 +99,24 @@ export function CreateJobDialog() {
   const updateWorkLine = useCallback(
     (id: string, field: keyof WorkLine, value: any) => {
       setWorkLines((prev) =>
-        prev.map((l) => (l.id === id ? { ...l, [field]: value } : l))
+        prev.map((l) => {
+          if (l.id !== id) return l;
+          const updated = { ...l, [field]: value };
+          // Auto-populate price from agreed menu items when job type changes
+          if (field === "jobType" && menuItems?.length) {
+            const match = menuItems.find((mi) => mi.job_type === value);
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              if (match.description && !l.description) {
+                updated.description = match.description;
+              }
+            }
+          }
+          return updated;
+        })
       );
     },
-    []
+    [menuItems]
   );
 
   const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice;
