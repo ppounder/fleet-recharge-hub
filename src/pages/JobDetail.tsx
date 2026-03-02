@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { useCurrentProvider } from "@/hooks/useCurrentProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -89,6 +90,42 @@ export default function JobDetail() {
   const { data: vatBands } = useVatBands(providerId || undefined);
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, jobFleetId);
   const { data: labourRates = [] } = useLabourRates(providerId || undefined, jobFleetId);
+
+  // Bulk fetch menu_item_labour for all menu items of this provider+fleet
+  const menuItemIds = useMemo(() => menuItems?.map((i) => i.id) || [], [menuItems]);
+  const { data: allMenuItemLabour } = useQuery({
+    queryKey: ["menu_item_labour_bulk_job", providerId, jobFleetId, menuItemIds],
+    enabled: menuItemIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("menu_item_labour")
+        .select("*")
+        .in("menu_item_id", menuItemIds);
+      if (error) throw error;
+      return data as { id: string; menu_item_id: string; labour_rate_id: string; units: number }[];
+    },
+  });
+
+  // Helper to build labour charges from a menu item's pre-set labour rates
+  const buildLabourCharges = useCallback(
+    (menuItemId: string): LabourCharge[] => {
+      if (!allMenuItemLabour || !labourRates) return [];
+      return allMenuItemLabour
+        .filter((mil) => mil.menu_item_id === menuItemId)
+        .map((mil) => {
+          const rate = labourRates.find((r) => r.id === mil.labour_rate_id);
+          return {
+            id: crypto.randomUUID(),
+            labourRateId: mil.labour_rate_id,
+            labourRateName: rate?.name || "Unknown",
+            costPerUnit: rate ? Number(rate.cost) : 0,
+            units: mil.units,
+            total: rate ? mil.units * Number(rate.cost) : 0,
+          };
+        });
+    },
+    [allMenuItemLabour, labourRates]
+  );
 
   // ── Local work lines state ──
   const [workLines, setWorkLines] = useState<WorkLine[]>([]);
@@ -215,18 +252,26 @@ export default function JobDetail() {
             updated.workCodeId = "";
             updated.vatPercent = getVatPercent(value, "");
             const match = findMenuPrice(value, "", menuItems);
-            if (match) { updated.unitPrice = Number(match.unit_price); if (match.description && !l.description) updated.description = match.description; }
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              updated.labourCharges = buildLabourCharges(match.id);
+              if (match.description && !l.description) updated.description = match.description;
+            }
           }
           if (field === "workCodeId") {
             updated.vatPercent = getVatPercent(l.jobTypeId, value);
             const match = findMenuPrice(l.jobTypeId, value, menuItems);
-            if (match) { updated.unitPrice = Number(match.unit_price); if (match.description && !l.description) updated.description = match.description; }
+            if (match) {
+              updated.unitPrice = Number(match.unit_price);
+              updated.labourCharges = buildLabourCharges(match.id);
+              if (match.description && !l.description) updated.description = match.description;
+            }
           }
           return updated;
         })
       );
     },
-    [menuItems, getVatPercent, findMenuPrice]
+    [menuItems, getVatPercent, findMenuPrice, buildLabourCharges]
   );
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
@@ -307,7 +352,10 @@ export default function JobDetail() {
           const catId = matchedCat?.id || "";
           const matchedCode = workCodes?.find((c) => c.name.toLowerCase() === (l.workCode || "").toLowerCase() && (!catId || c.work_category_id === catId));
           const codeId = matchedCode?.id || "";
-          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: [] };
+          const menuMatch = findMenuPrice(catId, codeId, menuItems);
+          const unitPrice = menuMatch ? Number(menuMatch.unit_price) : (l.unitPrice || 0);
+          const charges = menuMatch ? buildLabourCharges(menuMatch.id) : [];
+          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: charges };
         });
         setWorkLines((prev) => {
           const existing = prev.filter((l) => l.description.trim() || l.jobTypeId || l.dbId);
