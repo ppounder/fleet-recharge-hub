@@ -204,8 +204,13 @@ export function CreateJobDialog() {
           const menuMatch = findMenuPrice(catId, codeId, menuItems);
           return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", labourCharges: menuMatch ? buildLabourCharges(menuMatch.id) : [], menuItemId: menuMatch?.id || null };
         });
-        setWorkLines(applyMenuPrices(parsed, menuItems));
-        toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
+        const newLines = applyMenuPrices(parsed, menuItems);
+        setWorkLines((prev) => {
+          // Remove any empty placeholder lines before appending
+          const existing = prev.filter((l) => l.description.trim() || l.jobTypeId);
+          return [...existing, ...newLines];
+        });
+        toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) added from description` });
       }
     } catch (err: any) {
       console.error("AI parse error:", err);
