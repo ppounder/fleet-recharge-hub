@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +60,18 @@ export function CreateJobDialog() {
   // Fetch agreed menu items for this provider + fleet combination
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, profile?.fleet_id || undefined);
 
+  // Helper: apply menu item prices to work lines
+  const applyMenuPrices = (lines: WorkLine[], items: typeof menuItems): WorkLine[] => {
+    if (!items?.length) return lines;
+    return lines.map((l) => {
+      const match = items.find((mi) => mi.job_type === l.jobType);
+      if (match && l.unitPrice === 0) {
+        return { ...l, unitPrice: Number(match.unit_price) };
+      }
+      return l;
+    });
+  };
+
   const parseDescriptionWithAI = async (text: string) => {
     if (!text.trim() || text.trim() === lastParsedDesc.current) return;
     lastParsedDesc.current = text.trim();
@@ -80,7 +92,7 @@ export function CreateJobDialog() {
           rechargeable: false,
           rechargeReason: "",
         }));
-        setWorkLines(parsed);
+        setWorkLines(applyMenuPrices(parsed, menuItems));
         toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
       }
     } catch (err: any) {
@@ -90,6 +102,13 @@ export function CreateJobDialog() {
       setAiLoading(false);
     }
   };
+
+  // When menuItems load/change, apply prices to any lines that still have 0 price
+  useEffect(() => {
+    if (menuItems?.length) {
+      setWorkLines((prev) => applyMenuPrices(prev, menuItems));
+    }
+  }, [menuItems]);
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
 
