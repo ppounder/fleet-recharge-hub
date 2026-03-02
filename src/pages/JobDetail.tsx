@@ -309,8 +309,11 @@ export default function JobDetail() {
           const codeId = matchedCode?.id || "";
           return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: [] };
         });
-        setWorkLines(parsed);
-        toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
+        setWorkLines((prev) => {
+          const existing = prev.filter((l) => l.description.trim() || l.jobTypeId || l.dbId);
+          return [...existing, ...parsed];
+        });
+        toast({ title: "AI parsed work lines", description: `${parsed.length} new line(s) added` });
       }
     } catch (err: any) {
       toast({ title: "AI parsing failed", description: err.message || "Could not parse description", variant: "destructive" });
