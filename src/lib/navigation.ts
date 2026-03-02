@@ -30,7 +30,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Commercial Terms", href: "/commercial-terms", icon: Handshake },
     { label: "Reports", href: "/reports", icon: BarChart3 },
     { label: "Settings", href: "/settings", icon: Settings, children: [
-      { label: "Job Types", href: "/settings/job-types", icon: ListChecks },
+      { label: "Work Categories", href: "/settings/work-categories", icon: ListChecks },
       { label: "VAT Bands", href: "/settings/vat-bands", icon: Percent },
     ]},
   ],

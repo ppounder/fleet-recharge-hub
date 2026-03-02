@@ -115,7 +115,7 @@ export default function MenuItems() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Menu Items</h1>
-          <p className="text-muted-foreground">Manage agreed prices per Fleet Manager for each job type.</p>
+          <p className="text-muted-foreground">Manage agreed prices per Fleet Manager for each work category.</p>
         </div>
 
         {/* Add new item */}
@@ -156,7 +156,7 @@ export default function MenuItems() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Job Type *</Label>
+                <Label className="text-xs">Work Category *</Label>
                 <Select value={newJobType} onValueChange={setNewJobType}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -205,7 +205,7 @@ export default function MenuItems() {
                   <TableRow>
                     <TableHead>Service Provider</TableHead>
                     <TableHead>Fleet</TableHead>
-                    <TableHead>Job Type</TableHead>
+                    <TableHead>Work Category</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead className="text-right">Agreed Price</TableHead>
                     <TableHead className="w-[100px]">Actions</TableHead>
