@@ -258,7 +258,7 @@ export function CreateJobDialog() {
           const prefix = [catName, codeName].filter(Boolean).join(" > ");
           return { job_id: jobData.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: lineTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null };
         });
-        const { error } = await supabase.from("estimate_items").insert(items);
+        const { error } = await supabase.from("work_items").insert(items);
         if (error) throw error;
       }
 

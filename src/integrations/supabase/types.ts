@@ -59,50 +59,6 @@ export type Database = {
           },
         ]
       }
-      estimate_items: {
-        Row: {
-          created_at: string
-          description: string
-          id: string
-          job_id: string
-          quantity: number
-          recharge_reason: string | null
-          rechargeable: boolean
-          total: number
-          unit_price: number
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          id?: string
-          job_id: string
-          quantity?: number
-          recharge_reason?: string | null
-          rechargeable?: boolean
-          total?: number
-          unit_price?: number
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          id?: string
-          job_id?: string
-          quantity?: number
-          recharge_reason?: string | null
-          rechargeable?: boolean
-          total?: number
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "estimate_items_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       fleets: {
         Row: {
           created_at: string
@@ -704,6 +660,50 @@ export type Database = {
             columns: ["work_category_id"]
             isOneToOne: false
             referencedRelation: "work_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          job_id: string
+          quantity: number
+          recharge_reason: string | null
+          rechargeable: boolean
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          job_id: string
+          quantity?: number
+          recharge_reason?: string | null
+          rechargeable?: boolean
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          job_id?: string
+          quantity?: number
+          recharge_reason?: string | null
+          rechargeable?: boolean
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
