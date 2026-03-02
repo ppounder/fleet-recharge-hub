@@ -179,11 +179,18 @@ export type Database = {
       }
       jobs: {
         Row: {
+          booking_date: string | null
+          booking_reference: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
           customer_id: string | null
+          depot: string | null
           description: string | null
           estimate_total: number
           fleet_manager_id: string | null
+          fleet_reference: string | null
           has_recharge: boolean
           id: string
           invoice_total: number
@@ -199,11 +206,18 @@ export type Database = {
           vehicle_reg: string
         }
         Insert: {
+          booking_date?: string | null
+          booking_reference?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           customer_id?: string | null
+          depot?: string | null
           description?: string | null
           estimate_total?: number
           fleet_manager_id?: string | null
+          fleet_reference?: string | null
           has_recharge?: boolean
           id?: string
           invoice_total?: number
@@ -219,11 +233,18 @@ export type Database = {
           vehicle_reg: string
         }
         Update: {
+          booking_date?: string | null
+          booking_reference?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           customer_id?: string | null
+          depot?: string | null
           description?: string | null
           estimate_total?: number
           fleet_manager_id?: string | null
+          fleet_reference?: string | null
           has_recharge?: boolean
           id?: string
           invoice_total?: number

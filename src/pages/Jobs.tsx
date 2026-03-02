@@ -38,8 +38,8 @@ export default function Jobs() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Jobs</h1>
-            <p className="text-sm text-muted-foreground">{filtered.length} jobs {statusFilter !== "all" && `· filtered by ${statusFilter}`}</p>
+            <h1 className="text-2xl font-bold">Bookings & Jobs</h1>
+            <p className="text-sm text-muted-foreground">{filtered.length} bookings {statusFilter !== "all" && `· filtered by ${statusFilter}`}</p>
           </div>
           <CreateJobDialog />
         </div>
@@ -61,7 +61,7 @@ export default function Jobs() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Wrench className="w-4 h-4" /> All Jobs
+              <Wrench className="w-4 h-4" /> All Bookings
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -71,7 +71,7 @@ export default function Jobs() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground text-sm">No jobs found. Create your first job to get started.</p>
+                <p className="text-muted-foreground text-sm">No bookings found. Create your first booking to get started.</p>
               </div>
             ) : (
               <Table>
