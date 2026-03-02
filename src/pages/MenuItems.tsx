@@ -224,7 +224,6 @@ export default function MenuItems() {
                         <TableCell>{fleet?.name || "Unknown"}</TableCell>
                         <TableCell className="capitalize">{jobLabel}</TableCell>
                         <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
-                        <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
                         <TableCell className="text-right font-mono">
                           {isEditing ? (
                             <Input
