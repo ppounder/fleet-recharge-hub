@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { useCreateJob } from "@/hooks/useJobs";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
+import { useJobTypes } from "@/hooks/useJobTypes";
+import { useVatBands } from "@/hooks/useVatBands";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,22 +20,22 @@ import { Plus, Trash2, PlusCircle, Sparkles, Loader2 } from "lucide-react";
 
 interface WorkLine {
   id: string;
-  jobType: string;
-  type: "labour" | "parts" | "sundries";
+  jobTypeId: string; // job_types.id
   description: string;
   quantity: number;
   unitPrice: number;
+  vatPercent: number;
   rechargeable: boolean;
   rechargeReason: string;
 }
 
 const emptyWorkLine = (): WorkLine => ({
   id: crypto.randomUUID(),
-  jobType: "maintenance",
-  type: "labour",
+  jobTypeId: "",
   description: "",
   quantity: 1,
   unitPrice: 0,
+  vatPercent: 0,
   rechargeable: false,
   rechargeReason: "",
 });
@@ -55,22 +57,44 @@ export function CreateJobDialog() {
   const [aiLoading, setAiLoading] = useState(false);
   const lastParsedDesc = useRef("");
 
-  // Look up the service_providers row to get the provider's actual ID (not user_id)
-  const selectedProvider = serviceProviders?.find((sp) => sp.id === providerId);
+  // Fetch job types & vat bands for selected provider
+  const { data: jobTypes } = useJobTypes(providerId || undefined);
+  const { data: vatBands } = useVatBands(providerId || undefined);
   // Fetch agreed menu items for this provider + fleet combination
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, profile?.fleet_id || undefined);
 
-  // Helper: apply menu item prices to work lines
-  const applyMenuPrices = (lines: WorkLine[], items: typeof menuItems): WorkLine[] => {
-    if (!items?.length) return lines;
-    return lines.map((l) => {
-      const match = items.find((mi) => mi.job_type === l.jobType);
-      if (match && l.unitPrice === 0) {
-        return { ...l, unitPrice: Number(match.unit_price) };
+  // Build a lookup: job_type_id → vat percentage
+  const vatLookup = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!jobTypes || !vatBands) return map;
+    for (const jt of jobTypes) {
+      if (jt.vat_band_id) {
+        const vb = vatBands.find((b) => b.id === jt.vat_band_id);
+        if (vb) map.set(jt.id, Number(vb.percentage));
       }
-      return l;
-    });
-  };
+    }
+    return map;
+  }, [jobTypes, vatBands]);
+
+  // Helper: apply menu item prices to work lines
+  const applyMenuPrices = useCallback(
+    (lines: WorkLine[], items: typeof menuItems): WorkLine[] => {
+      if (!items?.length) return lines;
+      return lines.map((l) => {
+        if (!l.jobTypeId) return l;
+        const match = items.find((mi) => mi.job_type === l.jobTypeId);
+        if (match && l.unitPrice === 0) {
+          return {
+            ...l,
+            unitPrice: Number(match.unit_price),
+            vatPercent: vatLookup.get(l.jobTypeId) ?? 0,
+          };
+        }
+        return l;
+      });
+    },
+    [vatLookup]
+  );
 
   const parseDescriptionWithAI = async (text: string) => {
     if (!text.trim() || text.trim() === lastParsedDesc.current) return;
@@ -82,16 +106,21 @@ export function CreateJobDialog() {
       });
       if (error) throw error;
       if (data?.lines?.length) {
-        const parsed: WorkLine[] = data.lines.map((l: any) => ({
-          id: crypto.randomUUID(),
-          jobType: l.jobType || "maintenance",
-          type: l.lineType || "labour",
-          description: l.description || "",
-          quantity: l.quantity || 1,
-          unitPrice: l.unitPrice || 0,
-          rechargeable: false,
-          rechargeReason: "",
-        }));
+        // AI returns jobType as text like "maintenance" — try to match to a job_types record by name
+        const parsed: WorkLine[] = data.lines.map((l: any) => {
+          const matchedJt = jobTypes?.find((jt) => jt.name.toLowerCase() === (l.jobType || "").toLowerCase());
+          const jtId = matchedJt?.id || "";
+          return {
+            id: crypto.randomUUID(),
+            jobTypeId: jtId,
+            description: l.description || "",
+            quantity: l.quantity || 1,
+            unitPrice: l.unitPrice || 0,
+            vatPercent: jtId ? (vatLookup.get(jtId) ?? 0) : 0,
+            rechargeable: false,
+            rechargeReason: "",
+          };
+        });
         setWorkLines(applyMenuPrices(parsed, menuItems));
         toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
       }
@@ -108,7 +137,12 @@ export function CreateJobDialog() {
     if (menuItems?.length) {
       setWorkLines((prev) => applyMenuPrices(prev, menuItems));
     }
-  }, [menuItems]);
+  }, [menuItems, applyMenuPrices]);
+
+  // Reset work lines when provider changes
+  useEffect(() => {
+    setWorkLines([emptyWorkLine()]);
+  }, [providerId]);
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
 
@@ -121,13 +155,16 @@ export function CreateJobDialog() {
         prev.map((l) => {
           if (l.id !== id) return l;
           const updated = { ...l, [field]: value };
-          // Auto-populate price from agreed menu items when job type changes
-          if (field === "jobType" && menuItems?.length) {
-            const match = menuItems.find((mi) => mi.job_type === value);
-            if (match) {
-              updated.unitPrice = Number(match.unit_price);
-              if (match.description && !l.description) {
-                updated.description = match.description;
+          // Auto-populate price and VAT when job type changes
+          if (field === "jobTypeId") {
+            updated.vatPercent = vatLookup.get(value) ?? 0;
+            if (menuItems?.length) {
+              const match = menuItems.find((mi) => mi.job_type === value);
+              if (match) {
+                updated.unitPrice = Number(match.unit_price);
+                if (match.description && !l.description) {
+                  updated.description = match.description;
+                }
               }
             }
           }
@@ -135,10 +172,11 @@ export function CreateJobDialog() {
         })
       );
     },
-    [menuItems]
+    [menuItems, vatLookup]
   );
 
-  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice;
+  const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
+  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineVat(line);
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
 
   const resetForm = () => {
@@ -154,6 +192,7 @@ export function CreateJobDialog() {
     if (!vehicleId) return;
 
     const jobNumber = `J-${Date.now().toString().slice(-4)}`;
+    const firstLineJt = jobTypes?.find((jt) => jt.id === workLines[0]?.jobTypeId);
 
     try {
       const jobData = await createJob.mutateAsync({
@@ -161,7 +200,7 @@ export function CreateJobDialog() {
         vehicle_reg: selectedVehicle?.registration.toUpperCase() ?? "",
         vehicle_make_model: selectedVehicle ? `${selectedVehicle.make} ${selectedVehicle.model}` : null,
         vehicle_id: vehicleId,
-        type: workLines[0]?.jobType || "maintenance",
+        type: firstLineJt?.name || "maintenance",
         priority,
         description: description || null,
         fleet_manager_id: user?.id ?? null,
@@ -172,16 +211,18 @@ export function CreateJobDialog() {
 
       const validLines = workLines.filter((l) => l.description.trim());
       if (validLines.length > 0) {
-        const items = validLines.map((l) => ({
-          job_id: jobData.id,
-          type: l.type,
-          description: `[${l.jobType.toUpperCase()}] ${l.description}`,
-          quantity: l.quantity,
-          unit_price: l.unitPrice,
-          total: l.quantity * l.unitPrice,
-          rechargeable: l.rechargeable,
-          recharge_reason: l.rechargeReason || null,
-        }));
+        const items = validLines.map((l) => {
+          const jtName = jobTypes?.find((jt) => jt.id === l.jobTypeId)?.name || "";
+          return {
+            job_id: jobData.id,
+            description: jtName ? `[${jtName.toUpperCase()}] ${l.description}` : l.description,
+            quantity: l.quantity,
+            unit_price: l.unitPrice,
+            total: lineTotal(l),
+            rechargeable: l.rechargeable,
+            recharge_reason: l.rechargeReason || null,
+          };
+        });
         const { error } = await supabase.from("estimate_items").insert(items);
         if (error) throw error;
       }
@@ -304,100 +345,98 @@ export function CreateJobDialog() {
               </div>
 
               <div className="space-y-3">
-                {workLines.map((line, idx) => (
-                  <Card key={line.id} className="border-border">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-muted-foreground">
-                          Line {idx + 1} · <span className="capitalize">{line.jobType}</span>
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => removeWorkLine(line.id)}
-                          disabled={workLines.length <= 1}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-[1fr_130px_120px_80px_90px_90px] gap-3 items-end">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Description *</Label>
-                          <Input
-                            value={line.description}
-                            onChange={(e) => updateWorkLine(line.id, "description", e.target.value)}
-                            placeholder="e.g. Indicator repair, Tyre replacement..."
-                            className="text-sm"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Job Type</Label>
-                          <Select
-                            value={line.jobType}
-                            onValueChange={(v) => updateWorkLine(line.id, "jobType", v)}
+                {workLines.map((line, idx) => {
+                  const jtName = jobTypes?.find((jt) => jt.id === line.jobTypeId)?.name;
+                  return (
+                    <Card key={line.id} className="border-border">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono text-muted-foreground">
+                            Line {idx + 1}{jtName ? ` · ${jtName}` : ""}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeWorkLine(line.id)}
+                            disabled={workLines.length <= 1}
                           >
-                            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="maintenance">Maintenance</SelectItem>
-                              <SelectItem value="repair">Repair</SelectItem>
-                              <SelectItem value="mot">MOT</SelectItem>
-                              <SelectItem value="tyres">Tyres</SelectItem>
-                              <SelectItem value="bodywork">Bodywork</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Line Type</Label>
-                          <Select
-                            value={line.type}
-                            onValueChange={(v) => updateWorkLine(line.id, "type", v)}
-                          >
-                            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="labour">Labour</SelectItem>
-                              <SelectItem value="parts">Parts</SelectItem>
-                              <SelectItem value="sundries">Sundries</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Qty</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            value={line.quantity}
-                            onChange={(e) => updateWorkLine(line.id, "quantity", Number(e.target.value) || 1)}
-                            className="text-sm"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Unit £</Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            value={line.unitPrice || ""}
-                            onChange={(e) => updateWorkLine(line.id, "unitPrice", Number(e.target.value) || 0)}
-                            className="text-sm"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Total</Label>
-                          <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">
-                            £{lineTotal(line).toFixed(2)}
+                        <div className="grid grid-cols-[1fr_150px_60px_90px_90px_90px] gap-3 items-end">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Description *</Label>
+                            <Input
+                              value={line.description}
+                              onChange={(e) => updateWorkLine(line.id, "description", e.target.value)}
+                              placeholder="e.g. Indicator repair, Tyre replacement..."
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Job Type</Label>
+                            <Select
+                              value={line.jobTypeId}
+                              onValueChange={(v) => updateWorkLine(line.id, "jobTypeId", v)}
+                            >
+                              <SelectTrigger className="text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                              <SelectContent>
+                                {jobTypes?.map((jt) => (
+                                  <SelectItem key={jt.id} value={jt.id}>{jt.name}</SelectItem>
+                                ))}
+                                {!jobTypes?.length && (
+                                  <SelectItem value="none" disabled>
+                                    {providerId ? "No job types for this provider" : "Select a provider first"}
+                                  </SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Qty</Label>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={line.quantity}
+                              onChange={(e) => updateWorkLine(line.id, "quantity", Number(e.target.value) || 1)}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Unit £</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={line.unitPrice || ""}
+                              onChange={(e) => updateWorkLine(line.id, "unitPrice", Number(e.target.value) || 0)}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">VAT ({line.vatPercent}%)</Label>
+                            <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">
+                              £{lineVat(line).toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Total</Label>
+                            <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">
+                              £{lineTotal(line).toFixed(2)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
 
               {/* Grand Total */}
               <div className="flex items-center justify-between rounded-lg bg-primary/10 px-4 py-3">
-                <span className="text-sm font-semibold">Estimated Total</span>
+                <span className="text-sm font-semibold">Estimated Total (inc. VAT)</span>
                 <span className="text-lg font-bold font-mono">£{grandTotal.toFixed(2)}</span>
               </div>
             </section>

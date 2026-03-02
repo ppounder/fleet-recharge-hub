@@ -69,7 +69,6 @@ export type Database = {
           recharge_reason: string | null
           rechargeable: boolean
           total: number
-          type: string
           unit_price: number
         }
         Insert: {
@@ -81,7 +80,6 @@ export type Database = {
           recharge_reason?: string | null
           rechargeable?: boolean
           total?: number
-          type?: string
           unit_price?: number
         }
         Update: {
@@ -93,7 +91,6 @@ export type Database = {
           recharge_reason?: string | null
           rechargeable?: boolean
           total?: number
-          type?: string
           unit_price?: number
         }
         Relationships: [

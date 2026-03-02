@@ -1,0 +1,1 @@
+ALTER TABLE public.estimate_items DROP COLUMN IF EXISTS type;
