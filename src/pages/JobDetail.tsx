@@ -369,7 +369,25 @@ export default function JobDetail() {
       const total = validLines.reduce((s, l) => s + lineTotal(l), 0);
       await updateJob.mutateAsync({ id: job.id, estimate_total: total });
 
-      setInitialized(false); // re-sync from DB
+      // Mark lines as clean with new DB IDs instead of re-initializing
+      if (validLines.length > 0) {
+        const { data: freshItems } = await supabase
+          .from("work_items")
+          .select("*")
+          .eq("job_id", job.id)
+          .order("created_at", { ascending: true });
+        if (freshItems) {
+          setWorkLines((prev) =>
+            prev.map((line, idx) => ({
+              ...line,
+              dbId: freshItems[idx]?.id || line.dbId,
+              dirty: false,
+            }))
+          );
+        }
+      } else {
+        setWorkLines([emptyWorkLine()]);
+      }
       toast({ title: "Work items saved", description: `${validLines.length} line(s) saved` });
     } catch (err: any) {
       toast({ title: "Error saving", description: err.message, variant: "destructive" });
