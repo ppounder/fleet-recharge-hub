@@ -11,16 +11,9 @@ import {
   useDeleteMenuItem,
   useUpdateMenuItem,
 } from "@/hooks/useMenuItems";
+import { useJobTypes } from "@/hooks/useJobTypes";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
-
-const JOB_TYPES = [
-  { value: "mot", label: "MOT" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "repair", label: "Repair" },
-  { value: "tyres", label: "Tyres" },
-  { value: "bodywork", label: "Bodywork" },
-];
 
 interface MenuPricesPanelProps {
   providerId: string;
@@ -30,11 +23,12 @@ interface MenuPricesPanelProps {
 export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
   const { toast } = useToast();
   const { data: menuItems, isLoading } = useMenuItemsByProviderAndFleet(providerId, fleetId);
+  const { data: jobTypes } = useJobTypes(providerId);
   const createItem = useCreateMenuItem();
   const deleteItem = useDeleteMenuItem();
   const updateItem = useUpdateMenuItem();
 
-  const [newJobType, setNewJobType] = useState("mot");
+  const [newJobType, setNewJobType] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,11 +44,11 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
         provider_id: providerId,
         fleet_id: fleetId,
         job_type: newJobType,
-        description: newDescription || JOB_TYPES.find((j) => j.value === newJobType)?.label || newJobType,
+        description: newDescription || jobTypes?.find((j) => j.id === newJobType)?.name || newJobType,
         unit_price: Number(newPrice),
       });
       toast({ title: "Menu price added" });
-      setNewJobType("mot");
+      setNewJobType("");
       setNewDescription("");
       setNewPrice("");
     } catch (err: any) {
@@ -86,9 +80,12 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
               <Select value={newJobType} onValueChange={setNewJobType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {JOB_TYPES.map((jt) => (
-                    <SelectItem key={jt.value} value={jt.value}>{jt.label}</SelectItem>
+                  {jobTypes?.map((jt) => (
+                    <SelectItem key={jt.id} value={jt.id}>{jt.name}</SelectItem>
                   ))}
+                  {!jobTypes?.length && (
+                    <SelectItem value="none" disabled>No job types — add them in Settings</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -137,7 +134,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
               </TableHeader>
               <TableBody>
                 {menuItems.map((item) => {
-                  const jobLabel = JOB_TYPES.find((j) => j.value === item.job_type)?.label || item.job_type;
+                  const jobLabel = jobTypes?.find((j) => j.id === item.job_type)?.name || item.job_type;
                   const isEditing = editingId === item.id;
 
                   return (
