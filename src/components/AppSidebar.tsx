@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppContext } from "@/contexts/AppContext";
-import { navItemsByRole, UserRole } from "@/lib/navigation";
-import { ChevronLeft, ChevronRight, Bell, User, Wrench } from "lucide-react";
+import { navItemsByRole, NavItem, UserRole } from "@/lib/navigation";
+import { ChevronLeft, ChevronRight, ChevronDown, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -11,10 +12,43 @@ const roleLabels: Record<UserRole, string> = {
   customer: "Customer",
 };
 
+function NavItemLink({ item, sidebarOpen, isActive }: { item: NavItem; sidebarOpen: boolean; isActive: boolean }) {
+  return (
+    <Link
+      to={item.href}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative group",
+        isActive
+          ? "bg-sidebar-accent text-sidebar-primary font-medium"
+          : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+      )}
+    >
+      <item.icon className="w-4 h-4 shrink-0" />
+      {sidebarOpen && <span className="animate-fade-in">{item.label}</span>}
+      {item.badge && sidebarOpen && (
+        <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground text-[10px] px-1.5 py-0 h-5">
+          {item.badge}
+        </Badge>
+      )}
+      {item.badge && !sidebarOpen && (
+        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-sidebar-primary" />
+      )}
+    </Link>
+  );
+}
+
 export function AppSidebar() {
   const { currentRole, sidebarOpen, setSidebarOpen } = useAppContext();
   const location = useLocation();
   const navItems = navItemsByRole[currentRole];
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+
+  const toggleMenu = (label: string) => {
+    setExpandedMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const isChildActive = (item: NavItem) =>
+    item.children?.some((child) => location.pathname === child.href) ?? false;
 
   return (
     <aside
@@ -40,28 +74,44 @@ export function AppSidebar() {
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
+
+          if (item.children && sidebarOpen) {
+            const expanded = expandedMenus[item.label] || isChildActive(item);
+            return (
+              <div key={item.label}>
+                <button
+                  onClick={() => toggleMenu(item.label)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                    isChildActive(item)
+                      ? "text-sidebar-primary font-medium"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                  )}
+                >
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span className="animate-fade-in">{item.label}</span>
+                  <ChevronDown className={cn("w-3.5 h-3.5 ml-auto transition-transform", expanded && "rotate-180")} />
+                </button>
+                {expanded && (
+                  <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
+                    {item.children.map((child) => (
+                      <NavItemLink key={child.href} item={child} sidebarOpen={sidebarOpen} isActive={location.pathname === child.href} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // For collapsed sidebar with children, just show the icon
+          if (item.children && !sidebarOpen) {
+            return (
+              <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive || isChildActive(item)} />
+            );
+          }
+
           return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative group",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50",
-              )}
-            >
-              <item.icon className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span className="animate-fade-in">{item.label}</span>}
-              {item.badge && sidebarOpen && (
-                <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground text-[10px] px-1.5 py-0 h-5">
-                  {item.badge}
-                </Badge>
-              )}
-              {item.badge && !sidebarOpen && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-sidebar-primary" />
-              )}
-            </Link>
+            <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive} />
           );
         })}
       </nav>

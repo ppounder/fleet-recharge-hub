@@ -180,6 +180,48 @@ export type Database = {
           },
         ]
       }
+      job_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          provider_id: string
+          updated_at: string
+          vat_band_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          provider_id: string
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          provider_id?: string
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_types_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_types_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           created_at: string
@@ -433,6 +475,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vat_bands: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          percentage: number
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          percentage?: number
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          percentage?: number
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vat_bands_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vehicles: {
         Row: {

@@ -16,6 +16,8 @@ import Invoicing from "./pages/Invoicing";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import CommercialTerms from "./pages/CommercialTerms";
+import JobTypesSettings from "./pages/JobTypesSettings";
+import VatBandsSettings from "./pages/VatBandsSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const AppRoutes = () => (
     <Route path="/invoicing" element={<ProtectedRoute><Invoicing /></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+    <Route path="/settings/job-types" element={<ProtectedRoute><JobTypesSettings /></ProtectedRoute>} />
+    <Route path="/settings/vat-bands" element={<ProtectedRoute><VatBandsSettings /></ProtectedRoute>} />
     <Route path="/vehicles" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
     <Route path="/active-work" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
     <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
