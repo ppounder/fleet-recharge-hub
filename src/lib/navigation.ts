@@ -31,6 +31,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Reports", href: "/reports", icon: BarChart3 },
     { label: "Settings", href: "/settings", icon: Settings, children: [
       { label: "Work Categories", href: "/settings/work-categories", icon: ListChecks },
+      { label: "Work Codes", href: "/settings/work-codes", icon: ListChecks },
       { label: "VAT Bands", href: "/settings/vat-bands", icon: Percent },
     ]},
   ],
