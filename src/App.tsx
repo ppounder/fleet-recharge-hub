@@ -15,7 +15,7 @@ import Estimates from "./pages/Estimates";
 import Invoicing from "./pages/Invoicing";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
-import MenuItems from "./pages/MenuItems";
+import CommercialTerms from "./pages/CommercialTerms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,8 +51,7 @@ const AppRoutes = () => (
     <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
     <Route path="/suppliers" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/compliance" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-    <Route path="/parts" element={<ProtectedRoute><MenuItems /></ProtectedRoute>} />
-    <Route path="/menu-items" element={<ProtectedRoute><MenuItems /></ProtectedRoute>} />
+    <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

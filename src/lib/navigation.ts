@@ -1,4 +1,4 @@
-import { Car, Wrench, Users, FileText, BarChart3, Settings, Shield, CreditCard, Bell, ChevronLeft, ChevronRight, AlertTriangle, ClipboardList, Truck } from "lucide-react";
+import { Car, Wrench, Users, FileText, BarChart3, Settings, Shield, CreditCard, Bell, ChevronLeft, ChevronRight, AlertTriangle, ClipboardList, Truck, Handshake } from "lucide-react";
 
 export type UserRole = "fleet-manager" | "service-provider" | "customer";
 
@@ -26,7 +26,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Jobs", href: "/jobs", icon: Wrench, badge: 8 },
     { label: "Estimates", href: "/estimates", icon: ClipboardList, badge: 3 },
     { label: "Invoicing", href: "/invoicing", icon: FileText },
-    { label: "Menu Items", href: "/menu-items", icon: Settings },
+    { label: "Commercial Terms", href: "/commercial-terms", icon: Handshake },
     { label: "Reports", href: "/reports", icon: BarChart3 },
   ],
   "customer": [
