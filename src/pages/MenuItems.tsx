@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 const JOB_TYPES = [
@@ -22,8 +23,9 @@ const JOB_TYPES = [
 ];
 
 export default function MenuItems() {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const { toast } = useToast();
+  const isFleetManager = userRole === "fleet-manager";
   const { data: menuItems, isLoading } = useMenuItems();
   const createItem = useCreateMenuItem();
   const deleteItem = useDeleteMenuItem();
@@ -54,7 +56,11 @@ export default function MenuItems() {
     },
   });
 
+  // Get all service providers (for fleet managers to pick from)
+  const { data: allProviders } = useServiceProviders();
+
   const [newFleetId, setNewFleetId] = useState("");
+  const [newProviderId, setNewProviderId] = useState("");
   const [newJobType, setNewJobType] = useState("mot");
   const [newDescription, setNewDescription] = useState("");
   const [newPrice, setNewPrice] = useState("");
@@ -62,13 +68,14 @@ export default function MenuItems() {
   const [editPrice, setEditPrice] = useState("");
 
   const handleAdd = async () => {
-    if (!myProvider?.id || !newFleetId || !newPrice) {
+    const resolvedProviderId = isFleetManager ? newProviderId : myProvider?.id;
+    if (!resolvedProviderId || !newFleetId || !newPrice) {
       toast({ title: "Missing fields", description: "Please fill in all required fields", variant: "destructive" });
       return;
     }
     try {
       await createItem.mutateAsync({
-        provider_id: myProvider.id,
+        provider_id: resolvedProviderId,
         fleet_id: newFleetId,
         job_type: newJobType,
         description: newDescription || JOB_TYPES.find(j => j.value === newJobType)?.label || newJobType,
@@ -76,6 +83,7 @@ export default function MenuItems() {
       });
       toast({ title: "Menu item added" });
       setNewFleetId("");
+      setNewProviderId("");
       setNewJobType("mot");
       setNewDescription("");
       setNewPrice("");
@@ -116,9 +124,25 @@ export default function MenuItems() {
             <CardTitle className="text-base">Add Agreed Price</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-[1fr_1fr_1fr_100px_auto] gap-3 items-end">
+            <div className={`grid gap-3 items-end ${isFleetManager ? "grid-cols-[1fr_1fr_1fr_1fr_100px_auto]" : "grid-cols-[1fr_1fr_1fr_100px_auto]"}`}>
+              {isFleetManager && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Service Provider *</Label>
+                  <Select value={newProviderId} onValueChange={setNewProviderId}>
+                    <SelectTrigger><SelectValue placeholder="Select provider" /></SelectTrigger>
+                    <SelectContent>
+                      {allProviders?.map((sp) => (
+                        <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
+                      ))}
+                      {(!allProviders || allProviders.length === 0) && (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No providers found</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-1.5">
-                <Label className="text-xs">Fleet Manager *</Label>
+                <Label className="text-xs">Fleet *</Label>
                 <Select value={newFleetId} onValueChange={setNewFleetId}>
                   <SelectTrigger><SelectValue placeholder="Select fleet" /></SelectTrigger>
                   <SelectContent>
@@ -179,7 +203,8 @@ export default function MenuItems() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fleet Manager</TableHead>
+                    <TableHead>Service Provider</TableHead>
+                    <TableHead>Fleet</TableHead>
                     <TableHead>Job Type</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead className="text-right">Agreed Price</TableHead>
@@ -189,13 +214,16 @@ export default function MenuItems() {
                 <TableBody>
                   {menuItems.map((item) => {
                     const fleet = fleets?.find((f) => f.id === item.fleet_id);
+                    const provider = allProviders?.find((sp) => sp.id === item.provider_id);
                     const jobLabel = JOB_TYPES.find((j) => j.value === item.job_type)?.label || item.job_type;
                     const isEditing = editingId === item.id;
 
                     return (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium">{fleet?.name || "Unknown"}</TableCell>
+                        <TableCell className="font-medium">{provider?.name || "Unknown"}</TableCell>
+                        <TableCell>{fleet?.name || "Unknown"}</TableCell>
                         <TableCell className="capitalize">{jobLabel}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{item.description || "—"}</TableCell>
                         <TableCell className="text-right font-mono">
                           {isEditing ? (
