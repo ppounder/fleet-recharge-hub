@@ -261,6 +261,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "jobs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "jobs_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
