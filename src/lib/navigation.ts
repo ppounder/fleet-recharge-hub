@@ -1,4 +1,22 @@
-import { Car, Wrench, Users, FileText, BarChart3, Settings, Shield, CreditCard, Bell, ChevronLeft, ChevronRight, AlertTriangle, ClipboardList, Truck, Handshake, ListChecks, Percent } from "lucide-react";
+import {
+  Car,
+  Wrench,
+  Users,
+  FileText,
+  BarChart3,
+  Settings,
+  Shield,
+  CreditCard,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  ClipboardList,
+  Truck,
+  Handshake,
+  ListChecks,
+  Percent,
+} from "lucide-react";
 
 export type UserRole = "fleet-manager" | "service-provider" | "customer";
 
@@ -14,7 +32,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
   "fleet-manager": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
     { label: "Approvals", href: "/approvals", icon: Shield, badge: 12 },
-    { label: "Jobs", href: "/jobs", icon: Wrench },
+    { label: "Bookings/Jobs", href: "/jobs", icon: Wrench },
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
     { label: "Fleet", href: "/fleet", icon: Car },
     { label: "Suppliers", href: "/suppliers", icon: Truck },
@@ -29,13 +47,18 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Invoicing", href: "/invoicing", icon: FileText },
     { label: "Commercial Terms", href: "/commercial-terms", icon: Handshake },
     { label: "Reports", href: "/reports", icon: BarChart3 },
-    { label: "Settings", href: "/settings", icon: Settings, children: [
-      { label: "Work Categories", href: "/settings/work-categories", icon: ListChecks },
-      { label: "Work Codes", href: "/settings/work-codes", icon: ListChecks },
-      { label: "VAT Bands", href: "/settings/vat-bands", icon: Percent },
-    ]},
+    {
+      label: "Settings",
+      href: "/settings",
+      icon: Settings,
+      children: [
+        { label: "Work Categories", href: "/settings/work-categories", icon: ListChecks },
+        { label: "Work Codes", href: "/settings/work-codes", icon: ListChecks },
+        { label: "VAT Bands", href: "/settings/vat-bands", icon: Percent },
+      ],
+    },
   ],
-  "customer": [
+  customer: [
     { label: "Dashboard", href: "/", icon: BarChart3 },
     { label: "My Vehicles", href: "/vehicles", icon: Car },
     { label: "Active Work", href: "/active-work", icon: Wrench },
