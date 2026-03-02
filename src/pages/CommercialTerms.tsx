@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { MenuPricesPanel } from "@/components/MenuPricesPanel";
+import { LabourRatesPanel } from "@/components/LabourRatesPanel";
 import { Plus, Trash2, ArrowLeft, Handshake, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
@@ -103,6 +104,7 @@ export default function CommercialTerms() {
           </div>
 
           <MenuPricesPanel providerId={selectedTerm.provider_id} fleetId={selectedTerm.fleet_id} />
+          <LabourRatesPanel providerId={selectedTerm.provider_id} fleetId={selectedTerm.fleet_id} />
         </div>
       </AppLayout>
     );
