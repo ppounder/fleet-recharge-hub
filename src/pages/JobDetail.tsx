@@ -17,20 +17,30 @@ import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useVatBands } from "@/hooks/useVatBands";
 import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
+import { useLabourRates } from "@/hooks/useLabourRates";
 import { useCurrentProvider } from "@/hooks/useCurrentProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// ── Work Line type (mirrors CreateJobDialog) ──
+// ── Types ──
+interface LabourCharge {
+  id: string;
+  labourRateId: string;
+  labourRateName: string;
+  costPerUnit: number;
+  units: number;
+  total: number;
+}
+
 interface WorkLine {
   id: string;
-  dbId?: string; // if it already exists in the DB
+  dbId?: string;
   jobTypeId: string;
   workCodeId: string;
   description: string;
@@ -40,6 +50,7 @@ interface WorkLine {
   rechargeable: boolean;
   rechargeReason: string;
   dirty: boolean;
+  labourCharges: LabourCharge[];
 }
 
 const emptyWorkLine = (): WorkLine => ({
@@ -53,6 +64,7 @@ const emptyWorkLine = (): WorkLine => ({
   rechargeable: false,
   rechargeReason: "",
   dirty: true,
+  labourCharges: [],
 });
 
 export default function JobDetail() {
@@ -71,10 +83,29 @@ export default function JobDetail() {
   const providerId = job?.provider_id || currentProvider?.id || "";
   const fleetId = profile?.fleet_id || undefined;
 
+  // Resolve the fleet_id for this job (from the fleet manager who created it)
+  // We need the fleet_id linked to the job's fleet_manager_id
+  const [jobFleetId, setJobFleetId] = useState<string | undefined>(fleetId);
+  useEffect(() => {
+    if (job?.fleet_manager_id && !fleetId) {
+      supabase
+        .from("profiles")
+        .select("fleet_id")
+        .eq("id", job.fleet_manager_id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.fleet_id) setJobFleetId(data.fleet_id);
+        });
+    } else if (fleetId) {
+      setJobFleetId(fleetId);
+    }
+  }, [job?.fleet_manager_id, fleetId]);
+
   const { data: workCategories } = useWorkCategories(providerId || undefined);
   const { data: workCodes } = useWorkCodes(providerId || undefined);
   const { data: vatBands } = useVatBands(providerId || undefined);
-  const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, fleetId);
+  const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, jobFleetId);
+  const { data: labourRates = [] } = useLabourRates(providerId || undefined, jobFleetId);
 
   // ── Local work lines state ──
   const [workLines, setWorkLines] = useState<WorkLine[]>([]);
@@ -84,7 +115,7 @@ export default function JobDetail() {
   const lastParsedDesc = useRef("");
   const [saving, setSaving] = useState(false);
 
-  // ── VAT & price helpers (same as CreateJobDialog) ──
+  // ── VAT & price helpers ──
   const getVatPercent = useCallback(
     (categoryId: string, codeId: string): number => {
       if (!vatBands) return 0;
@@ -107,7 +138,7 @@ export default function JobDetail() {
     [workCategories, workCodes, vatBands]
   );
 
-  // Parse "[CATEGORY > CODE] description" or "[CATEGORY] description" from stored text
+  // Parse "[CATEGORY > CODE] description" from stored text
   const parseStoredDescription = useCallback(
     (raw: string) => {
       const match = raw.match(/^\[([^\]]+)\]\s*(.*)/);
@@ -129,32 +160,53 @@ export default function JobDetail() {
     [workCategories, workCodes, getVatPercent]
   );
 
-  // Initialize local state from DB items (wait for categories/codes to be loaded)
+  // Initialize local state from DB items + load labour charges
   useEffect(() => {
     if (!itemsLoading && !initialized && workCategories !== undefined && workCodes !== undefined) {
-      if (dbWorkItems.length > 0) {
-        setWorkLines(
-          dbWorkItems.map((item) => {
-            const parsed = parseStoredDescription(item.description);
-            return {
-              id: crypto.randomUUID(),
-              dbId: item.id,
-              jobTypeId: parsed.jobTypeId,
-              workCodeId: parsed.workCodeId,
-              description: parsed.description,
-              quantity: item.quantity,
-              unitPrice: Number(item.unit_price),
-              vatPercent: parsed.vatPercent || 0,
-              rechargeable: item.rechargeable,
-              rechargeReason: item.recharge_reason || "",
-              dirty: false,
-            };
-          })
-        );
-      } else {
-        setWorkLines([emptyWorkLine()]);
-      }
-      setInitialized(true);
+      const initLines = async () => {
+        if (dbWorkItems.length > 0) {
+          // Fetch labour charges for all work items
+          const workItemIds = dbWorkItems.map((i) => i.id);
+          const { data: dbLabour } = await supabase
+            .from("work_item_labour")
+            .select("*")
+            .in("work_item_id", workItemIds);
+
+          setWorkLines(
+            dbWorkItems.map((item) => {
+              const parsed = parseStoredDescription(item.description);
+              const itemLabour = (dbLabour || [])
+                .filter((l: any) => l.work_item_id === item.id)
+                .map((l: any) => ({
+                  id: crypto.randomUUID(),
+                  labourRateId: l.labour_rate_id,
+                  labourRateName: l.labour_rate_name,
+                  costPerUnit: Number(l.cost_per_unit),
+                  units: Number(l.units),
+                  total: Number(l.total),
+                }));
+              return {
+                id: crypto.randomUUID(),
+                dbId: item.id,
+                jobTypeId: parsed.jobTypeId,
+                workCodeId: parsed.workCodeId,
+                description: parsed.description,
+                quantity: item.quantity,
+                unitPrice: Number(item.unit_price),
+                vatPercent: parsed.vatPercent || 0,
+                rechargeable: item.rechargeable,
+                rechargeReason: item.recharge_reason || "",
+                dirty: false,
+                labourCharges: itemLabour,
+              };
+            })
+          );
+        } else {
+          setWorkLines([emptyWorkLine()]);
+        }
+        setInitialized(true);
+      };
+      initLines();
     }
   }, [dbWorkItems, itemsLoading, initialized, workCategories, workCodes, parseStoredDescription]);
 
@@ -197,9 +249,64 @@ export default function JobDetail() {
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
   const removeWorkLine = (lineId: string) => setWorkLines((prev) => (prev.length <= 1 ? prev : prev.filter((l) => l.id !== lineId)));
 
+  // ── Labour charge helpers ──
+  const addLabourCharge = (lineId: string) => {
+    const defaultRate = labourRates.find((r) => r.is_default) || labourRates[0];
+    if (!defaultRate) {
+      toast({ title: "No labour rates", description: "No labour rates configured for this provider/fleet.", variant: "destructive" });
+      return;
+    }
+    const charge: LabourCharge = {
+      id: crypto.randomUUID(),
+      labourRateId: defaultRate.id,
+      labourRateName: defaultRate.name,
+      costPerUnit: Number(defaultRate.cost),
+      units: 1,
+      total: Number(defaultRate.cost),
+    };
+    setWorkLines((prev) =>
+      prev.map((l) => l.id === lineId ? { ...l, labourCharges: [...l.labourCharges, charge], dirty: true } : l)
+    );
+  };
+
+  const updateLabourCharge = (lineId: string, chargeId: string, field: string, value: any) => {
+    setWorkLines((prev) =>
+      prev.map((l) => {
+        if (l.id !== lineId) return l;
+        const charges = l.labourCharges.map((c) => {
+          if (c.id !== chargeId) return c;
+          const updated = { ...c, [field]: value };
+          if (field === "labourRateId") {
+            const rate = labourRates.find((r) => r.id === value);
+            if (rate) {
+              updated.labourRateName = rate.name;
+              updated.costPerUnit = Number(rate.cost);
+              updated.total = Number(rate.cost) * updated.units;
+            }
+          }
+          if (field === "units") {
+            updated.total = updated.costPerUnit * Number(value);
+          }
+          return updated;
+        });
+        return { ...l, labourCharges: charges, dirty: true };
+      })
+    );
+  };
+
+  const removeLabourCharge = (lineId: string, chargeId: string) => {
+    setWorkLines((prev) =>
+      prev.map((l) => l.id === lineId ? { ...l, labourCharges: l.labourCharges.filter((c) => c.id !== chargeId), dirty: true } : l)
+    );
+  };
+
+  // ── Totals ──
   const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
-  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineVat(line);
+  const linePartsTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineVat(line);
+  const lineLabourTotal = (line: WorkLine) => line.labourCharges.reduce((s, c) => s + c.total, 0);
+  const lineTotal = (line: WorkLine) => linePartsTotal(line) + lineLabourTotal(line);
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
+  const totalLabour = workLines.reduce((sum, l) => sum + lineLabourTotal(l), 0);
 
   // ── AI parsing ──
   const parseDescriptionWithAI = async (text: string) => {
@@ -217,7 +324,7 @@ export default function JobDetail() {
           const catId = matchedCat?.id || "";
           const matchedCode = workCodes?.find((c) => c.name.toLowerCase() === (l.workCode || "").toLowerCase() && (!catId || c.work_category_id === catId));
           const codeId = matchedCode?.id || "";
-          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true };
+          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: [] };
         });
         setWorkLines(parsed);
         toast({ title: "AI parsed work lines", description: `${parsed.length} line(s) generated from description` });
@@ -229,12 +336,12 @@ export default function JobDetail() {
     }
   };
 
-  // ── Save all work lines to DB ──
+  // ── Save all work lines + labour to DB ──
   const handleSaveWorkItems = async () => {
     if (!job) return;
     setSaving(true);
     try {
-      // Delete all existing DB items
+      // Delete all existing DB items (cascade deletes labour)
       const existingIds = dbWorkItems.map((i) => i.id);
       for (const eid of existingIds) {
         await deleteItem.mutateAsync({ id: eid, job_id: job.id });
@@ -246,12 +353,36 @@ export default function JobDetail() {
           const catName = workCategories?.find((wc) => wc.id === l.jobTypeId)?.name || "";
           const codeName = workCodes?.find((c) => c.id === l.workCodeId)?.name || "";
           const prefix = [catName, codeName].filter(Boolean).join(" > ");
-          return { job_id: job.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: lineTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null };
+          return { job_id: job.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: linePartsTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null };
         });
-        const { error } = await supabase.from("work_items").insert(items);
+        const { data: insertedItems, error } = await supabase.from("work_items").insert(items).select();
         if (error) throw error;
+
+        // Insert labour charges for each work item
+        if (insertedItems) {
+          const labourRows: any[] = [];
+          validLines.forEach((line, idx) => {
+            const dbItem = insertedItems[idx];
+            if (dbItem && line.labourCharges.length > 0) {
+              line.labourCharges.forEach((charge) => {
+                labourRows.push({
+                  work_item_id: dbItem.id,
+                  labour_rate_id: charge.labourRateId,
+                  labour_rate_name: charge.labourRateName,
+                  cost_per_unit: charge.costPerUnit,
+                  units: charge.units,
+                  total: charge.total,
+                });
+              });
+            }
+          });
+          if (labourRows.length > 0) {
+            const { error: labErr } = await supabase.from("work_item_labour").insert(labourRows);
+            if (labErr) throw labErr;
+          }
+        }
       }
-      // Update job estimate total
+      // Update job estimate total (parts + labour)
       const total = validLines.reduce((s, l) => s + lineTotal(l), 0);
       await updateJob.mutateAsync({ id: job.id, estimate_total: total });
 
@@ -280,7 +411,6 @@ export default function JobDetail() {
   };
 
   const handleSubmitEstimate = async () => {
-    // Save first, then move to estimated
     await handleSaveWorkItems();
     try {
       const total = workLines.filter((l) => l.description.trim()).reduce((s, l) => s + lineTotal(l), 0);
@@ -400,7 +530,7 @@ export default function JobDetail() {
           </CardContent>
         </Card>
 
-        {/* Work Items — Full editor (matches CreateJobDialog) */}
+        {/* Work Items */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -440,15 +570,29 @@ export default function JobDetail() {
                 if (!canEditItems) {
                   // Read-only view
                   return (
-                    <div key={line.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{line.description}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {line.quantity} × £{line.unitPrice.toFixed(2)}
-                          {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
-                        </p>
+                    <div key={line.id} className="p-3 border rounded-lg space-y-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{line.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {line.quantity} × £{line.unitPrice.toFixed(2)}
+                            {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
+                          </p>
+                        </div>
+                        <span className="text-sm font-semibold whitespace-nowrap">£{linePartsTotal(line).toFixed(2)}</span>
                       </div>
-                      <span className="text-sm font-semibold whitespace-nowrap">£{lineTotal(line).toFixed(2)}</span>
+                      {line.labourCharges.length > 0 && (
+                        <div className="ml-4 space-y-1">
+                          {line.labourCharges.map((c) => (
+                            <div key={c.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              <span>{c.labourRateName}</span>
+                              <span>{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
+                              <span className="font-semibold text-foreground ml-auto">£{c.total.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -460,9 +604,16 @@ export default function JobDetail() {
                         <span className="text-xs font-mono text-muted-foreground">
                           Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
                         </span>
-                        <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          {isProvider && (
+                            <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => addLabourCharge(line.id)}>
+                              <Clock className="w-3.5 h-3.5" /> Labour
+                            </Button>
+                          )}
+                          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
                         <div className="space-y-1.5">
@@ -502,9 +653,50 @@ export default function JobDetail() {
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs">Total</Label>
-                          <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{lineTotal(line).toFixed(2)}</div>
+                          <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{linePartsTotal(line).toFixed(2)}</div>
                         </div>
                       </div>
+
+                      {/* Labour charges for this work item */}
+                      {line.labourCharges.length > 0 && (
+                        <div className="mt-2 ml-2 space-y-2 border-l-2 border-primary/20 pl-3">
+                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Labour Charges
+                          </span>
+                          {line.labourCharges.map((charge) => (
+                            <div key={charge.id} className="flex items-center gap-2">
+                              <Select value={charge.labourRateId} onValueChange={(v) => updateLabourCharge(line.id, charge.id, "labourRateId", v)}>
+                                <SelectTrigger className="text-sm w-[200px] h-8"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {labourRates.map((r) => (
+                                    <SelectItem key={r.id} value={r.id}>{r.name} (£{Number(r.cost).toFixed(2)}/unit)</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <div className="flex items-center gap-1">
+                                <Label className="text-xs whitespace-nowrap">Units</Label>
+                                <Input
+                                  type="number"
+                                  min={0.5}
+                                  step={0.5}
+                                  value={charge.units}
+                                  onChange={(e) => updateLabourCharge(line.id, charge.id, "units", Number(e.target.value) || 1)}
+                                  className="w-20 h-8 text-sm"
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                × £{charge.costPerUnit.toFixed(2)}
+                              </span>
+                              <span className="text-sm font-semibold whitespace-nowrap ml-auto">
+                                £{charge.total.toFixed(2)}
+                              </span>
+                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeLabourCharge(line.id, charge.id)}>
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
@@ -512,9 +704,22 @@ export default function JobDetail() {
             </div>
 
             {/* Grand total bar */}
-            <div className="flex items-center justify-between rounded-lg bg-primary/10 px-4 py-3">
-              <span className="text-sm font-semibold">Estimated Total (inc. VAT)</span>
-              <span className="text-lg font-bold font-mono">£{grandTotal.toFixed(2)}</span>
+            <div className="rounded-lg bg-primary/10 px-4 py-3 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Parts & Materials</span>
+                <span className="text-sm font-medium font-mono">£{(grandTotal - totalLabour).toFixed(2)}</span>
+              </div>
+              {totalLabour > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Labour</span>
+                  <span className="text-sm font-medium font-mono">£{totalLabour.toFixed(2)}</span>
+                </div>
+              )}
+              <Separator className="my-1" />
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Estimated Total (inc. VAT)</span>
+                <span className="text-lg font-bold font-mono">£{grandTotal.toFixed(2)}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
