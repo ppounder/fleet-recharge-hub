@@ -32,19 +32,18 @@ export interface NavItem {
 export const navItemsByRole: Record<UserRole, NavItem[]> = {
   "fleet-manager": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
+    { label: "Bookings", href: "/bookings", icon: ClipboardList, badgeKey: "bookings" },
     { label: "Approvals", href: "/approvals", icon: Shield, badgeKey: "approvals" },
-    { label: "Bookings/Jobs", href: "/jobs", icon: Wrench, badgeKey: "openJobs" },
+    { label: "Jobs", href: "/jobs", icon: Wrench, badgeKey: "activeJobs" },
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
     { label: "Fleet", href: "/fleet", icon: Car },
     { label: "Suppliers", href: "/suppliers", icon: Truck },
     { label: "Reports", href: "/reports", icon: FileText },
-    { label: "Compliance", href: "/compliance", icon: AlertTriangle },
     { label: "Settings", href: "/settings", icon: Settings },
   ],
   "service-provider": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
-    { label: "Jobs", href: "/jobs", icon: Wrench, badge: 8 },
-    { label: "Estimates", href: "/estimates", icon: ClipboardList, badge: 3 },
+    { label: "Bookings and Jobs", href: "/jobs", icon: Wrench, badgeKey: "openJobs" },
     { label: "Invoicing", href: "/invoicing", icon: FileText },
     { label: "Commercial Terms", href: "/commercial-terms", icon: Handshake },
     { label: "Reports", href: "/reports", icon: BarChart3 },

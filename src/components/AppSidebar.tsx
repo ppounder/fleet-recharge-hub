@@ -51,7 +51,12 @@ export function AppSidebar() {
   const badgeCounts = useMemo(() => {
     if (!jobs) return {};
     return {
+      bookings: jobs.filter((j) => j.status === "booked" || j.status === "confirmed").length,
       approvals: jobs.filter((j) => j.status === "estimated").length,
+      activeJobs: jobs.filter((j) => {
+        const postApproval = ["approved", "not-started", "in-progress", "awaiting-sign-off", "completed", "invoiced"];
+        return postApproval.includes(j.status);
+      }).length,
       openJobs: jobs.filter((j) => j.status !== "closed").length,
     };
   }, [jobs]);
