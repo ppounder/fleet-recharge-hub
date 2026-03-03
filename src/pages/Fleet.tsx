@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CreateVehicleDialog } from "@/components/CreateVehicleDialog";
-import { useVehicles } from "@/hooks/useVehicles";
+import { EditVehicleDialog } from "@/components/EditVehicleDialog";
+import { useVehicles, Vehicle } from "@/hooks/useVehicles";
 import { Car, Loader2 } from "lucide-react";
 
 export default function Fleet() {
   const { data: vehicles, isLoading } = useVehicles();
+  const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
 
   return (
     <AppLayout>
@@ -51,7 +54,7 @@ export default function Fleet() {
                 </TableHeader>
                 <TableBody>
                   {vehicles.map((v) => (
-                    <TableRow key={v.id}>
+                    <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setEditVehicle(v)}>
                       <TableCell className="font-mono text-xs font-semibold">{v.registration}</TableCell>
                       <TableCell className="text-xs">{v.make}</TableCell>
                       <TableCell className="text-xs">{v.model}</TableCell>
@@ -68,6 +71,8 @@ export default function Fleet() {
           </CardContent>
         </Card>
       </div>
+
+      <EditVehicleDialog vehicle={editVehicle} open={!!editVehicle} onOpenChange={(open) => !open && setEditVehicle(null)} />
     </AppLayout>
   );
 }
