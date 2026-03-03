@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -39,6 +39,16 @@ interface LabourCharge {
   total: number;
 }
 
+type WorkItemAuthStatus = "pending" | "authorisation_requested" | "authorised" | "in_query" | "declined";
+
+const authStatusConfig: Record<WorkItemAuthStatus, { label: string; color: string }> = {
+  pending: { label: "Pending Authorisation", color: "bg-muted text-muted-foreground" },
+  authorisation_requested: { label: "Authorisation Requested", color: "bg-warning/15 text-warning border border-warning/30" },
+  authorised: { label: "Authorised", color: "bg-success/15 text-success border border-success/30" },
+  in_query: { label: "In Query", color: "bg-accent/15 text-accent-foreground border border-accent/30" },
+  declined: { label: "Declined", color: "bg-destructive/15 text-destructive border border-destructive/30" },
+};
+
 interface WorkLine {
   id: string;
   dbId?: string;
@@ -52,6 +62,7 @@ interface WorkLine {
   rechargeReason: string;
   dirty: boolean;
   labourCharges: LabourCharge[];
+  authStatus: WorkItemAuthStatus;
 }
 
 const emptyWorkLine = (): WorkLine => ({
@@ -66,6 +77,7 @@ const emptyWorkLine = (): WorkLine => ({
   rechargeReason: "",
   dirty: true,
   labourCharges: [],
+  authStatus: "pending",
 });
 
 export default function JobDetail() {
@@ -218,6 +230,7 @@ export default function JobDetail() {
                 rechargeReason: item.recharge_reason || "",
                 dirty: false,
                 labourCharges: itemLabour,
+                authStatus: ((item as any).auth_status || "pending") as WorkItemAuthStatus,
               };
             })
           );
@@ -355,7 +368,7 @@ export default function JobDetail() {
           const menuMatch = findMenuPrice(catId, codeId, menuItems);
           const unitPrice = menuMatch ? Number(menuMatch.unit_price) : (l.unitPrice || 0);
           const charges = menuMatch ? buildLabourCharges(menuMatch.id) : [];
-          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: charges };
+          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: charges, authStatus: "pending" as WorkItemAuthStatus };
         });
         setWorkLines((prev) => {
           const existing = prev.filter((l) => l.description.trim() || l.jobTypeId || l.dbId);
@@ -387,9 +400,9 @@ export default function JobDetail() {
           const catName = workCategories?.find((wc) => wc.id === l.jobTypeId)?.name || "";
           const codeName = workCodes?.find((c) => c.id === l.workCodeId)?.name || "";
           const prefix = [catName, codeName].filter(Boolean).join(" > ");
-          return { job_id: job.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: linePartsTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null };
+          return { job_id: job.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: linePartsTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null, auth_status: l.authStatus } as any;
         });
-        const { data: insertedItems, error } = await supabase.from("work_items").insert(items).select();
+        const { data: insertedItems, error } = await supabase.from("work_items").insert(items as any).select();
         if (error) throw error;
 
         // Insert labour charges for each work item
@@ -463,11 +476,56 @@ export default function JobDetail() {
   };
 
   const handleSubmitEstimate = async () => {
+    // Set all work items to authorisation_requested before saving
+    setWorkLines((prev) => prev.map((l) => ({ ...l, authStatus: "authorisation_requested" as WorkItemAuthStatus, dirty: true })));
+    // Need a small delay so state updates before save
+    await new Promise((r) => setTimeout(r, 0));
     await handleSaveWorkItems();
     try {
       const total = workLines.filter((l) => l.description.trim()).reduce((s, l) => s + lineTotal(l), 0);
       await updateJob.mutateAsync({ id: job!.id, status: "estimated", estimate_total: total });
+      // Update auth_status on all work items in DB
+      const { data: savedItems } = await supabase.from("work_items").select("id").eq("job_id", job!.id);
+      if (savedItems?.length) {
+        await supabase.from("work_items").update({ auth_status: "authorisation_requested" }).eq("job_id", job!.id);
+      }
       toast({ title: "Estimate submitted", description: `Estimate of £${total.toFixed(2)} sent to Fleet Manager for approval.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  // ── FM: Authorise / Decline individual work items ──
+  const isFleetManager = userRole === "fleet-manager";
+  const canAuthoriseItems = isFleetManager && job?.status === "estimated";
+
+  const handleSetItemAuthStatus = async (lineId: string, status: WorkItemAuthStatus) => {
+    const line = workLines.find((l) => l.id === lineId);
+    if (!line?.dbId) return;
+    try {
+      const { error } = await supabase.from("work_items").update({ auth_status: status }).eq("id", line.dbId);
+      if (error) throw error;
+      setWorkLines((prev) => prev.map((l) => l.id === lineId ? { ...l, authStatus: status } : l));
+      toast({ title: `Item ${authStatusConfig[status].label}` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  // ── FM: Approve job (all items must be authorised or declined) ──
+  const validWorkLines = workLines.filter((l) => l.description.trim());
+  const allItemsResolved = validWorkLines.length > 0 && validWorkLines.every((l) => l.authStatus === "authorised" || l.authStatus === "declined");
+  const hasAuthorisedItems = validWorkLines.some((l) => l.authStatus === "authorised");
+  const canApproveJob = isFleetManager && job?.status === "estimated" && allItemsResolved && hasAuthorisedItems;
+
+  const handleApproveJob = async () => {
+    try {
+      // Recalculate total based only on authorised items
+      const authorisedTotal = validWorkLines
+        .filter((l) => l.authStatus === "authorised")
+        .reduce((s, l) => s + lineTotal(l), 0);
+      await updateJob.mutateAsync({ id: job!.id, status: "approved", estimate_total: authorisedTotal });
+      toast({ title: "Job approved", description: `Approved with £${authorisedTotal.toFixed(2)} of authorised work.` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -511,7 +569,31 @@ export default function JobDetail() {
             </div>
             <p className="text-sm text-muted-foreground mt-1">{job.vehicle_reg} {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {isFleetManager && job?.status === "estimated" && !allItemsResolved && (
+              <div className="text-xs text-muted-foreground max-w-[200px] text-right">
+                Authorise or decline all work items to approve this job
+              </div>
+            )}
+            {canApproveJob && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button className="gap-1.5 bg-success hover:bg-success/90 text-white"><ShieldCheck className="w-4 h-4" /> Approve Job</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Approve this job?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {validWorkLines.filter((l) => l.authStatus === "authorised").length} item(s) authorised, {validWorkLines.filter((l) => l.authStatus === "declined").length} declined. The job will move to Approved status.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleApproveJob} disabled={updateJob.isPending}>Approve</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             {canConfirm && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -621,16 +703,38 @@ export default function JobDetail() {
                 if (!canEditItems) {
                   // Read-only view
                   return (
-                    <div key={line.id} className="p-3 border rounded-lg space-y-2">
+                    <div key={line.id} className={`p-3 border rounded-lg space-y-2 ${line.authStatus === "declined" ? "opacity-50" : ""}`}>
                       <div className="flex items-center gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{line.description}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium truncate">{line.description}</p>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${authStatusConfig[line.authStatus].color}`}>
+                              {authStatusConfig[line.authStatus].label}
+                            </span>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {line.quantity} × £{line.unitPrice.toFixed(2)}
                             {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
                           </p>
                         </div>
-                        <span className="text-sm font-semibold whitespace-nowrap">£{linePartsTotal(line).toFixed(2)}</span>
+                        <div className="flex items-center gap-2">
+                          {canAuthoriseItems && line.authStatus === "authorisation_requested" && (
+                            <>
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-success hover:text-success" onClick={() => handleSetItemAuthStatus(line.id, "authorised")}>
+                                <ShieldCheck className="w-3 h-3" /> Authorise
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-destructive hover:text-destructive" onClick={() => handleSetItemAuthStatus(line.id, "declined")}>
+                                <XCircle className="w-3 h-3" /> Decline
+                              </Button>
+                            </>
+                          )}
+                          {canAuthoriseItems && (line.authStatus === "authorised" || line.authStatus === "declined") && (
+                            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleSetItemAuthStatus(line.id, "authorisation_requested")}>
+                              Undo
+                            </Button>
+                          )}
+                          <span className="text-sm font-semibold whitespace-nowrap">£{linePartsTotal(line).toFixed(2)}</span>
+                        </div>
                       </div>
                       {line.labourCharges.length > 0 && (
                         <div className="ml-4 space-y-1">
@@ -652,9 +756,14 @@ export default function JobDetail() {
                   <Card key={line.id} className="border-border">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-muted-foreground">
-                          Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-muted-foreground">
+                            Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
+                          </span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${authStatusConfig[line.authStatus].color}`}>
+                            {authStatusConfig[line.authStatus].label}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-1">
                           {isProvider && (
                             <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => addLabourCharge(line.id)}>

@@ -760,6 +760,7 @@ export type Database = {
       }
       work_items: {
         Row: {
+          auth_status: string
           created_at: string
           description: string
           id: string
@@ -771,6 +772,7 @@ export type Database = {
           unit_price: number
         }
         Insert: {
+          auth_status?: string
           created_at?: string
           description: string
           id?: string
@@ -782,6 +784,7 @@ export type Database = {
           unit_price?: number
         }
         Update: {
+          auth_status?: string
           created_at?: string
           description?: string
           id?: string
