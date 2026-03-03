@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -758,7 +759,7 @@ export default function JobDetail() {
               {job.priority === "urgent" && <Badge variant="destructive" className="text-[10px]">URGENT</Badge>}
               {job.priority === "high" && <Badge className="text-[10px]">HIGH</Badge>}
             </div>
-            <p className="text-sm text-muted-foreground mt-1">{job.vehicle_reg} {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</p>
+            <span className="text-sm text-muted-foreground mt-1 inline-flex items-center gap-1.5"><UKNumberPlate registration={job.vehicle_reg} /> {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</span>
           </div>
           <div className="flex items-center gap-2">
             {isFleetManager && job?.status === "estimated" && !allItemsResolved && (

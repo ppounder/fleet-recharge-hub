@@ -5,6 +5,7 @@ import { JobProgress } from "@/components/JobProgress";
 import { useJobs } from "@/hooks/useJobs";
 import { Loader2, Wrench } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 
 export default function CustomerActiveWork() {
   const { data: jobs = [], isLoading } = useJobs();
@@ -38,7 +39,7 @@ export default function CustomerActiveWork() {
                   <div className="flex items-center gap-3 mb-2">
                     <span className="font-mono text-sm font-semibold">{job.job_number}</span>
                     <StatusBadge status={job.status} />
-                    <span className="text-xs text-muted-foreground ml-auto font-mono">{job.vehicle_reg}</span>
+                    <UKNumberPlate registration={job.vehicle_reg} />
                   </div>
                   <p className="text-sm mb-2">{job.description || "No description"}</p>
                   {job.vehicle_make_model && <p className="text-xs text-muted-foreground mb-2">{job.vehicle_make_model}</p>}

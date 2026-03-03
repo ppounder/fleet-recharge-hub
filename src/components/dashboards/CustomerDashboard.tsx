@@ -1,4 +1,5 @@
 import { Car, Wrench, CreditCard, FileText, Clock } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
@@ -57,7 +58,7 @@ export function CustomerDashboard() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-semibold text-sm">{v.registration}</span>
+                        <UKNumberPlate registration={v.registration} />
                         <StatusBadge status={v.status} />
                       </div>
                       <p className="text-xs text-muted-foreground">{v.make} {v.model} {v.year && `· ${v.year}`}</p>
@@ -85,7 +86,7 @@ export function CustomerDashboard() {
                     <StatusBadge status={job.status} />
                   </div>
                   <p className="text-xs">{job.description || "No description"}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{job.vehicle_reg}</p>
+                  <span className="text-[11px] text-muted-foreground mt-0.5 inline-flex items-center"><UKNumberPlate registration={job.vehicle_reg} /></span>
                   <div className="mt-2">
                     <JobProgress currentStatus={job.status} />
                   </div>

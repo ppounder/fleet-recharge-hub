@@ -8,6 +8,7 @@ import { EditVehicleDialog } from "@/components/EditVehicleDialog";
 import { useVehicles, Vehicle } from "@/hooks/useVehicles";
 import { useCustomers } from "@/hooks/useCustomers";
 import { Car, Loader2 } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 
 export default function Fleet() {
   const { data: vehicles, isLoading } = useVehicles();
@@ -59,7 +60,7 @@ export default function Fleet() {
                 <TableBody>
                   {vehicles.map((v) => (
                     <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setEditVehicle(v)}>
-                      <TableCell className="font-mono text-xs font-semibold">{v.registration}</TableCell>
+                      <TableCell><UKNumberPlate registration={v.registration} /></TableCell>
                       <TableCell className="text-xs">{v.make}</TableCell>
                       <TableCell className="text-xs">{v.model}</TableCell>
                       <TableCell className="text-xs">{v.year ?? "—"}</TableCell>

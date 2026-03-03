@@ -8,6 +8,7 @@ import { useJobs } from "@/hooks/useJobs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Wrench, Loader2 } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import { jobStatusSteps } from "@/lib/mock-data";
@@ -94,8 +95,8 @@ export default function Jobs() {
                       <TableCell className="font-mono text-xs font-medium">{job.job_number}</TableCell>
                       <TableCell className="text-xs">
                         <div>
-                          <p className="font-medium">{job.vehicle_reg}</p>
-                          {job.vehicle_make_model && <p className="text-muted-foreground">{job.vehicle_make_model}</p>}
+                          <UKNumberPlate registration={job.vehicle_reg} />
+                          {job.vehicle_make_model && <p className="text-muted-foreground mt-1">{job.vehicle_make_model}</p>}
                         </div>
                       </TableCell>
                       <TableCell className="text-xs capitalize">{job.type}</TableCell>

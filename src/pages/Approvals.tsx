@@ -7,6 +7,7 @@ import { JobProgress } from "@/components/JobProgress";
 import { useJobs } from "@/hooks/useJobs";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Loader2 } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 
 export default function Approvals() {
   const { data: jobs, isLoading } = useJobs();
@@ -58,8 +59,8 @@ export default function Approvals() {
                       <TableCell className="font-mono text-xs font-medium">{job.job_number}</TableCell>
                       <TableCell className="text-xs">
                         <div>
-                          <p className="font-medium">{job.vehicle_reg}</p>
-                          {job.vehicle_make_model && <p className="text-muted-foreground">{job.vehicle_make_model}</p>}
+                          <UKNumberPlate registration={job.vehicle_reg} />
+                          {job.vehicle_make_model && <p className="text-muted-foreground mt-1">{job.vehicle_make_model}</p>}
                         </div>
                       </TableCell>
                       <TableCell className="text-xs capitalize">{job.type}</TableCell>

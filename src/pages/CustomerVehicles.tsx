@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useVehicles } from "@/hooks/useVehicles";
 import { Car, Loader2 } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
@@ -32,7 +33,7 @@ export default function CustomerVehicles() {
               <Card key={v.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-mono">{v.registration}</CardTitle>
+                    <CardTitle className="text-base"><UKNumberPlate registration={v.registration} /></CardTitle>
                     <StatusBadge status={v.status} />
                   </div>
                 </CardHeader>

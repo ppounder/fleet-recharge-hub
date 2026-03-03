@@ -1,4 +1,5 @@
 import { Wrench, Clock, FileText, Package, Upload, Camera, CheckCircle } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { useNavigate } from "react-router-dom";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -58,7 +59,7 @@ export function SupplierDashboard() {
                       {job.priority === "urgent" && <Badge variant="destructive" className="text-[10px] h-5">URGENT</Badge>}
                     </div>
                     <p className="text-sm mt-1">{job.description || "No description"}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{job.vehicle_reg} {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</p>
+                    <span className="text-xs text-muted-foreground mt-0.5 inline-flex items-center gap-1.5"><UKNumberPlate registration={job.vehicle_reg} /> {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</span>
                   </div>
                   <Button size="sm" className="gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5" /> View & Confirm
@@ -91,7 +92,7 @@ export function SupplierDashboard() {
                       )}
                     </div>
                     <p className="text-sm mt-1">{job.description || "No description"}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{job.vehicle_reg} {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</p>
+                    <span className="text-xs text-muted-foreground mt-0.5 inline-flex items-center gap-1.5"><UKNumberPlate registration={job.vehicle_reg} /> {job.vehicle_make_model && `· ${job.vehicle_make_model}`}</span>
                   </div>
                   <Button size="sm" variant="outline" className="h-7 text-xs">View</Button>
                 </div>

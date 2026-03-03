@@ -1,4 +1,5 @@
 import { Shield, Wrench, CreditCard, AlertTriangle, TrendingUp, Clock, Car } from "lucide-react";
+import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
@@ -88,7 +89,7 @@ export function FleetManagerDashboard() {
                   <TableBody>
                     {vehicles.map((v) => (
                       <TableRow key={v.id}>
-                        <TableCell className="font-mono text-xs font-semibold">{v.registration}</TableCell>
+                        <TableCell><UKNumberPlate registration={v.registration} /></TableCell>
                         <TableCell className="text-xs">{v.make}</TableCell>
                         <TableCell className="text-xs">{v.model}</TableCell>
                         <TableCell className="text-xs">{v.year ?? "—"}</TableCell>
@@ -133,7 +134,7 @@ export function FleetManagerDashboard() {
                       {pendingApprovals.map((job) => (
                         <TableRow key={job.id}>
                           <TableCell className="font-mono text-xs font-medium">{job.job_number}</TableCell>
-                          <TableCell className="text-xs">{job.vehicle_reg}</TableCell>
+                          <TableCell><UKNumberPlate registration={job.vehicle_reg} /></TableCell>
                           <TableCell className="text-xs font-medium">£{Number(job.estimate_total).toFixed(2)}</TableCell>
                           <TableCell><StatusBadge status={job.priority === "urgent" ? "off-road" : "active"} /></TableCell>
                         </TableRow>
@@ -206,8 +207,8 @@ export function FleetManagerDashboard() {
                         <TableCell className="font-mono text-xs font-medium">{job.job_number}</TableCell>
                         <TableCell className="text-xs">
                           <div>
-                            <p className="font-medium">{job.vehicle_reg}</p>
-                            {job.vehicle_make_model && <p className="text-muted-foreground">{job.vehicle_make_model}</p>}
+                            <UKNumberPlate registration={job.vehicle_reg} />
+                            {job.vehicle_make_model && <p className="text-muted-foreground mt-1">{job.vehicle_make_model}</p>}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs capitalize">{job.type}</TableCell>
