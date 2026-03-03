@@ -65,13 +65,35 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
     },
   });
 
+  // Get VAT percent for base price & labour from work code or work category
+  const getServiceVatPercent = (item: MenuItemRow): number => {
+    if (item.work_code_id) {
+      const code = workCodes?.find((c) => c.id === item.work_code_id);
+      if (code?.vat_band_id) {
+        const band = vatBands?.find((v) => v.id === code.vat_band_id);
+        if (band) return Number(band.percentage);
+      }
+    }
+    const cat = workCategories?.find((c) => c.id === item.job_type);
+    if (cat?.vat_band_id) {
+      const band = vatBands?.find((v) => v.id === cat.vat_band_id);
+      if (band) return Number(band.percentage);
+    }
+    return 0;
+  };
+
   // Calculate total price (unit_price + labour costs + parts with VAT) for a menu item
   const getTotalPrice = (item: MenuItemRow) => {
+    const basePrice = Number(item.unit_price);
+    const serviceVatPc = getServiceVatPercent(item);
+
     const labourRows = allMenuItemLabour?.filter((l) => l.menu_item_id === item.id) || [];
     const labourTotal = labourRows.reduce((sum, row) => {
       const rate = labourRates?.find((r) => r.id === row.labour_rate_id);
       return sum + (rate ? row.units * rate.cost : 0);
     }, 0);
+
+    const baseAndLabourVat = (basePrice + labourTotal) * serviceVatPc / 100;
 
     const partRows = allMenuItemParts?.filter((p) => p.menu_item_id === item.id) || [];
     const partsTotal = partRows.reduce((sum, row) => {
@@ -81,7 +103,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
       return sum + net + (net * vatPc / 100);
     }, 0);
 
-    return Number(item.unit_price) + labourTotal + partsTotal;
+    return basePrice + labourTotal + baseAndLabourVat + partsTotal;
   };
 
   const [newJobType, setNewJobType] = useState("");
