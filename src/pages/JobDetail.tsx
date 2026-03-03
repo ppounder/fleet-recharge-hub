@@ -24,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle, Wrench } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle, Wrench, CreditCard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { JobHistory } from "@/components/JobHistory";
@@ -710,6 +710,24 @@ export default function JobDetail() {
   const hasAuthorisedItems = validWorkLines.some((l) => l.authStatus === "authorised");
   const canApproveJob = isFleetManager && job?.status === "estimated" && allItemsResolved && hasAuthorisedItems;
 
+  // ── FM: Toggle recharge on a work item ──
+  const canRechargeItems = isFleetManager && job && ["approved", "in-progress", "completed", "invoiced"].includes(job.status);
+
+  const handleToggleRecharge = async (lineId: string) => {
+    const line = workLines.find((l) => l.id === lineId);
+    if (!line?.dbId) return;
+    const newVal = !line.rechargeable;
+    try {
+      const { error } = await supabase.from("work_items").update({ rechargeable: newVal }).eq("id", line.dbId);
+      if (error) throw error;
+      setWorkLines((prev) => prev.map((l) => l.id === lineId ? { ...l, rechargeable: newVal } : l));
+      logActivity.mutate({ job_id: job!.id, user_id: user!.id, user_name: profile?.full_name || "Unknown", action: newVal ? "work_item_recharged" : "work_item_recharge_removed", details: { description: line.description } });
+      toast({ title: newVal ? "Item marked as recharge" : "Recharge removed" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const handleApproveJob = async () => {
     try {
       const authorisedTotal = validWorkLines
@@ -904,7 +922,7 @@ export default function JobDetail() {
                     if (!canEditItems) {
                       // Read-only view
                       return (
-                        <div key={line.id} className={`p-3 border rounded-lg space-y-2 ${line.authStatus === "declined" ? "opacity-50" : ""}`}>
+                        <div key={line.id} className={`p-3 border rounded-lg space-y-2 ${line.authStatus === "declined" ? "opacity-50" : ""} ${line.rechargeable ? "border-success bg-success/5" : ""}`}>
                           <div className="flex items-center gap-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -931,6 +949,17 @@ export default function JobDetail() {
                               {canAuthoriseItems && (line.authStatus === "authorised" || line.authStatus === "declined") && (
                                 <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleSetItemAuthStatus(line.id, "authorisation_requested")}>
                                   Undo
+                                </Button>
+                              )}
+                              {canRechargeItems && line.authStatus === "authorised" && (
+                                <Button
+                                  size="sm"
+                                  variant={line.rechargeable ? "default" : "outline"}
+                                  className={`h-7 text-xs gap-1 ${line.rechargeable ? "bg-success hover:bg-success/90 text-white" : ""}`}
+                                  onClick={() => handleToggleRecharge(line.id)}
+                                >
+                                  <CreditCard className="w-3 h-3" />
+                                  {line.rechargeable ? "Recharged" : "Recharge"}
                                 </Button>
                               )}
                               <span className="text-sm font-semibold whitespace-nowrap">£{lineTotal(line).toFixed(2)}</span>
