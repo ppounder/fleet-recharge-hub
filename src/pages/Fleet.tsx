@@ -6,11 +6,14 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CreateVehicleDialog } from "@/components/CreateVehicleDialog";
 import { EditVehicleDialog } from "@/components/EditVehicleDialog";
 import { useVehicles, Vehicle } from "@/hooks/useVehicles";
+import { useCustomers } from "@/hooks/useCustomers";
 import { Car, Loader2 } from "lucide-react";
 
 export default function Fleet() {
   const { data: vehicles, isLoading } = useVehicles();
+  const { data: customers } = useCustomers();
   const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
+  const customerMap = new Map(customers?.map((c) => [c.id, c.name]) ?? []);
 
   return (
     <AppLayout>
@@ -48,8 +51,9 @@ export default function Fleet() {
                     <TableHead className="text-xs">Year</TableHead>
                     <TableHead className="text-xs">Mileage</TableHead>
                     <TableHead className="text-xs">MOT Due</TableHead>
-                    <TableHead className="text-xs">Next Service</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
+                     <TableHead className="text-xs">Next Service</TableHead>
+                     <TableHead className="text-xs">Customer</TableHead>
+                     <TableHead className="text-xs">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -62,6 +66,7 @@ export default function Fleet() {
                       <TableCell className="text-xs">{v.mileage ? `${v.mileage.toLocaleString()} mi` : "—"}</TableCell>
                       <TableCell className="text-xs">{v.mot_due ?? "—"}</TableCell>
                       <TableCell className="text-xs">{v.next_service ?? "—"}</TableCell>
+                      <TableCell className="text-xs">{v.customer_id ? customerMap.get(v.customer_id) ?? "—" : "—"}</TableCell>
                       <TableCell><StatusBadge status={v.status} /></TableCell>
                     </TableRow>
                   ))}
