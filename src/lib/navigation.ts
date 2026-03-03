@@ -16,6 +16,7 @@ import {
   Handshake,
   ListChecks,
   Percent,
+  Package,
 } from "lucide-react";
 
 export type UserRole = "fleet-manager" | "service-provider" | "customer";
@@ -54,6 +55,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
       children: [
         { label: "Work Categories", href: "/settings/work-categories", icon: ListChecks },
         { label: "Work Codes", href: "/settings/work-codes", icon: ListChecks },
+        { label: "Parts", href: "/settings/parts", icon: Package },
         { label: "VAT Bands", href: "/settings/vat-bands", icon: Percent },
       ],
     },

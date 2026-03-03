@@ -364,6 +364,93 @@ export type Database = {
           },
         ]
       }
+      menu_item_parts: {
+        Row: {
+          created_at: string
+          id: string
+          menu_item_id: string
+          part_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          menu_item_id: string
+          part_id: string
+          quantity?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          menu_item_id?: string
+          part_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_parts_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "provider_menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_parts_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parts: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          part_number: string
+          provider_id: string
+          updated_at: string
+          vat_band_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          part_number?: string
+          provider_id: string
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          part_number?: string
+          provider_id?: string
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parts_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
