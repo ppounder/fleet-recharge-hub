@@ -865,6 +865,7 @@ export default function JobDetail() {
                               <span className="text-sm font-semibold whitespace-nowrap">£{lineTotal(line).toFixed(2)}</span>
                             </div>
                           </div>
+                          {line.unitPrice > 0 && (
                           <div className="ml-4 space-y-1">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <span className="font-mono w-[100px] shrink-0 truncate">BASE PRICE</span>
@@ -873,6 +874,7 @@ export default function JobDetail() {
                               <span className="font-semibold text-foreground whitespace-nowrap">£{lineBaseTotal(line).toFixed(2)}</span>
                             </div>
                           </div>
+                          )}
                           {line.labourCharges.length > 0 && (
                             <div className="ml-4 space-y-1">
                               {line.labourCharges.map((c) => (
