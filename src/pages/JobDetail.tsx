@@ -42,6 +42,17 @@ interface LabourCharge {
   total: number;
 }
 
+interface PartCharge {
+  id: string;
+  partId: string;
+  partDescription: string;
+  partNumber: string;
+  unitPrice: number;
+  quantity: number;
+  vatPercent: number;
+  total: number;
+}
+
 type WorkItemAuthStatus = "pending" | "authorisation_requested" | "authorised" | "in_query" | "declined";
 
 const authStatusConfig: Record<WorkItemAuthStatus, { label: string; color: string }> = {
@@ -65,6 +76,7 @@ interface WorkLine {
   rechargeReason: string;
   dirty: boolean;
   labourCharges: LabourCharge[];
+  partCharges: PartCharge[];
   authStatus: WorkItemAuthStatus;
 }
 
@@ -80,6 +92,7 @@ const emptyWorkLine = (): WorkLine => ({
   rechargeReason: "",
   dirty: true,
   labourCharges: [],
+  partCharges: [],
   authStatus: "pending",
 });
 
@@ -106,6 +119,15 @@ export default function JobDetail() {
   const { data: vatBands } = useVatBands(providerId || undefined);
   const { data: menuItems } = useMenuItemsByProviderAndFleet(providerId || undefined, jobFleetId);
   const { data: labourRates = [] } = useLabourRates(providerId || undefined, jobFleetId);
+  const { data: parts } = useQuery({
+    queryKey: ["parts", providerId],
+    enabled: !!providerId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("parts").select("*").eq("provider_id", providerId);
+      if (error) throw error;
+      return data as { id: string; description: string; part_number: string; vat_band_id: string | null }[];
+    },
+  });
 
   // Bulk fetch menu_item_labour for all menu items of this provider+fleet
   const menuItemIds = useMemo(() => menuItems?.map((i) => i.id) || [], [menuItems]);
@@ -119,6 +141,20 @@ export default function JobDetail() {
         .in("menu_item_id", menuItemIds);
       if (error) throw error;
       return data as { id: string; menu_item_id: string; labour_rate_id: string; units: number }[];
+    },
+  });
+
+  // Bulk fetch menu_item_parts for all menu items of this provider+fleet
+  const { data: allMenuItemParts } = useQuery({
+    queryKey: ["menu_item_parts_bulk_job", providerId, jobFleetId, menuItemIds],
+    enabled: menuItemIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("menu_item_parts")
+        .select("*")
+        .in("menu_item_id", menuItemIds);
+      if (error) throw error;
+      return data as { id: string; menu_item_id: string; part_id: string; unit_price: number; quantity: number }[];
     },
   });
 
@@ -141,6 +177,41 @@ export default function JobDetail() {
         });
     },
     [allMenuItemLabour, labourRates]
+  );
+
+  // Helper to build part charges from a menu item's pre-set parts
+  const getPartVatPercent = useCallback(
+    (partId: string): number => {
+      const part = parts?.find((p) => p.id === partId);
+      if (!part?.vat_band_id || !vatBands) return 0;
+      const band = vatBands.find((v) => v.id === part.vat_band_id);
+      return band ? Number(band.percentage) : 0;
+    },
+    [parts, vatBands]
+  );
+
+  const buildPartCharges = useCallback(
+    (menuItemId: string): PartCharge[] => {
+      if (!allMenuItemParts || !parts) return [];
+      return allMenuItemParts
+        .filter((mip) => mip.menu_item_id === menuItemId)
+        .map((mip) => {
+          const part = parts.find((p) => p.id === mip.part_id);
+          const vatPc = getPartVatPercent(mip.part_id);
+          const net = mip.unit_price * mip.quantity;
+          return {
+            id: crypto.randomUUID(),
+            partId: mip.part_id,
+            partDescription: part?.description || "Unknown",
+            partNumber: part?.part_number || "",
+            unitPrice: mip.unit_price,
+            quantity: mip.quantity,
+            vatPercent: vatPc,
+            total: net + (net * vatPc / 100),
+          };
+        });
+    },
+    [allMenuItemParts, parts, getPartVatPercent]
   );
 
   // ── Local work lines state ──
@@ -201,12 +272,12 @@ export default function JobDetail() {
     if (!itemsLoading && !initialized && workCategories !== undefined && workCodes !== undefined) {
       const initLines = async () => {
         if (dbWorkItems.length > 0) {
-          // Fetch labour charges for all work items
+          // Fetch labour charges and part charges for all work items
           const workItemIds = dbWorkItems.map((i) => i.id);
-          const { data: dbLabour } = await supabase
-            .from("work_item_labour")
-            .select("*")
-            .in("work_item_id", workItemIds);
+          const [{ data: dbLabour }, { data: dbParts }] = await Promise.all([
+            supabase.from("work_item_labour").select("*").in("work_item_id", workItemIds),
+            supabase.from("work_item_parts").select("*").in("work_item_id", workItemIds),
+          ]);
 
           setWorkLines(
             dbWorkItems.map((item) => {
@@ -221,6 +292,18 @@ export default function JobDetail() {
                   units: Number(l.units),
                   total: Number(l.total),
                 }));
+              const itemParts = (dbParts || [])
+                .filter((p: any) => p.work_item_id === item.id)
+                .map((p: any) => ({
+                  id: crypto.randomUUID(),
+                  partId: p.part_id,
+                  partDescription: p.part_description,
+                  partNumber: p.part_number,
+                  unitPrice: Number(p.unit_price),
+                  quantity: Number(p.quantity),
+                  vatPercent: Number(p.vat_percent),
+                  total: Number(p.total),
+                }));
               return {
                 id: crypto.randomUUID(),
                 dbId: item.id,
@@ -234,6 +317,7 @@ export default function JobDetail() {
                 rechargeReason: item.recharge_reason || "",
                 dirty: false,
                 labourCharges: itemLabour,
+                partCharges: itemParts,
                 authStatus: ((item as any).auth_status || "pending") as WorkItemAuthStatus,
               };
             })
@@ -272,6 +356,7 @@ export default function JobDetail() {
             if (match) {
               updated.unitPrice = Number(match.unit_price);
               updated.labourCharges = buildLabourCharges(match.id);
+              updated.partCharges = buildPartCharges(match.id);
               if (match.description && !l.description) updated.description = match.description;
             }
           }
@@ -281,6 +366,7 @@ export default function JobDetail() {
             if (match) {
               updated.unitPrice = Number(match.unit_price);
               updated.labourCharges = buildLabourCharges(match.id);
+              updated.partCharges = buildPartCharges(match.id);
               if (match.description && !l.description) updated.description = match.description;
             }
           }
@@ -288,7 +374,7 @@ export default function JobDetail() {
         })
       );
     },
-    [menuItems, getVatPercent, findMenuPrice, buildLabourCharges]
+    [menuItems, getVatPercent, findMenuPrice, buildLabourCharges, buildPartCharges]
   );
 
   const addWorkLine = () => setWorkLines((prev) => [...prev, emptyWorkLine()]);
@@ -347,11 +433,13 @@ export default function JobDetail() {
 
   // ── Totals ──
   const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
-  const linePartsTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineVat(line);
+  const lineBaseTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineVat(line);
   const lineLabourTotal = (line: WorkLine) => line.labourCharges.reduce((s, c) => s + c.total, 0);
-  const lineTotal = (line: WorkLine) => linePartsTotal(line) + lineLabourTotal(line);
+  const linePartChargesTotal = (line: WorkLine) => line.partCharges.reduce((s, p) => s + p.total, 0);
+  const lineTotal = (line: WorkLine) => lineBaseTotal(line) + lineLabourTotal(line) + linePartChargesTotal(line);
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
   const totalLabour = workLines.reduce((sum, l) => sum + lineLabourTotal(l), 0);
+  const totalParts = workLines.reduce((sum, l) => sum + linePartChargesTotal(l), 0);
 
   // ── AI parsing ──
   const parseDescriptionWithAI = async (text: string) => {
@@ -372,7 +460,8 @@ export default function JobDetail() {
           const menuMatch = findMenuPrice(catId, codeId, menuItems);
           const unitPrice = menuMatch ? Number(menuMatch.unit_price) : (l.unitPrice || 0);
           const charges = menuMatch ? buildLabourCharges(menuMatch.id) : [];
-          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: charges, authStatus: "pending" as WorkItemAuthStatus };
+          const partCh = menuMatch ? buildPartCharges(menuMatch.id) : [];
+          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", dirty: true, labourCharges: charges, partCharges: partCh, authStatus: "pending" as WorkItemAuthStatus };
         });
         setWorkLines((prev) => {
           const existing = prev.filter((l) => l.description.trim() || l.jobTypeId || l.dbId);
@@ -404,7 +493,7 @@ export default function JobDetail() {
           const catName = workCategories?.find((wc) => wc.id === l.jobTypeId)?.name || "";
           const codeName = workCodes?.find((c) => c.id === l.workCodeId)?.name || "";
           const prefix = [catName, codeName].filter(Boolean).join(" > ");
-          return { job_id: job.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: linePartsTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null, auth_status: l.authStatus } as any;
+          return { job_id: job.id, description: prefix ? `[${prefix.toUpperCase()}] ${l.description}` : l.description, quantity: l.quantity, unit_price: l.unitPrice, total: lineBaseTotal(l), rechargeable: l.rechargeable, recharge_reason: l.rechargeReason || null, auth_status: l.authStatus } as any;
         });
         const { data: insertedItems, error } = await supabase.from("work_items").insert(items as any).select();
         if (error) throw error;
@@ -430,6 +519,30 @@ export default function JobDetail() {
           if (labourRows.length > 0) {
             const { error: labErr } = await supabase.from("work_item_labour").insert(labourRows);
             if (labErr) throw labErr;
+          }
+
+          // Insert part charges for each work item
+          const partRows: any[] = [];
+          validLines.forEach((line, idx) => {
+            const dbItem = insertedItems[idx];
+            if (dbItem && line.partCharges.length > 0) {
+              line.partCharges.forEach((pc) => {
+                partRows.push({
+                  work_item_id: dbItem.id,
+                  part_id: pc.partId,
+                  part_description: pc.partDescription,
+                  part_number: pc.partNumber,
+                  unit_price: pc.unitPrice,
+                  quantity: pc.quantity,
+                  vat_percent: pc.vatPercent,
+                  total: pc.total,
+                });
+              });
+            }
+          });
+          if (partRows.length > 0) {
+            const { error: partErr } = await supabase.from("work_item_parts").insert(partRows);
+            if (partErr) throw partErr;
           }
         }
       }
@@ -746,7 +859,7 @@ export default function JobDetail() {
                                   Undo
                                 </Button>
                               )}
-                              <span className="text-sm font-semibold whitespace-nowrap">£{linePartsTotal(line).toFixed(2)}</span>
+                              <span className="text-sm font-semibold whitespace-nowrap">£{lineBaseTotal(line).toFixed(2)}</span>
                             </div>
                           </div>
                           {line.labourCharges.length > 0 && (
@@ -826,7 +939,7 @@ export default function JobDetail() {
                             </div>
                             <div className="space-y-1.5">
                               <Label className="text-xs">Total</Label>
-                              <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{linePartsTotal(line).toFixed(2)}</div>
+                              <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{lineBaseTotal(line).toFixed(2)}</div>
                             </div>
                           </div>
 

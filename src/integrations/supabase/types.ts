@@ -883,6 +883,60 @@ export type Database = {
           },
         ]
       }
+      work_item_parts: {
+        Row: {
+          created_at: string
+          id: string
+          part_description: string
+          part_id: string
+          part_number: string
+          quantity: number
+          total: number
+          unit_price: number
+          vat_percent: number
+          work_item_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          part_description?: string
+          part_id: string
+          part_number?: string
+          quantity?: number
+          total?: number
+          unit_price?: number
+          vat_percent?: number
+          work_item_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          part_description?: string
+          part_id?: string
+          part_number?: string
+          quantity?: number
+          total?: number
+          unit_price?: number
+          vat_percent?: number
+          work_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_item_parts_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_item_parts_work_item_id_fkey"
+            columns: ["work_item_id"]
+            isOneToOne: false
+            referencedRelation: "work_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_items: {
         Row: {
           auth_status: string
