@@ -843,8 +843,7 @@ export default function JobDetail() {
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {line.quantity} × £{line.unitPrice.toFixed(2)}{line.vatPercent > 0 ? ` (inc VAT ${line.vatPercent}%)` : ""}
-                                {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
+                                {line.rechargeable && <Badge variant="outline" className="ml-0 text-[9px] h-4">Rechargeable</Badge>}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -863,7 +862,15 @@ export default function JobDetail() {
                                   Undo
                                 </Button>
                               )}
-                              <span className="text-sm font-semibold whitespace-nowrap">£{lineBaseTotal(line).toFixed(2)}</span>
+                              <span className="text-sm font-semibold whitespace-nowrap">£{lineTotal(line).toFixed(2)}</span>
+                            </div>
+                          </div>
+                          <div className="ml-4 space-y-1">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="font-mono w-[100px] shrink-0 truncate">BASE PRICE</span>
+                              <span className="flex-1 truncate">{line.description}</span>
+                              <span className="whitespace-nowrap">{line.quantity} × £{line.unitPrice.toFixed(2)}{line.vatPercent > 0 ? ` (inc VAT ${line.vatPercent}%)` : ""}</span>
+                              <span className="font-semibold text-foreground whitespace-nowrap">£{lineBaseTotal(line).toFixed(2)}</span>
                             </div>
                           </div>
                           {line.labourCharges.length > 0 && (
