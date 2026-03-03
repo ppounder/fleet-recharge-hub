@@ -34,19 +34,20 @@ export default function Recharges() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []).map((item: any) => {
-        const labourTotal = (item.work_item_labour || []).reduce((s: number, l: any) => s + Number(l.total), 0);
-        const partsNet = (item.work_item_parts || []).reduce((s: number, p: any) => s + Number(p.unit_price) * Number(p.quantity), 0);
+        const labourTotal = (item.work_item_labour || []).reduce((s: number, l: any) => s + (Number(l.total) || 0), 0);
+        const partsNet = (item.work_item_parts || []).reduce((s: number, p: any) => s + (Number(p.unit_price) || 0) * (Number(p.quantity) || 0), 0);
         const partsVat = (item.work_item_parts || []).reduce((s: number, p: any) => {
-          const net = Number(p.unit_price) * Number(p.quantity);
-          return s + net * (Number(p.vat_percent) / 100);
+          const net = (Number(p.unit_price) || 0) * (Number(p.quantity) || 0);
+          return s + net * ((Number(p.vat_percent) || 0) / 100);
         }, 0);
-        const grandTotal = Number(item.total) + labourTotal + partsNet + partsVat;
+        const baseTotal = Number(item.total) || 0;
+        const grandTotal = baseTotal + labourTotal + partsNet + partsVat;
         return {
           id: item.id,
-          description: item.description,
-          quantity: item.quantity,
-          unit_price: Number(item.unit_price),
-          total: Number(item.total),
+          description: item.description || "",
+          quantity: item.quantity || 0,
+          unit_price: Number(item.unit_price) || 0,
+          total: baseTotal,
           job_id: item.job_id,
           job_number: item.jobs?.job_number || "",
           vehicle_reg: item.jobs?.vehicle_reg || "",
