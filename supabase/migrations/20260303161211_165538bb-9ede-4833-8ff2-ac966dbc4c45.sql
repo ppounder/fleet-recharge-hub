@@ -1,0 +1,2 @@
+ALTER TABLE public.vehicles DROP CONSTRAINT vehicles_customer_id_fkey;
+ALTER TABLE public.vehicles ADD CONSTRAINT vehicles_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE SET NULL;
