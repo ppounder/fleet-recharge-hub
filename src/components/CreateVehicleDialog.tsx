@@ -3,7 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateVehicle } from "@/hooks/useVehicles";
+import { useCustomers } from "@/hooks/useCustomers";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
@@ -16,7 +18,9 @@ export function CreateVehicleDialog() {
   const [year, setYear] = useState("");
   const [vin, setVin] = useState("");
   const [mileage, setMileage] = useState("");
+  const [customerId, setCustomerId] = useState("");
   const createVehicle = useCreateVehicle();
+  const { data: customers } = useCustomers();
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
@@ -32,6 +36,7 @@ export function CreateVehicleDialog() {
         year: year ? parseInt(year) : null,
         vin: vin || null,
         mileage: mileage ? parseInt(mileage) : null,
+        customer_id: customerId || null,
         fleet_manager_id: user?.id ?? null,
         fleet_id: profile?.fleet_id ?? null,
       });
@@ -43,6 +48,7 @@ export function CreateVehicleDialog() {
       setYear("");
       setVin("");
       setMileage("");
+      setCustomerId("");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -85,6 +91,18 @@ export function CreateVehicleDialog() {
           <div className="space-y-2">
             <Label>Mileage</Label>
             <Input value={mileage} onChange={(e) => setMileage(e.target.value)} type="number" placeholder="45000" />
+          </div>
+          <div className="space-y-2">
+            <Label>Customer</Label>
+            <Select value={customerId} onValueChange={setCustomerId}>
+              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">None</SelectItem>
+                {customers?.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

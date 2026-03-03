@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
+import { useCustomers } from "@/hooks/useCustomers";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditVehicleDialogProps {
@@ -23,7 +24,9 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
   const [motDue, setMotDue] = useState("");
   const [nextService, setNextService] = useState("");
   const [status, setStatus] = useState("active");
+  const [customerId, setCustomerId] = useState("");
   const updateVehicle = useUpdateVehicle();
+  const { data: customers } = useCustomers();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
       setMotDue(vehicle.mot_due ?? "");
       setNextService(vehicle.next_service ?? "");
       setStatus(vehicle.status);
+      setCustomerId(vehicle.customer_id ?? "");
     }
   }, [vehicle]);
 
@@ -56,6 +60,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
         mot_due: motDue || null,
         next_service: nextService || null,
         status,
+        customer_id: customerId || null,
       });
       toast({ title: "Vehicle updated", description: `${registration.toUpperCase()} has been updated` });
       onOpenChange(false);
@@ -122,6 +127,18 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
               <Label>Next Service</Label>
               <Input value={nextService} onChange={(e) => setNextService(e.target.value)} type="date" />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Customer</Label>
+            <Select value={customerId} onValueChange={setCustomerId}>
+              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">None</SelectItem>
+                {customers?.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
