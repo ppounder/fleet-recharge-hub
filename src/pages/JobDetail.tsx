@@ -1085,7 +1085,7 @@ export default function JobDetail() {
                                     <SelectTrigger className="text-sm w-[280px] h-8"><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                       {parts?.map((p) => (
-                                        <SelectItem key={p.id} value={p.id}>{p.description} (£{0})</SelectItem>
+                                        <SelectItem key={p.id} value={p.id}>{p.description} (£{charge.unitPrice.toFixed(2)})</SelectItem>
                                       ))}
                                     </SelectContent>
                                   </Select>
