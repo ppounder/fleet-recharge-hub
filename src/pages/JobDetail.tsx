@@ -24,6 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLogJobActivity } from "@/hooks/useJobActivityLog";
+import { JobHistory } from "@/components/JobHistory";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -84,7 +87,7 @@ export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userRole, profile } = useAuth();
+  const { userRole, profile, user } = useAuth();
   const { data: jobs, isLoading: jobsLoading } = useJobs();
   const job = jobs?.find((j) => j.id === id);
   const { data: dbWorkItems = [], isLoading: itemsLoading } = useWorkItems(id);
@@ -92,6 +95,7 @@ export default function JobDetail() {
   const createItem = useCreateWorkItem();
   const deleteItem = useDeleteWorkItem();
   const { data: currentProvider } = useCurrentProvider();
+  const logActivity = useLogJobActivity();
 
   const providerId = job?.provider_id || currentProvider?.id || "";
   // fleet_id is now stored directly on the job
@@ -452,6 +456,7 @@ export default function JobDetail() {
       } else {
         setWorkLines([emptyWorkLine()]);
       }
+      logActivity.mutate({ job_id: job.id, user_id: user!.id, user_name: profile?.full_name || "Unknown", action: "work_items_saved", details: { item_count: validLines.length, total: validLines.reduce((s, l) => s + lineTotal(l), 0) } });
       toast({ title: "Work items saved", description: `${validLines.length} line(s) saved` });
     } catch (err: any) {
       toast({ title: "Error saving", description: err.message, variant: "destructive" });
@@ -469,6 +474,7 @@ export default function JobDetail() {
   const handleConfirm = async () => {
     try {
       await updateJob.mutateAsync({ id: job!.id, status: "confirmed" });
+      logActivity.mutate({ job_id: job!.id, user_id: user!.id, user_name: profile?.full_name || "Unknown", action: "job_confirmed", details: { from_status: "booked", to_status: "confirmed" } });
       toast({ title: "Booking confirmed", description: "You can now review and update the work items before submitting an estimate." });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -476,19 +482,17 @@ export default function JobDetail() {
   };
 
   const handleSubmitEstimate = async () => {
-    // Set all work items to authorisation_requested before saving
     setWorkLines((prev) => prev.map((l) => ({ ...l, authStatus: "authorisation_requested" as WorkItemAuthStatus, dirty: true })));
-    // Need a small delay so state updates before save
     await new Promise((r) => setTimeout(r, 0));
     await handleSaveWorkItems();
     try {
       const total = workLines.filter((l) => l.description.trim()).reduce((s, l) => s + lineTotal(l), 0);
       await updateJob.mutateAsync({ id: job!.id, status: "estimated", estimate_total: total });
-      // Update auth_status on all work items in DB
       const { data: savedItems } = await supabase.from("work_items").select("id").eq("job_id", job!.id);
       if (savedItems?.length) {
         await supabase.from("work_items").update({ auth_status: "authorisation_requested" }).eq("job_id", job!.id);
       }
+      logActivity.mutate({ job_id: job!.id, user_id: user!.id, user_name: profile?.full_name || "Unknown", action: "estimate_submitted", details: { from_status: "confirmed", to_status: "estimated", total, item_count: savedItems?.length || 0 } });
       toast({ title: "Estimate submitted", description: `Estimate of £${total.toFixed(2)} sent to Fleet Manager for approval.` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -506,6 +510,7 @@ export default function JobDetail() {
       const { error } = await supabase.from("work_items").update({ auth_status: status }).eq("id", line.dbId);
       if (error) throw error;
       setWorkLines((prev) => prev.map((l) => l.id === lineId ? { ...l, authStatus: status } : l));
+      logActivity.mutate({ job_id: job!.id, user_id: user!.id, user_name: profile?.full_name || "Unknown", action: status === "authorised" ? "work_item_authorised" : "work_item_declined", details: { description: line.description, auth_status: status } });
       toast({ title: `Item ${authStatusConfig[status].label}` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -520,11 +525,11 @@ export default function JobDetail() {
 
   const handleApproveJob = async () => {
     try {
-      // Recalculate total based only on authorised items
       const authorisedTotal = validWorkLines
         .filter((l) => l.authStatus === "authorised")
         .reduce((s, l) => s + lineTotal(l), 0);
       await updateJob.mutateAsync({ id: job!.id, status: "approved", estimate_total: authorisedTotal });
+      logActivity.mutate({ job_id: job!.id, user_id: user!.id, user_name: profile?.full_name || "Unknown", action: "job_approved", details: { from_status: "estimated", to_status: "approved", total: authorisedTotal } });
       toast({ title: "Job approved", description: `Approved with £${authorisedTotal.toFixed(2)} of authorised work.` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -643,246 +648,267 @@ export default function JobDetail() {
           </CardContent>
         </Card>
 
-        {/* Job Details */}
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">Booking Details</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              <div><span className="text-muted-foreground">Booking Date</span><p className="font-medium">{job.booking_date ? `${new Date(job.booking_date).toLocaleDateString()} ${new Date(job.booking_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "—"}</p></div>
-              <div><span className="text-muted-foreground">Booking Ref</span><p className="font-medium">{job.booking_reference || job.job_number || "—"}</p></div>
-              <div><span className="text-muted-foreground">Fleet Ref</span><p className="font-medium">{job.fleet_reference || "—"}</p></div>
-              <div><span className="text-muted-foreground">Depot</span><p className="font-medium">{job.depot || "—"}</p></div>
-              <div><span className="text-muted-foreground">Contact</span><p className="font-medium">{job.contact_name || "—"}</p></div>
-            </div>
-            {job.description && (
-              <>
-                <Separator className="my-4" />
-                <div><span className="text-sm text-muted-foreground">Description</span><p className="text-sm mt-1">{job.description}</p></div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        {/* Tabs */}
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList>
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
 
-        {/* Work Items */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Work Items</CardTitle>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold">Total: £{grandTotal.toFixed(2)}</span>
-                {canEditItems && (
-                  <Button type="button" variant="outline" size="sm" onClick={addWorkLine}>
-                    <PlusCircle className="w-4 h-4 mr-1" /> Add Line
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* AI description parser */}
-            {canEditItems && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Description (AI auto-generate)</Label>
-                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" disabled={aiLoading || !aiText.trim()} onClick={() => parseDescriptionWithAI(aiText)}>
-                    {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                    Generate Lines
-                  </Button>
+          <TabsContent value="details" className="space-y-6 mt-4">
+            {/* Job Details */}
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base">Booking Details</CardTitle></CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                  <div><span className="text-muted-foreground">Booking Date</span><p className="font-medium">{job.booking_date ? `${new Date(job.booking_date).toLocaleDateString()} ${new Date(job.booking_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "—"}</p></div>
+                  <div><span className="text-muted-foreground">Booking Ref</span><p className="font-medium">{job.booking_reference || job.job_number || "—"}</p></div>
+                  <div><span className="text-muted-foreground">Fleet Ref</span><p className="font-medium">{job.fleet_reference || "—"}</p></div>
+                  <div><span className="text-muted-foreground">Depot</span><p className="font-medium">{job.depot || "—"}</p></div>
+                  <div><span className="text-muted-foreground">Contact</span><p className="font-medium">{job.contact_name || "—"}</p></div>
                 </div>
-                <Textarea value={aiText} onChange={(e) => setAiText(e.target.value)} onBlur={() => { if (aiText.trim()) parseDescriptionWithAI(aiText); }} placeholder="Describe the work needed — AI will auto-generate work lines..." rows={3} />
-              </div>
-            )}
+                {job.description && (
+                  <>
+                    <Separator className="my-4" />
+                    <div><span className="text-sm text-muted-foreground">Description</span><p className="text-sm mt-1">{job.description}</p></div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Work line cards */}
-            <div className="space-y-3">
-              {workLines.map((line, idx) => {
-                const catName = workCategories?.find((wc) => wc.id === line.jobTypeId)?.name;
-                const codeName = workCodes?.find((c) => c.id === line.workCodeId)?.name;
-                const codesForCategory = workCodes?.filter((c) => c.work_category_id === line.jobTypeId) || [];
-
-                if (!canEditItems) {
-                  // Read-only view
-                  return (
-                    <div key={line.id} className={`p-3 border rounded-lg space-y-2 ${line.authStatus === "declined" ? "opacity-50" : ""}`}>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium truncate">{line.description}</p>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${authStatusConfig[line.authStatus].color}`}>
-                              {authStatusConfig[line.authStatus].label}
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {line.quantity} × £{line.unitPrice.toFixed(2)}
-                            {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {canAuthoriseItems && line.authStatus === "authorisation_requested" && (
-                            <>
-                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-success hover:text-success" onClick={() => handleSetItemAuthStatus(line.id, "authorised")}>
-                                <ShieldCheck className="w-3 h-3" /> Authorise
-                              </Button>
-                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-destructive hover:text-destructive" onClick={() => handleSetItemAuthStatus(line.id, "declined")}>
-                                <XCircle className="w-3 h-3" /> Decline
-                              </Button>
-                            </>
-                          )}
-                          {canAuthoriseItems && (line.authStatus === "authorised" || line.authStatus === "declined") && (
-                            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleSetItemAuthStatus(line.id, "authorisation_requested")}>
-                              Undo
-                            </Button>
-                          )}
-                          <span className="text-sm font-semibold whitespace-nowrap">£{linePartsTotal(line).toFixed(2)}</span>
-                        </div>
-                      </div>
-                      {line.labourCharges.length > 0 && (
-                        <div className="ml-4 space-y-1">
-                          {line.labourCharges.map((c) => (
-                            <div key={c.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              <span>{c.labourRateName}</span>
-                              <span>{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
-                              <span className="font-semibold text-foreground ml-auto">£{c.total.toFixed(2)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+            {/* Work Items */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Work Items</CardTitle>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold">Total: £{grandTotal.toFixed(2)}</span>
+                    {canEditItems && (
+                      <Button type="button" variant="outline" size="sm" onClick={addWorkLine}>
+                        <PlusCircle className="w-4 h-4 mr-1" /> Add Line
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* AI description parser */}
+                {canEditItems && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Description (AI auto-generate)</Label>
+                      <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" disabled={aiLoading || !aiText.trim()} onClick={() => parseDescriptionWithAI(aiText)}>
+                        {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                        Generate Lines
+                      </Button>
                     </div>
-                  );
-                }
+                    <Textarea value={aiText} onChange={(e) => setAiText(e.target.value)} onBlur={() => { if (aiText.trim()) parseDescriptionWithAI(aiText); }} placeholder="Describe the work needed — AI will auto-generate work lines..." rows={3} />
+                  </div>
+                )}
 
-                return (
-                  <Card key={line.id} className="border-border">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-muted-foreground">
-                            Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
-                          </span>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${authStatusConfig[line.authStatus].color}`}>
-                            {authStatusConfig[line.authStatus].label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {isProvider && (
-                            <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => addLabourCharge(line.id)}>
-                              <Clock className="w-3.5 h-3.5" /> Labour
-                            </Button>
+                {/* Work line cards */}
+                <div className="space-y-3">
+                  {workLines.map((line, idx) => {
+                    const catName = workCategories?.find((wc) => wc.id === line.jobTypeId)?.name;
+                    const codeName = workCodes?.find((c) => c.id === line.workCodeId)?.name;
+                    const codesForCategory = workCodes?.filter((c) => c.work_category_id === line.jobTypeId) || [];
+
+                    if (!canEditItems) {
+                      // Read-only view
+                      return (
+                        <div key={line.id} className={`p-3 border rounded-lg space-y-2 ${line.authStatus === "declined" ? "opacity-50" : ""}`}>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium truncate">{line.description}</p>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${authStatusConfig[line.authStatus].color}`}>
+                                  {authStatusConfig[line.authStatus].label}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {line.quantity} × £{line.unitPrice.toFixed(2)}
+                                {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {canAuthoriseItems && line.authStatus === "authorisation_requested" && (
+                                <>
+                                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-success hover:text-success" onClick={() => handleSetItemAuthStatus(line.id, "authorised")}>
+                                    <ShieldCheck className="w-3 h-3" /> Authorise
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-destructive hover:text-destructive" onClick={() => handleSetItemAuthStatus(line.id, "declined")}>
+                                    <XCircle className="w-3 h-3" /> Decline
+                                  </Button>
+                                </>
+                              )}
+                              {canAuthoriseItems && (line.authStatus === "authorised" || line.authStatus === "declined") && (
+                                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleSetItemAuthStatus(line.id, "authorisation_requested")}>
+                                  Undo
+                                </Button>
+                              )}
+                              <span className="text-sm font-semibold whitespace-nowrap">£{linePartsTotal(line).toFixed(2)}</span>
+                            </div>
+                          </div>
+                          {line.labourCharges.length > 0 && (
+                            <div className="ml-4 space-y-1">
+                              {line.labourCharges.map((c) => (
+                                <div key={c.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{c.labourRateName}</span>
+                                  <span>{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
+                                  <span className="font-semibold text-foreground ml-auto">£{c.total.toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
                           )}
-                          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Description *</Label>
-                          <Input value={line.description} onChange={(e) => updateWorkLine(line.id, "description", e.target.value)} placeholder="e.g. Indicator repair, Tyre replacement..." className="text-sm" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Category</Label>
-                          <Select value={line.jobTypeId} onValueChange={(v) => updateWorkLine(line.id, "jobTypeId", v)}>
-                            <SelectTrigger className="text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                            <SelectContent>
-                              {workCategories?.map((wc) => (<SelectItem key={wc.id} value={wc.id}>{wc.name}</SelectItem>))}
-                              {!workCategories?.length && (<SelectItem value="none" disabled>No categories</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Work Code</Label>
-                          <Select value={line.workCodeId} onValueChange={(v) => updateWorkLine(line.id, "workCodeId", v)} disabled={!line.jobTypeId || codesForCategory.length === 0}>
-                            <SelectTrigger className="text-sm"><SelectValue placeholder={!line.jobTypeId ? "Select category first" : codesForCategory.length === 0 ? "No codes" : "Select"} /></SelectTrigger>
-                            <SelectContent>
-                              {codesForCategory.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Qty</Label>
-                          <Input type="text" inputMode="numeric" value={line.quantity} onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) updateWorkLine(line.id, "quantity", Number(v) || 1); }} className="text-sm" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Unit £</Label>
-                          <Input type="text" inputMode="decimal" value={line.unitPrice} onChange={(e) => { const v = e.target.value; if (/^\d*\.?\d{0,2}$/.test(v)) updateWorkLine(line.id, "unitPrice", Number(v) || 0); }} className="text-sm" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">VAT ({line.vatPercent}%)</Label>
-                          <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{lineVat(line).toFixed(2)}</div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Total</Label>
-                          <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{linePartsTotal(line).toFixed(2)}</div>
-                        </div>
-                      </div>
+                      );
+                    }
 
-                      {/* Labour charges for this work item */}
-                      {line.labourCharges.length > 0 && (
-                        <div className="mt-2 ml-2 space-y-2 border-l-2 border-primary/20 pl-3">
-                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Labour Charges
-                          </span>
-                          {line.labourCharges.map((charge) => (
-                            <div key={charge.id} className="flex items-center gap-2">
-                              <Select value={charge.labourRateId} onValueChange={(v) => updateLabourCharge(line.id, charge.id, "labourRateId", v)}>
-                                <SelectTrigger className="text-sm w-[280px] h-8"><SelectValue /></SelectTrigger>
+                    return (
+                      <Card key={line.id} className="border-border">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono text-muted-foreground">
+                                Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
+                              </span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${authStatusConfig[line.authStatus].color}`}>
+                                {authStatusConfig[line.authStatus].label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {isProvider && (
+                                <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => addLabourCharge(line.id)}>
+                                  <Clock className="w-3.5 h-3.5" /> Labour
+                                </Button>
+                              )}
+                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Description *</Label>
+                              <Input value={line.description} onChange={(e) => updateWorkLine(line.id, "description", e.target.value)} placeholder="e.g. Indicator repair, Tyre replacement..." className="text-sm" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Category</Label>
+                              <Select value={line.jobTypeId} onValueChange={(v) => updateWorkLine(line.id, "jobTypeId", v)}>
+                                <SelectTrigger className="text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                                 <SelectContent>
-                                  {labourRates.map((r) => (
-                                    <SelectItem key={r.id} value={r.id}>{r.name} (£{Number(r.cost).toFixed(2)}/unit)</SelectItem>
-                                  ))}
+                                  {workCategories?.map((wc) => (<SelectItem key={wc.id} value={wc.id}>{wc.name}</SelectItem>))}
+                                  {!workCategories?.length && (<SelectItem value="none" disabled>No categories</SelectItem>)}
                                 </SelectContent>
                               </Select>
-                              <div className="flex items-center gap-1">
-                                <Label className="text-xs whitespace-nowrap">Units</Label>
-                                <Input
-                                  type="number"
-                                  min={0.5}
-                                  step={0.5}
-                                  value={charge.units}
-                                  onChange={(e) => updateLabourCharge(line.id, charge.id, "units", Number(e.target.value) || 1)}
-                                  className="w-20 h-8 text-sm"
-                                />
-                              </div>
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                × £{charge.costPerUnit.toFixed(2)}
-                              </span>
-                              <span className="text-sm font-semibold whitespace-nowrap ml-auto">
-                                £{charge.total.toFixed(2)}
-                              </span>
-                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeLabourCharge(line.id, charge.id)}>
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Work Code</Label>
+                              <Select value={line.workCodeId} onValueChange={(v) => updateWorkLine(line.id, "workCodeId", v)} disabled={!line.jobTypeId || codesForCategory.length === 0}>
+                                <SelectTrigger className="text-sm"><SelectValue placeholder={!line.jobTypeId ? "Select category first" : codesForCategory.length === 0 ? "No codes" : "Select"} /></SelectTrigger>
+                                <SelectContent>
+                                  {codesForCategory.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Qty</Label>
+                              <Input type="text" inputMode="numeric" value={line.quantity} onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) updateWorkLine(line.id, "quantity", Number(v) || 1); }} className="text-sm" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Unit £</Label>
+                              <Input type="text" inputMode="decimal" value={line.unitPrice} onChange={(e) => { const v = e.target.value; if (/^\d*\.?\d{0,2}$/.test(v)) updateWorkLine(line.id, "unitPrice", Number(v) || 0); }} className="text-sm" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">VAT ({line.vatPercent}%)</Label>
+                              <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{lineVat(line).toFixed(2)}</div>
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Total</Label>
+                              <div className="flex items-center h-10 px-3 rounded-md bg-muted text-sm font-medium">£{linePartsTotal(line).toFixed(2)}</div>
+                            </div>
+                          </div>
 
-            {/* Grand total bar */}
-            <div className="rounded-lg bg-primary/10 px-4 py-3 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Parts & Materials</span>
-                <span className="text-sm font-medium font-mono">£{(grandTotal - totalLabour).toFixed(2)}</span>
-              </div>
-              {totalLabour > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Labour</span>
-                  <span className="text-sm font-medium font-mono">£{totalLabour.toFixed(2)}</span>
+                          {/* Labour charges for this work item */}
+                          {line.labourCharges.length > 0 && (
+                            <div className="mt-2 ml-2 space-y-2 border-l-2 border-primary/20 pl-3">
+                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> Labour Charges
+                              </span>
+                              {line.labourCharges.map((charge) => (
+                                <div key={charge.id} className="flex items-center gap-2">
+                                  <Select value={charge.labourRateId} onValueChange={(v) => updateLabourCharge(line.id, charge.id, "labourRateId", v)}>
+                                    <SelectTrigger className="text-sm w-[280px] h-8"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      {labourRates.map((r) => (
+                                        <SelectItem key={r.id} value={r.id}>{r.name} (£{Number(r.cost).toFixed(2)}/unit)</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <div className="flex items-center gap-1">
+                                    <Label className="text-xs whitespace-nowrap">Units</Label>
+                                    <Input
+                                      type="number"
+                                      min={0.5}
+                                      step={0.5}
+                                      value={charge.units}
+                                      onChange={(e) => updateLabourCharge(line.id, charge.id, "units", Number(e.target.value) || 1)}
+                                      className="w-20 h-8 text-sm"
+                                    />
+                                  </div>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    × £{charge.costPerUnit.toFixed(2)}
+                                  </span>
+                                  <span className="text-sm font-semibold whitespace-nowrap ml-auto">
+                                    £{charge.total.toFixed(2)}
+                                  </span>
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeLabourCharge(line.id, charge.id)}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
-              )}
-              <Separator className="my-1" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">Estimated Total (inc. VAT)</span>
-                <span className="text-lg font-bold font-mono">£{grandTotal.toFixed(2)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
+                {/* Grand total bar */}
+                <div className="rounded-lg bg-primary/10 px-4 py-3 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Parts & Materials</span>
+                    <span className="text-sm font-medium font-mono">£{(grandTotal - totalLabour).toFixed(2)}</span>
+                  </div>
+                  {totalLabour > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Labour</span>
+                      <span className="text-sm font-medium font-mono">£{totalLabour.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <Separator className="my-1" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Estimated Total (inc. VAT)</span>
+                    <span className="text-lg font-bold font-mono">£{grandTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Job Activity History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <JobHistory jobId={job.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

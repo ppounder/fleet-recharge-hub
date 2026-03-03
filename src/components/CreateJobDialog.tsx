@@ -21,6 +21,7 @@ import { useLabourRates } from "@/hooks/useLabourRates";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Trash2, PlusCircle, Sparkles, Loader2, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -88,6 +89,7 @@ export function CreateJobDialog() {
   const lastParsedDesc = useRef("");
 
   const createJob = useCreateJob();
+  const logActivity = useLogJobActivity();
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const { data: serviceProviders, isLoading: loadingProviders } = useServiceProviders();
@@ -354,6 +356,11 @@ export function CreateJobDialog() {
           const { error: labourError } = await supabase.from("work_item_labour").insert(labourInserts);
           if (labourError) throw labourError;
         }
+      }
+
+      // Log activity
+      if (user) {
+        logActivity.mutate({ job_id: jobData.id, user_id: user.id, user_name: profile?.full_name || "Unknown", action: "job_created", details: { vehicle_reg: selectedVehicle?.registration || "", item_count: validLines.length, total: grandTotal } });
       }
 
       toast({ title: "Booking created", description: `${jobNumber} created with ${validLines.length} work line(s) — Total: £${grandTotal.toFixed(2)}` });
