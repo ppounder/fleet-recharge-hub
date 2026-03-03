@@ -1100,21 +1100,10 @@ export default function JobDetail() {
                                       className="w-20 h-8 text-sm"
                                     />
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <Label className="text-xs whitespace-nowrap">Unit £</Label>
-                                    <Input
-                                      type="text"
-                                      inputMode="decimal"
-                                      value={charge.unitPrice}
-                                      onChange={(e) => { const v = e.target.value; if (/^\d*\.?\d{0,2}$/.test(v)) updatePartCharge(line.id, charge.id, "unitPrice", Number(v) || 0); }}
-                                      className="w-24 h-8 text-sm"
-                                    />
-                                  </div>
-                                  {charge.vatPercent > 0 && (
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                      VAT {charge.vatPercent}%
-                                    </span>
-                                  )}
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    × £{charge.unitPrice.toFixed(2)}
+                                    {charge.vatPercent > 0 && ` (VAT ${charge.vatPercent}%)`}
+                                  </span>
                                   <span className="text-sm font-semibold whitespace-nowrap ml-auto">
                                     £{charge.total.toFixed(2)}
                                   </span>
