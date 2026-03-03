@@ -101,17 +101,25 @@ export const rechargeReasonCodes: Record<string, string> = {
   "fuel-contamination": "Fuel Contamination",
 };
 
-export const jobStatusSteps = [
+export const authStatusSteps = [
   "booked",
   "confirmed",
   "estimated",
   "approved",
+] as const;
+
+export const workStatusSteps = [
   "not-started",
   "in-progress",
   "awaiting-sign-off",
   "completed",
   "invoiced",
   "closed",
+] as const;
+
+export const jobStatusSteps = [
+  ...authStatusSteps,
+  ...workStatusSteps,
 ] as const;
 
 export const statusColors: Record<string, string> = {
