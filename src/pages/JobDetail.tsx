@@ -433,6 +433,12 @@ export default function JobDetail() {
   };
 
   // ── Part charge helpers ──
+  const lookupPartPrice = (partId: string): number => {
+    if (!allMenuItemParts) return 0;
+    const mip = allMenuItemParts.find((m) => m.part_id === partId);
+    return mip?.unit_price ?? 0;
+  };
+
   const addPartCharge = (lineId: string) => {
     if (!parts?.length) {
       toast({ title: "No parts", description: "No parts configured for this provider.", variant: "destructive" });
@@ -440,15 +446,17 @@ export default function JobDetail() {
     }
     const firstPart = parts[0];
     const vatPc = getPartVatPercent(firstPart.id);
+    const price = lookupPartPrice(firstPart.id);
+    const net = price * 1;
     const charge: PartCharge = {
       id: crypto.randomUUID(),
       partId: firstPart.id,
       partDescription: firstPart.description,
       partNumber: firstPart.part_number,
-      unitPrice: 0,
+      unitPrice: price,
       quantity: 1,
       vatPercent: vatPc,
-      total: 0,
+      total: net + (net * vatPc / 100),
     };
     setWorkLines((prev) =>
       prev.map((l) => l.id === lineId ? { ...l, partCharges: [...l.partCharges, charge], dirty: true } : l)
@@ -468,6 +476,7 @@ export default function JobDetail() {
               updated.partDescription = part.description;
               updated.partNumber = part.part_number;
               updated.vatPercent = getPartVatPercent(part.id);
+              updated.unitPrice = lookupPartPrice(part.id);
             }
             const net = updated.unitPrice * updated.quantity;
             updated.total = net + (net * updated.vatPercent / 100);
@@ -1087,7 +1096,7 @@ export default function JobDetail() {
                                     <SelectTrigger className="text-sm w-[280px] h-8"><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                       {parts?.map((p) => (
-                                        <SelectItem key={p.id} value={p.id}>{p.description} (£{charge.unitPrice.toFixed(2)})</SelectItem>
+                                        <SelectItem key={p.id} value={p.id}>{p.description} (£{lookupPartPrice(p.id).toFixed(2)})</SelectItem>
                                       ))}
                                     </SelectContent>
                                   </Select>
