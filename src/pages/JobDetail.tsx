@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle, Wrench } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { JobHistory } from "@/components/JobHistory";
@@ -428,6 +428,65 @@ export default function JobDetail() {
   const removeLabourCharge = (lineId: string, chargeId: string) => {
     setWorkLines((prev) =>
       prev.map((l) => l.id === lineId ? { ...l, labourCharges: l.labourCharges.filter((c) => c.id !== chargeId), dirty: true } : l)
+    );
+  };
+
+  // ── Part charge helpers ──
+  const addPartCharge = (lineId: string) => {
+    if (!parts?.length) {
+      toast({ title: "No parts", description: "No parts configured for this provider.", variant: "destructive" });
+      return;
+    }
+    const firstPart = parts[0];
+    const vatPc = getPartVatPercent(firstPart.id);
+    const charge: PartCharge = {
+      id: crypto.randomUUID(),
+      partId: firstPart.id,
+      partDescription: firstPart.description,
+      partNumber: firstPart.part_number,
+      unitPrice: 0,
+      quantity: 1,
+      vatPercent: vatPc,
+      total: 0,
+    };
+    setWorkLines((prev) =>
+      prev.map((l) => l.id === lineId ? { ...l, partCharges: [...l.partCharges, charge], dirty: true } : l)
+    );
+  };
+
+  const updatePartCharge = (lineId: string, chargeId: string, field: string, value: any) => {
+    setWorkLines((prev) =>
+      prev.map((l) => {
+        if (l.id !== lineId) return l;
+        const charges = l.partCharges.map((c) => {
+          if (c.id !== chargeId) return c;
+          const updated = { ...c, [field]: value };
+          if (field === "partId") {
+            const part = parts?.find((p) => p.id === value);
+            if (part) {
+              updated.partDescription = part.description;
+              updated.partNumber = part.part_number;
+              updated.vatPercent = getPartVatPercent(part.id);
+            }
+            const net = updated.unitPrice * updated.quantity;
+            updated.total = net + (net * updated.vatPercent / 100);
+          }
+          if (field === "quantity" || field === "unitPrice") {
+            const qty = field === "quantity" ? Number(value) : updated.quantity;
+            const price = field === "unitPrice" ? Number(value) : updated.unitPrice;
+            const net = qty * price;
+            updated.total = net + (net * updated.vatPercent / 100);
+          }
+          return updated;
+        });
+        return { ...l, partCharges: charges, dirty: true };
+      })
+    );
+  };
+
+  const removePartCharge = (lineId: string, chargeId: string) => {
+    setWorkLines((prev) =>
+      prev.map((l) => l.id === lineId ? { ...l, partCharges: l.partCharges.filter((c) => c.id !== chargeId), dirty: true } : l)
     );
   };
 
@@ -921,6 +980,11 @@ export default function JobDetail() {
                                   <Clock className="w-3.5 h-3.5" /> Labour
                                 </Button>
                               )}
+                              {isProvider && (
+                                <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => addPartCharge(line.id)}>
+                                  <Wrench className="w-3.5 h-3.5" /> Parts
+                                </Button>
+                              )}
                               <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
                                 <Trash2 className="w-3.5 h-3.5" />
                               </Button>
@@ -1012,15 +1076,51 @@ export default function JobDetail() {
                           {/* Part charges for this work item */}
                           {line.partCharges.length > 0 && (
                             <div className="mt-2 ml-2 space-y-2 border-l-2 border-primary/20 pl-3">
-                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Parts & Materials</span>
-                              {line.partCharges.map((p) => (
-                                <div key={p.id} className="flex items-center gap-2 text-sm">
-                                  <span className="text-xs font-mono text-muted-foreground w-[100px] truncate">{p.partNumber}</span>
-                                  <span className="text-xs text-muted-foreground flex-1 truncate">{p.partDescription}</span>
-                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                    {p.quantity} × £{p.unitPrice.toFixed(2)}{p.vatPercent > 0 ? ` (inc VAT ${p.vatPercent}%)` : ""}
+                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                                <Wrench className="w-3 h-3" /> Parts & Materials
+                              </span>
+                              {line.partCharges.map((charge) => (
+                                <div key={charge.id} className="flex items-center gap-2">
+                                  <Select value={charge.partId} onValueChange={(v) => updatePartCharge(line.id, charge.id, "partId", v)}>
+                                    <SelectTrigger className="text-sm w-[280px] h-8"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      {parts?.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>{p.description} (£{0})</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <div className="flex items-center gap-1">
+                                    <Label className="text-xs whitespace-nowrap">Qty</Label>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      step={1}
+                                      value={charge.quantity}
+                                      onChange={(e) => updatePartCharge(line.id, charge.id, "quantity", Number(e.target.value) || 1)}
+                                      className="w-20 h-8 text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Label className="text-xs whitespace-nowrap">Unit £</Label>
+                                    <Input
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={charge.unitPrice}
+                                      onChange={(e) => { const v = e.target.value; if (/^\d*\.?\d{0,2}$/.test(v)) updatePartCharge(line.id, charge.id, "unitPrice", Number(v) || 0); }}
+                                      className="w-24 h-8 text-sm"
+                                    />
+                                  </div>
+                                  {charge.vatPercent > 0 && (
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      VAT {charge.vatPercent}%
+                                    </span>
+                                  )}
+                                  <span className="text-sm font-semibold whitespace-nowrap ml-auto">
+                                    £{charge.total.toFixed(2)}
                                   </span>
-                                  <span className="text-sm font-semibold whitespace-nowrap ml-auto">£{p.total.toFixed(2)}</span>
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removePartCharge(line.id, charge.id)}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
                                 </div>
                               ))}
                             </div>
