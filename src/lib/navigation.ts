@@ -25,14 +25,15 @@ export interface NavItem {
   href: string;
   icon: React.ElementType;
   badge?: number;
+  badgeKey?: string;
   children?: NavItem[];
 }
 
 export const navItemsByRole: Record<UserRole, NavItem[]> = {
   "fleet-manager": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
-    { label: "Approvals", href: "/approvals", icon: Shield, badge: 12 },
-    { label: "Bookings/Jobs", href: "/jobs", icon: Wrench },
+    { label: "Approvals", href: "/approvals", icon: Shield, badgeKey: "approvals" },
+    { label: "Bookings/Jobs", href: "/jobs", icon: Wrench, badgeKey: "openJobs" },
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
     { label: "Fleet", href: "/fleet", icon: Car },
     { label: "Suppliers", href: "/suppliers", icon: Truck },

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppContext } from "@/contexts/AppContext";
 import { navItemsByRole, NavItem, UserRole } from "@/lib/navigation";
+import { useJobs } from "@/hooks/useJobs";
 import { ChevronLeft, ChevronRight, ChevronDown, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,10 @@ const roleLabels: Record<UserRole, string> = {
   customer: "Customer",
 };
 
-function NavItemLink({ item, sidebarOpen, isActive }: { item: NavItem; sidebarOpen: boolean; isActive: boolean }) {
+function NavItemLink({ item, sidebarOpen, isActive, badgeCounts }: { item: NavItem; sidebarOpen: boolean; isActive: boolean; badgeCounts: Record<string, number> }) {
+  const badgeValue = item.badgeKey ? badgeCounts[item.badgeKey] : item.badge;
+  const showBadge = badgeValue != null && badgeValue > 0;
+
   return (
     <Link
       to={item.href}
@@ -25,12 +29,12 @@ function NavItemLink({ item, sidebarOpen, isActive }: { item: NavItem; sidebarOp
     >
       <item.icon className="w-4 h-4 shrink-0" />
       {sidebarOpen && <span className="animate-fade-in">{item.label}</span>}
-      {item.badge && sidebarOpen && (
+      {showBadge && sidebarOpen && (
         <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground text-[10px] px-1.5 py-0 h-5">
-          {item.badge}
+          {badgeValue}
         </Badge>
       )}
-      {item.badge && !sidebarOpen && (
+      {showBadge && !sidebarOpen && (
         <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-sidebar-primary" />
       )}
     </Link>
@@ -42,6 +46,15 @@ export function AppSidebar() {
   const location = useLocation();
   const navItems = navItemsByRole[currentRole];
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const { data: jobs } = useJobs();
+
+  const badgeCounts = useMemo(() => {
+    if (!jobs) return {};
+    return {
+      approvals: jobs.filter((j) => j.status === "estimated").length,
+      openJobs: jobs.filter((j) => j.status !== "closed").length,
+    };
+  }, [jobs]);
 
   const toggleMenu = (label: string) => {
     setExpandedMenus((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -95,7 +108,7 @@ export function AppSidebar() {
                 {expanded && (
                   <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
                     {item.children.map((child) => (
-                      <NavItemLink key={child.href} item={child} sidebarOpen={sidebarOpen} isActive={location.pathname === child.href} />
+                      <NavItemLink key={child.href} item={child} sidebarOpen={sidebarOpen} isActive={location.pathname === child.href} badgeCounts={badgeCounts} />
                     ))}
                   </div>
                 )}
@@ -106,12 +119,12 @@ export function AppSidebar() {
           // For collapsed sidebar with children, just show the icon
           if (item.children && !sidebarOpen) {
             return (
-              <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive || isChildActive(item)} />
+              <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive || isChildActive(item)} badgeCounts={badgeCounts} />
             );
           }
 
           return (
-            <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive} />
+            <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive} badgeCounts={badgeCounts} />
           );
         })}
       </nav>
