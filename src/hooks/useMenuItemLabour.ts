@@ -37,7 +37,10 @@ export function useCreateMenuItemLabour() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["menu_item_labour", vars.menu_item_id] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["menu_item_labour", vars.menu_item_id] });
+      qc.invalidateQueries({ queryKey: ["menu_item_labour_bulk"] });
+    },
   });
 }
 
@@ -54,7 +57,10 @@ export function useUpdateMenuItemLabour() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["menu_item_labour", vars.menu_item_id] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["menu_item_labour", vars.menu_item_id] });
+      qc.invalidateQueries({ queryKey: ["menu_item_labour_bulk"] });
+    },
   });
 }
 
@@ -65,6 +71,9 @@ export function useDeleteMenuItemLabour() {
       const { error } = await supabase.from("menu_item_labour").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["menu_item_labour", vars.menu_item_id] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["menu_item_labour", vars.menu_item_id] });
+      qc.invalidateQueries({ queryKey: ["menu_item_labour_bulk"] });
+    },
   });
 }

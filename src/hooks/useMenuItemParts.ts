@@ -33,7 +33,10 @@ export function useCreateMenuItemPart() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["menu_item_parts", vars.menu_item_id] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["menu_item_parts", vars.menu_item_id] });
+      qc.invalidateQueries({ queryKey: ["menu_item_parts_bulk"] });
+    },
   });
 }
 
@@ -46,7 +49,10 @@ export function useUpdateMenuItemPart() {
       if (error) throw error;
       return { menu_item_id };
     },
-    onSuccess: (result) => qc.invalidateQueries({ queryKey: ["menu_item_parts", result.menu_item_id] }),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["menu_item_parts", result.menu_item_id] });
+      qc.invalidateQueries({ queryKey: ["menu_item_parts_bulk"] });
+    },
   });
 }
 
@@ -58,6 +64,9 @@ export function useDeleteMenuItemPart() {
       if (error) throw error;
       return { menu_item_id: row.menu_item_id };
     },
-    onSuccess: (result) => qc.invalidateQueries({ queryKey: ["menu_item_parts", result.menu_item_id] }),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["menu_item_parts", result.menu_item_id] });
+      qc.invalidateQueries({ queryKey: ["menu_item_parts_bulk"] });
+    },
   });
 }
