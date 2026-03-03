@@ -35,6 +35,16 @@ interface LabourCharge {
   total: number;
 }
 
+interface PartCharge {
+  part_id: string;
+  part_description: string;
+  part_number: string;
+  unit_price: number;
+  quantity: number;
+  vat_percent: number;
+  total: number;
+}
+
 interface WorkLine {
   id: string;
   jobTypeId: string;
@@ -46,6 +56,7 @@ interface WorkLine {
   rechargeable: boolean;
   rechargeReason: string;
   labourCharges: LabourCharge[];
+  partCharges: PartCharge[];
   menuItemId: string | null;
 }
 
@@ -60,6 +71,7 @@ const emptyWorkLine = (): WorkLine => ({
   rechargeable: false,
   rechargeReason: "",
   labourCharges: [],
+  partCharges: [],
   menuItemId: null,
 });
 
@@ -118,6 +130,30 @@ export function CreateJobDialog() {
     },
   });
 
+  // Bulk fetch menu_item_parts + parts for this provider
+  const { data: allMenuItemParts } = useQuery({
+    queryKey: ["menu_item_parts_bulk_create", providerId, profile?.fleet_id, menuItemIds],
+    enabled: menuItemIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("menu_item_parts")
+        .select("*")
+        .in("menu_item_id", menuItemIds);
+      if (error) throw error;
+      return data as { id: string; menu_item_id: string; part_id: string; unit_price: number; quantity: number }[];
+    },
+  });
+
+  const { data: providerParts } = useQuery({
+    queryKey: ["parts", providerId],
+    enabled: !!providerId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("parts").select("*").eq("provider_id", providerId);
+      if (error) throw error;
+      return data as { id: string; description: string; part_number: string; vat_band_id: string | null }[];
+    },
+  });
+
   // Helper to build labour charges from a menu item
   const buildLabourCharges = useCallback(
     (menuItemId: string): LabourCharge[] => {
@@ -136,6 +172,41 @@ export function CreateJobDialog() {
         });
     },
     [allMenuItemLabour, labourRates]
+  );
+
+  // Helper to get VAT percent for a part
+  const getPartVatPercent = useCallback(
+    (partId: string): number => {
+      const part = providerParts?.find((p) => p.id === partId);
+      if (!part?.vat_band_id || !vatBands) return 0;
+      const band = vatBands.find((v) => v.id === part.vat_band_id);
+      return band ? Number(band.percentage) : 0;
+    },
+    [providerParts, vatBands]
+  );
+
+  // Helper to build part charges from a menu item
+  const buildPartCharges = useCallback(
+    (menuItemId: string): PartCharge[] => {
+      if (!allMenuItemParts || !providerParts) return [];
+      return allMenuItemParts
+        .filter((mip) => mip.menu_item_id === menuItemId)
+        .map((mip) => {
+          const part = providerParts.find((p) => p.id === mip.part_id);
+          const vatPc = getPartVatPercent(mip.part_id);
+          const net = mip.unit_price * mip.quantity;
+          return {
+            part_id: mip.part_id,
+            part_description: part?.description || "Unknown",
+            part_number: part?.part_number || "",
+            unit_price: mip.unit_price,
+            quantity: mip.quantity,
+            vat_percent: vatPc,
+            total: net + (net * vatPc / 100),
+          };
+        });
+    },
+    [allMenuItemParts, providerParts, getPartVatPercent]
   );
   // ── VAT & price helpers (unchanged logic) ──────────────────────
   const getVatPercent = useCallback(
@@ -204,7 +275,7 @@ export function CreateJobDialog() {
           const matchedCode = workCodes?.find((c) => c.name.toLowerCase() === (l.workCode || "").toLowerCase() && (!catId || c.work_category_id === catId));
           const codeId = matchedCode?.id || "";
           const menuMatch = findMenuPrice(catId, codeId, menuItems);
-          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", labourCharges: menuMatch ? buildLabourCharges(menuMatch.id) : [], menuItemId: menuMatch?.id || null };
+          return { id: crypto.randomUUID(), jobTypeId: catId, workCodeId: codeId, description: l.description || "", quantity: l.quantity || 1, unitPrice: l.unitPrice || 0, vatPercent: getVatPercent(catId, codeId), rechargeable: false, rechargeReason: "", labourCharges: menuMatch ? buildLabourCharges(menuMatch.id) : [], partCharges: menuMatch ? buildPartCharges(menuMatch.id) : [], menuItemId: menuMatch?.id || null };
         });
         const newLines = applyMenuPrices(parsed, menuItems);
         setWorkLines((prev) => {
@@ -247,10 +318,12 @@ export function CreateJobDialog() {
               updated.unitPrice = Number(match.unit_price);
               updated.menuItemId = match.id;
               updated.labourCharges = buildLabourCharges(match.id);
+              updated.partCharges = buildPartCharges(match.id);
               if (match.description && !l.description) updated.description = match.description;
             } else {
               updated.menuItemId = null;
               updated.labourCharges = [];
+              updated.partCharges = [];
             }
           }
           if (field === "workCodeId") {
@@ -260,22 +333,25 @@ export function CreateJobDialog() {
               updated.unitPrice = Number(match.unit_price);
               updated.menuItemId = match.id;
               updated.labourCharges = buildLabourCharges(match.id);
+              updated.partCharges = buildPartCharges(match.id);
               if (match.description && !l.description) updated.description = match.description;
             } else {
               updated.menuItemId = null;
               updated.labourCharges = [];
+              updated.partCharges = [];
             }
           }
           return updated;
         })
       );
     },
-    [menuItems, getVatPercent, findMenuPrice, buildLabourCharges]
+    [menuItems, getVatPercent, findMenuPrice, buildLabourCharges, buildPartCharges]
   );
 
   const lineLabourTotal = (line: WorkLine) => line.labourCharges.reduce((sum, lc) => sum + lc.total, 0);
+  const linePartChargesTotal = (line: WorkLine) => line.partCharges.reduce((sum, pc) => sum + pc.total, 0);
   const lineVat = (line: WorkLine) => line.quantity * line.unitPrice * (line.vatPercent / 100);
-  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineLabourTotal(line) + lineVat(line);
+  const lineTotal = (line: WorkLine) => line.quantity * line.unitPrice + lineLabourTotal(line) + linePartChargesTotal(line) + lineVat(line);
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
 
   const resetForm = () => {
@@ -355,6 +431,30 @@ export function CreateJobDialog() {
         if (labourInserts.length > 0) {
           const { error: labourError } = await supabase.from("work_item_labour").insert(labourInserts);
           if (labourError) throw labourError;
+        }
+
+        // Insert part charges for each work item
+        const partInserts: any[] = [];
+        validLines.forEach((l, idx) => {
+          const workItemId = insertedItems?.[idx]?.id;
+          if (workItemId && l.partCharges.length > 0) {
+            l.partCharges.forEach((pc) => {
+              partInserts.push({
+                work_item_id: workItemId,
+                part_id: pc.part_id,
+                part_description: pc.part_description,
+                part_number: pc.part_number,
+                unit_price: pc.unit_price,
+                quantity: pc.quantity,
+                vat_percent: pc.vat_percent,
+                total: pc.total,
+              });
+            });
+          }
+        });
+        if (partInserts.length > 0) {
+          const { error: partError } = await supabase.from("work_item_parts").insert(partInserts);
+          if (partError) throw partError;
         }
       }
 
@@ -584,6 +684,20 @@ export function CreateJobDialog() {
                                 <div key={lcIdx} className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded px-3 py-1.5">
                                   <span>{lc.labour_rate_name}</span>
                                   <span className="font-mono">{lc.units} × £{lc.cost_per_unit.toFixed(2)} = £{lc.total.toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {/* Part charges (read-only) */}
+                        {line.partCharges.length > 0 && (
+                          <div className="border-t border-border pt-2 mt-1">
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Parts & Materials</span>
+                            <div className="mt-1 space-y-1">
+                              {line.partCharges.map((pc, pcIdx) => (
+                                <div key={pcIdx} className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded px-3 py-1.5">
+                                  <span>{pc.part_description}{pc.part_number ? ` (${pc.part_number})` : ""}</span>
+                                  <span className="font-mono">{pc.quantity} × £{pc.unit_price.toFixed(2)} + {pc.vat_percent}% VAT = £{pc.total.toFixed(2)}</span>
                                 </div>
                               ))}
                             </div>
