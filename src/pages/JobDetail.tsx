@@ -870,10 +870,10 @@ export default function JobDetail() {
                             <div className="ml-4 space-y-1">
                               {line.labourCharges.map((c) => (
                                 <div key={c.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className="font-mono w-[100px] truncate">LABOUR</span>
-                                  <span>{c.labourRateName}</span>
-                                  <span>{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
-                                  <span className="font-semibold text-foreground ml-auto">£{c.total.toFixed(2)}</span>
+                                  <span className="font-mono w-[100px] shrink-0 truncate">LABOUR</span>
+                                  <span className="flex-1 truncate">{c.labourRateName}</span>
+                                  <span className="whitespace-nowrap">{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
+                                  <span className="font-semibold text-foreground whitespace-nowrap">£{c.total.toFixed(2)}</span>
                                 </div>
                               ))}
                             </div>
@@ -882,10 +882,10 @@ export default function JobDetail() {
                             <div className="ml-4 space-y-1">
                               {line.partCharges.map((p) => (
                                 <div key={p.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className="font-mono">{p.partNumber}</span>
-                                  <span>{p.partDescription}</span>
-                                  <span>{p.quantity} × £{p.unitPrice.toFixed(2)}{p.vatPercent > 0 ? ` (inc VAT ${p.vatPercent}%)` : ""}</span>
-                                  <span className="font-semibold text-foreground ml-auto">£{p.total.toFixed(2)}</span>
+                                  <span className="font-mono w-[100px] shrink-0 truncate">{p.partNumber}</span>
+                                  <span className="flex-1 truncate">{p.partDescription}</span>
+                                  <span className="whitespace-nowrap">{p.quantity} × £{p.unitPrice.toFixed(2)}{p.vatPercent > 0 ? ` (inc VAT ${p.vatPercent}%)` : ""}</span>
+                                  <span className="font-semibold text-foreground whitespace-nowrap">£{p.total.toFixed(2)}</span>
                                 </div>
                               ))}
                             </div>
