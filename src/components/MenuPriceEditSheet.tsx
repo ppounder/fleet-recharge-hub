@@ -214,7 +214,6 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
     const rate = getRateName(ml.labour_rate_id);
     return sum + (rate ? rate.cost * ml.units : 0);
   }, 0);
-  const labourVat = labourTotal * serviceVatPc / 100;
 
   // Calculate parts total (inc VAT)
   const partsNetTotal = (menuItemParts || []).reduce((sum, mp) => {
@@ -227,7 +226,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
   }, 0);
 
   const totalNet = basePrice + labourTotal + partsNetTotal;
-  const totalVat = baseVat + labourVat + partsVatTotal;
+  const totalVat = baseVat + partsVatTotal;
   const grandTotal = totalNet + totalVat;
 
   const catLabel = workCategories?.find((j) => j.id === jobType)?.name || jobType;
@@ -395,9 +394,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
 
               {menuItemLabour && menuItemLabour.length > 0 && (
                 <div className="flex justify-end text-sm gap-4">
-                  <span className="text-muted-foreground">Net: <span className="font-mono font-medium text-foreground">£{labourTotal.toFixed(2)}</span></span>
-                  <span className="text-muted-foreground">VAT ({serviceVatPc}%): <span className="font-mono font-medium text-foreground">£{labourVat.toFixed(2)}</span></span>
-                  <span className="text-muted-foreground">Total: <span className="font-mono font-medium text-foreground">£{(labourTotal + labourVat).toFixed(2)}</span></span>
+                  <span className="text-muted-foreground">Total: <span className="font-mono font-medium text-foreground">£{labourTotal.toFixed(2)}</span></span>
                 </div>
               )}
             </CardContent>
@@ -555,7 +552,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                   <span className="font-mono">£{partsNetTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>VAT ({serviceVatPc}% on base+labour{partsVatTotal > 0 ? " + parts VAT" : ""})</span>
+                  <span>VAT ({serviceVatPc}% on base{partsVatTotal > 0 ? " + parts VAT" : ""})</span>
                   <span className="font-mono">£{totalVat.toFixed(2)}</span>
                 </div>
                 <Separator />

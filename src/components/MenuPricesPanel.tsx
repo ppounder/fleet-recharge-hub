@@ -93,7 +93,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
       return sum + (rate ? row.units * rate.cost : 0);
     }, 0);
 
-    const baseAndLabourVat = (basePrice + labourTotal) * serviceVatPc / 100;
+    const baseVat = basePrice * serviceVatPc / 100;
 
     const partRows = allMenuItemParts?.filter((p) => p.menu_item_id === item.id) || [];
     const partsTotal = partRows.reduce((sum, row) => {
@@ -103,7 +103,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
       return sum + net + (net * vatPc / 100);
     }, 0);
 
-    return basePrice + labourTotal + baseAndLabourVat + partsTotal;
+    return basePrice + labourTotal + baseVat + partsTotal;
   };
 
   const [newJobType, setNewJobType] = useState("");
