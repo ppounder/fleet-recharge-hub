@@ -1,23 +1,43 @@
-import { Car, Wrench, CreditCard, FileText, Clock } from "lucide-react";
+import { Car, Wrench, CreditCard, FileText } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
 import { useJobs } from "@/hooks/useJobs";
-import { useRecharges } from "@/hooks/useRecharges";
 import { useVehicles } from "@/hooks/useVehicles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function CustomerDashboard() {
   const { data: jobs = [], isLoading: jobsLoading } = useJobs();
-  const { data: recharges = [], isLoading: rechargesLoading } = useRecharges();
   const { data: vehicles = [], isLoading: vehiclesLoading } = useVehicles();
+
+  // Fetch rechargeable work items with labour/parts for accurate totals
+  const { data: rechargeItems = [], isLoading: rechargesLoading } = useQuery({
+    queryKey: ["customer_recharge_summary"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("work_items")
+        .select("id, total, work_item_labour(total), work_item_parts(unit_price, quantity, vat_percent)")
+        .eq("rechargeable", true);
+      if (error) throw error;
+      return (data || []).map((item: any) => {
+        const labourTotal = (item.work_item_labour || []).reduce((s: number, l: any) => s + Number(l.total), 0);
+        const partsNet = (item.work_item_parts || []).reduce((s: number, p: any) => s + Number(p.unit_price) * Number(p.quantity), 0);
+        const partsVat = (item.work_item_parts || []).reduce((s: number, p: any) => {
+          const net = Number(p.unit_price) * Number(p.quantity);
+          return s + net * (Number(p.vat_percent) / 100);
+        }, 0);
+        return Number(item.total) + labourTotal + partsNet + partsVat;
+      });
+    },
+  });
 
   const isLoading = jobsLoading || rechargesLoading || vehiclesLoading;
   const activeJobs = jobs.filter((j) => !["closed", "invoiced"].includes(j.status));
-  const pendingRecharges = recharges.filter((r) => ["pending-review", "approved"].includes(r.status));
+  const rechargeTotal = rechargeItems.reduce((s, t) => s + t, 0);
 
   if (isLoading) {
     return (
@@ -37,7 +57,7 @@ export function CustomerDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="My Vehicles" value={vehicles.length} icon={Car} />
         <StatCard label="Active Work" value={activeJobs.length} icon={Wrench} changeType="neutral" />
-        <StatCard label="Pending Recharges" value={`£${pendingRecharges.reduce((s, r) => s + Number(r.cost), 0).toLocaleString()}`} icon={CreditCard} change={`${pendingRecharges.length} items`} changeType="negative" iconColor="bg-warning/10" />
+        <StatCard label="Recharges" value={`£${rechargeTotal.toFixed(2)}`} icon={CreditCard} change={`${rechargeItems.length} items`} changeType="negative" />
         <StatCard label="Total Jobs" value={jobs.length} icon={FileText} changeType="neutral" />
       </div>
 
