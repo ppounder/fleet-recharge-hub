@@ -130,10 +130,10 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
           </div>
           <div className="space-y-2">
             <Label>Customer</Label>
-            <Select value={customerId} onValueChange={setCustomerId}>
+            <Select value={customerId || "__none__"} onValueChange={(v) => setCustomerId(v === "__none__" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {customers?.map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
