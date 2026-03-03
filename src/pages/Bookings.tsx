@@ -4,61 +4,48 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
+import { CreateJobDialog } from "@/components/CreateJobDialog";
 import { useJobs, useUpdateJob } from "@/hooks/useJobs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wrench, Loader2 } from "lucide-react";
+import { ClipboardList, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useAppContext } from "@/contexts/AppContext";
-import { jobStatusSteps } from "@/lib/mock-data";
-import { CreateJobDialog } from "@/components/CreateJobDialog";
 
-const activeJobStatuses = ["approved", "not-started", "in-progress", "awaiting-sign-off", "completed", "invoiced"] as const;
+const bookingStatuses = ["booked", "confirmed"] as const;
 
-export default function Jobs() {
+export default function Bookings() {
   const { data: jobs, isLoading } = useJobs();
   const navigate = useNavigate();
   const updateJob = useUpdateJob();
   const { toast } = useToast();
-  const { currentRole } = useAppContext();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const isFleetManager = currentRole === "fleet-manager";
-
-  // Fleet managers see only approved+ (not closed); other roles see all non-closed
-  const baseFiltered = isFleetManager
-    ? jobs?.filter((j) => activeJobStatuses.includes(j.status as any)) ?? []
-    : jobs?.filter((j) => j.status !== "closed") ?? [];
-
-  const filtered = baseFiltered.filter((j) => statusFilter === "all" || j.status === statusFilter);
-
-  const filterStatuses = isFleetManager ? [...activeJobStatuses] : jobStatusSteps.filter((s) => s !== "closed");
+  const filtered = jobs
+    ?.filter((j) => bookingStatuses.includes(j.status as any))
+    ?.filter((j) => statusFilter === "all" || j.status === statusFilter) ?? [];
 
   const advanceStatus = async (jobId: string, currentStatus: string) => {
-    const idx = jobStatusSteps.indexOf(currentStatus as any);
-    if (idx < 0 || idx >= jobStatusSteps.length - 1) return;
-    const nextStatus = jobStatusSteps[idx + 1];
+    const next = currentStatus === "booked" ? "confirmed" : currentStatus === "confirmed" ? "estimated" : null;
+    if (!next) return;
     try {
-      await updateJob.mutateAsync({ id: jobId, status: nextStatus });
-      toast({ title: "Status updated", description: `Job moved to ${nextStatus}` });
+      await updateJob.mutateAsync({ id: jobId, status: next });
+      toast({ title: "Status updated", description: `Job moved to ${next}` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
-
-  const title = isFleetManager ? "Jobs" : "Bookings and Jobs";
 
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{title}</h1>
-            <p className="text-sm text-muted-foreground">{filtered.length} jobs {statusFilter !== "all" && `· filtered by ${statusFilter}`}</p>
+            <h1 className="text-2xl font-bold">Bookings</h1>
+            <p className="text-sm text-muted-foreground">{filtered.length} bookings {statusFilter !== "all" && `· filtered by ${statusFilter}`}</p>
           </div>
-          {!isFleetManager && <CreateJobDialog />}
+          <CreateJobDialog />
         </div>
 
         <div className="flex gap-2">
@@ -67,8 +54,8 @@ export default function Jobs() {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {filterStatuses.map((s) => (
+              <SelectItem value="all">All Bookings</SelectItem>
+              {bookingStatuses.map((s) => (
                 <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
               ))}
             </SelectContent>
@@ -78,7 +65,7 @@ export default function Jobs() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Wrench className="w-4 h-4" /> {title}
+              <ClipboardList className="w-4 h-4" /> Bookings
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -88,7 +75,7 @@ export default function Jobs() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground text-sm">No jobs found.</p>
+                <p className="text-muted-foreground text-sm">No bookings found.</p>
               </div>
             ) : (
               <Table>
@@ -99,7 +86,6 @@ export default function Jobs() {
                     <TableHead className="text-xs">Type</TableHead>
                     <TableHead className="text-xs">Priority</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs">Estimate</TableHead>
                     <TableHead className="text-xs">Progress</TableHead>
                     <TableHead className="text-xs">Actions</TableHead>
                   </TableRow>
@@ -121,24 +107,19 @@ export default function Jobs() {
                         </Badge>
                       </TableCell>
                       <TableCell><StatusBadge status={job.status} /></TableCell>
-                      <TableCell className="text-xs font-medium">
-                        {Number(job.estimate_total) > 0 ? `£${Number(job.estimate_total).toFixed(2)}` : "—"}
-                      </TableCell>
                       <TableCell className="min-w-[200px]">
                         <JobProgress currentStatus={job.status} />
                       </TableCell>
                       <TableCell>
-                        {job.status !== "closed" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs"
-                            onClick={(e) => { e.stopPropagation(); advanceStatus(job.id, job.status); }}
-                            disabled={updateJob.isPending}
-                          >
-                            Advance →
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={(e) => { e.stopPropagation(); advanceStatus(job.id, job.status); }}
+                          disabled={updateJob.isPending}
+                        >
+                          Advance →
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
