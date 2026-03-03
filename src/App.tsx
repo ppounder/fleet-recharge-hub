@@ -22,6 +22,8 @@ import WorkCategoriesSettings from "./pages/JobTypesSettings";
 import VatBandsSettings from "./pages/VatBandsSettings";
 import WorkCodesSettings from "./pages/WorkCodesSettings";
 import PartsSettings from "./pages/PartsSettings";
+import CustomerVehicles from "./pages/CustomerVehicles";
+import CustomerActiveWork from "./pages/CustomerActiveWork";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,9 +60,9 @@ const AppRoutes = () => (
     <Route path="/settings/work-codes" element={<ProtectedRoute><WorkCodesSettings /></ProtectedRoute>} />
     <Route path="/settings/vat-bands" element={<ProtectedRoute><VatBandsSettings /></ProtectedRoute>} />
     <Route path="/settings/parts" element={<ProtectedRoute><PartsSettings /></ProtectedRoute>} />
-    <Route path="/vehicles" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
-    <Route path="/active-work" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-    <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+     <Route path="/vehicles" element={<ProtectedRoute><CustomerVehicles /></ProtectedRoute>} />
+     <Route path="/active-work" element={<ProtectedRoute><CustomerActiveWork /></ProtectedRoute>} />
+     <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
     <Route path="/suppliers" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/compliance" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
