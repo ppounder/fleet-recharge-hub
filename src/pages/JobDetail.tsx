@@ -440,6 +440,10 @@ export default function JobDetail() {
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
   const totalLabour = workLines.reduce((sum, l) => sum + lineLabourTotal(l), 0);
   const totalParts = workLines.reduce((sum, l) => sum + linePartChargesTotal(l), 0);
+  const totalBaseNet = workLines.reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+  const totalBaseVat = workLines.reduce((sum, l) => sum + lineVat(l), 0);
+  const totalPartsNet = workLines.reduce((sum, l) => sum + l.partCharges.reduce((s, p) => s + p.unitPrice * p.quantity, 0), 0);
+  const totalPartsVat = workLines.reduce((sum, l) => sum + l.partCharges.reduce((s, p) => s + p.unitPrice * p.quantity * (p.vatPercent / 100), 0), 0);
 
   // ── AI parsing ──
   const parseDescriptionWithAI = async (text: string) => {
@@ -839,7 +843,7 @@ export default function JobDetail() {
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {line.quantity} × £{line.unitPrice.toFixed(2)}
+                                {line.quantity} × £{line.unitPrice.toFixed(2)}{line.vatPercent > 0 ? ` (inc VAT ${line.vatPercent}%)` : ""}
                                 {line.rechargeable && <Badge variant="outline" className="ml-2 text-[9px] h-4">Rechargeable</Badge>}
                               </p>
                             </div>
@@ -870,6 +874,18 @@ export default function JobDetail() {
                                   <span>{c.labourRateName}</span>
                                   <span>{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
                                   <span className="font-semibold text-foreground ml-auto">£{c.total.toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {line.partCharges.length > 0 && (
+                            <div className="ml-4 space-y-1">
+                              {line.partCharges.map((p) => (
+                                <div key={p.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="font-mono">{p.partNumber}</span>
+                                  <span>{p.partDescription}</span>
+                                  <span>{p.quantity} × £{p.unitPrice.toFixed(2)}{p.vatPercent > 0 ? ` (inc VAT ${p.vatPercent}%)` : ""}</span>
+                                  <span className="font-semibold text-foreground ml-auto">£{p.total.toFixed(2)}</span>
                                 </div>
                               ))}
                             </div>
@@ -983,6 +999,23 @@ export default function JobDetail() {
                               ))}
                             </div>
                           )}
+
+                          {/* Part charges for this work item */}
+                          {line.partCharges.length > 0 && (
+                            <div className="mt-2 ml-2 space-y-2 border-l-2 border-primary/20 pl-3">
+                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Parts & Materials</span>
+                              {line.partCharges.map((p) => (
+                                <div key={p.id} className="flex items-center gap-2 text-sm">
+                                  <span className="text-xs font-mono text-muted-foreground w-[100px] truncate">{p.partNumber}</span>
+                                  <span className="text-xs text-muted-foreground flex-1 truncate">{p.partDescription}</span>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {p.quantity} × £{p.unitPrice.toFixed(2)}{p.vatPercent > 0 ? ` (inc VAT ${p.vatPercent}%)` : ""}
+                                  </span>
+                                  <span className="text-sm font-semibold whitespace-nowrap ml-auto">£{p.total.toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     );
@@ -992,13 +1025,23 @@ export default function JobDetail() {
                 {/* Grand total bar */}
                 <div className="rounded-lg bg-primary/10 px-4 py-3 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Parts & Materials</span>
-                    <span className="text-sm font-medium font-mono">£{(grandTotal - totalLabour).toFixed(2)}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Base Price{totalBaseVat > 0 ? ` (inc VAT)` : ""}
+                    </span>
+                    <span className="text-sm font-medium font-mono">£{(totalBaseNet + totalBaseVat).toFixed(2)}</span>
                   </div>
                   {totalLabour > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Labour</span>
                       <span className="text-sm font-medium font-mono">£{totalLabour.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {totalParts > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Parts & Materials{totalPartsVat > 0 ? ` (inc VAT)` : ""}
+                      </span>
+                      <span className="text-sm font-medium font-mono">£{(totalPartsNet + totalPartsVat).toFixed(2)}</span>
                     </div>
                   )}
                   <Separator className="my-1" />
