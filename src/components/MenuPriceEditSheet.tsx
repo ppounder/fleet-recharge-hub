@@ -287,6 +287,11 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
               <Button onClick={handleSaveDetails} disabled={updateItem.isPending} size="sm">
                 <Save className="w-3.5 h-3.5 mr-1" /> Save Details
               </Button>
+              <div className="flex justify-end text-sm gap-4">
+                <span className="text-muted-foreground">Net: <span className="font-mono font-medium text-foreground">£{basePrice.toFixed(2)}</span></span>
+                <span className="text-muted-foreground">VAT ({serviceVatPc}%): <span className="font-mono font-medium text-foreground">£{baseVat.toFixed(2)}</span></span>
+                <span className="text-muted-foreground">Total: <span className="font-mono font-medium text-foreground">£{(basePrice + baseVat).toFixed(2)}</span></span>
+              </div>
             </CardContent>
           </Card>
 
@@ -389,9 +394,10 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
               )}
 
               {menuItemLabour && menuItemLabour.length > 0 && (
-                <div className="flex justify-end text-sm">
-                  <span className="text-muted-foreground mr-2">Labour Total:</span>
-                  <span className="font-mono font-medium">£{labourTotal.toFixed(2)}</span>
+                <div className="flex justify-end text-sm gap-4">
+                  <span className="text-muted-foreground">Net: <span className="font-mono font-medium text-foreground">£{labourTotal.toFixed(2)}</span></span>
+                  <span className="text-muted-foreground">VAT ({serviceVatPc}%): <span className="font-mono font-medium text-foreground">£{labourVat.toFixed(2)}</span></span>
+                  <span className="text-muted-foreground">Total: <span className="font-mono font-medium text-foreground">£{(labourTotal + labourVat).toFixed(2)}</span></span>
                 </div>
               )}
             </CardContent>
@@ -522,8 +528,9 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
 
               {menuItemParts && menuItemParts.length > 0 && (
                 <div className="flex justify-end text-sm gap-4">
-                  <span className="text-muted-foreground">Parts Net: <span className="font-mono font-medium text-foreground">£{partsNetTotal.toFixed(2)}</span></span>
+                  <span className="text-muted-foreground">Net: <span className="font-mono font-medium text-foreground">£{partsNetTotal.toFixed(2)}</span></span>
                   <span className="text-muted-foreground">VAT: <span className="font-mono font-medium text-foreground">£{partsVatTotal.toFixed(2)}</span></span>
+                  <span className="text-muted-foreground">Total: <span className="font-mono font-medium text-foreground">£{(partsNetTotal + partsVatTotal).toFixed(2)}</span></span>
                 </div>
               )}
             </CardContent>
