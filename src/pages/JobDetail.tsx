@@ -870,7 +870,7 @@ export default function JobDetail() {
                             <div className="ml-4 space-y-1">
                               {line.labourCharges.map((c) => (
                                 <div key={c.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Clock className="w-3 h-3" />
+                                  <span className="font-mono w-[100px] truncate">LABOUR</span>
                                   <span>{c.labourRateName}</span>
                                   <span>{c.units} unit(s) × £{c.costPerUnit.toFixed(2)}</span>
                                   <span className="font-semibold text-foreground ml-auto">£{c.total.toFixed(2)}</span>
