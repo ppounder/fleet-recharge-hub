@@ -59,10 +59,8 @@ export default function Auth() {
           <div className="mx-auto w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-2">
             <Wrench className="w-6 h-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">Jaama SMR</CardTitle>
-          <CardDescription>
-            {isLogin ? "Sign in to your account" : "Create a new account"}
-          </CardDescription>
+          <CardTitle className="text-2xl">MEx 2.0</CardTitle>
+          <CardDescription>{isLogin ? "Sign in to your account" : "Create a new account"}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,11 +104,7 @@ export default function Auth() {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
-            >
+            <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </div>

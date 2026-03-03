@@ -13,7 +13,17 @@ const roleLabels: Record<UserRole, string> = {
   customer: "Customer",
 };
 
-function NavItemLink({ item, sidebarOpen, isActive, badgeCounts }: { item: NavItem; sidebarOpen: boolean; isActive: boolean; badgeCounts: Record<string, number> }) {
+function NavItemLink({
+  item,
+  sidebarOpen,
+  isActive,
+  badgeCounts,
+}: {
+  item: NavItem;
+  sidebarOpen: boolean;
+  isActive: boolean;
+  badgeCounts: Record<string, number>;
+}) {
   const badgeValue = item.badgeKey ? badgeCounts[item.badgeKey] : item.badge;
   const showBadge = badgeValue != null && badgeValue > 0;
 
@@ -65,8 +75,7 @@ export function AppSidebar() {
     setExpandedMenus((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const isChildActive = (item: NavItem) =>
-    item.children?.some((child) => location.pathname === child.href) ?? false;
+  const isChildActive = (item: NavItem) => item.children?.some((child) => location.pathname === child.href) ?? false;
 
   return (
     <aside
@@ -82,7 +91,7 @@ export function AppSidebar() {
         </div>
         {sidebarOpen && (
           <div className="animate-fade-in">
-            <h1 className="text-sm font-bold tracking-tight">Jaama SMR</h1>
+            <h1 className="text-sm font-bold tracking-tight">MEx 2.0</h1>
             <p className="text-[10px] text-sidebar-muted">{roleLabels[currentRole]}</p>
           </div>
         )}
@@ -113,7 +122,13 @@ export function AppSidebar() {
                 {expanded && (
                   <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
                     {item.children.map((child) => (
-                      <NavItemLink key={child.href} item={child} sidebarOpen={sidebarOpen} isActive={location.pathname === child.href} badgeCounts={badgeCounts} />
+                      <NavItemLink
+                        key={child.href}
+                        item={child}
+                        sidebarOpen={sidebarOpen}
+                        isActive={location.pathname === child.href}
+                        badgeCounts={badgeCounts}
+                      />
                     ))}
                   </div>
                 )}
@@ -124,12 +139,24 @@ export function AppSidebar() {
           // For collapsed sidebar with children, just show the icon
           if (item.children && !sidebarOpen) {
             return (
-              <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive || isChildActive(item)} badgeCounts={badgeCounts} />
+              <NavItemLink
+                key={item.href}
+                item={item}
+                sidebarOpen={sidebarOpen}
+                isActive={isActive || isChildActive(item)}
+                badgeCounts={badgeCounts}
+              />
             );
           }
 
           return (
-            <NavItemLink key={item.href} item={item} sidebarOpen={sidebarOpen} isActive={isActive} badgeCounts={badgeCounts} />
+            <NavItemLink
+              key={item.href}
+              item={item}
+              sidebarOpen={sidebarOpen}
+              isActive={isActive}
+              badgeCounts={badgeCounts}
+            />
           );
         })}
       </nav>
