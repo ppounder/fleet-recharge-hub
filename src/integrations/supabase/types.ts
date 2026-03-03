@@ -1075,6 +1075,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      vehicle_belongs_to_customer: {
+        Args: { _user_id: string; _vehicle_id: string }
+        Returns: boolean
+      }
+      vehicle_customer_is_user: {
+        Args: { _customer_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "fleet-manager" | "supplier" | "customer"
