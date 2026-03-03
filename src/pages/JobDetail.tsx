@@ -27,6 +27,7 @@ import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkl
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { JobHistory } from "@/components/JobHistory";
+import { JobComments } from "@/components/JobComments";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -828,6 +829,7 @@ export default function JobDetail() {
         <Tabs defaultValue="details" className="w-full">
           <TabsList>
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="comments">Comments</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
@@ -1148,6 +1150,14 @@ export default function JobDetail() {
                     <span className="text-lg font-bold font-mono">£{grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="comments" className="mt-4">
+            <Card>
+              <CardContent className="p-0">
+                <JobComments jobId={job.id} />
               </CardContent>
             </Card>
           </TabsContent>
