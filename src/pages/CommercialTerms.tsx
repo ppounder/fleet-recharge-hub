@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useServiceProviders } from "@/hooks/useServiceProviders";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { MenuPricesPanel } from "@/components/MenuPricesPanel";
 import { LabourRatesPanel } from "@/components/LabourRatesPanel";
 import { Plus, Trash2, ArrowLeft, Handshake, Calendar } from "lucide-react";
@@ -34,18 +34,18 @@ export default function CommercialTerms() {
   const [newProviderId, setNewProviderId] = useState("");
   const [newStartDate, setNewStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  // Get provider record for current user (service-provider role)
+  // Get supplier record for current user (supplier role)
   const { data: myProvider } = useQuery({
-    queryKey: ["my_service_provider", user?.id],
+    queryKey: ["my_supplier", user?.id],
     enabled: !!user?.id && !isFleetManager,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("service_providers")
+        .from("suppliers" as any)
         .select("*")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as unknown as { id: string; name: string; user_id: string } | null;
     },
   });
 
@@ -58,7 +58,7 @@ export default function CommercialTerms() {
     },
   });
 
-  const { data: allProviders } = useServiceProviders();
+  const { data: allProviders } = useSuppliers();
 
   const selectedTerm = terms?.find((t) => t.id === selectedTermId);
 
@@ -130,7 +130,7 @@ export default function CommercialTerms() {
           <h1 className="text-2xl font-bold">Commercial Terms</h1>
           <p className="text-muted-foreground">
             {isFleetManager
-              ? "Manage commercial agreements with your service providers."
+              ? "Manage commercial agreements with your suppliers."
               : "Manage your fleet agreements and agreed menu prices."}
           </p>
         </div>
@@ -145,7 +145,7 @@ export default function CommercialTerms() {
             <div className={`grid gap-3 items-end ${isFleetManager ? "grid-cols-[1fr_1fr_150px_auto]" : "grid-cols-[1fr_150px_auto]"}`}>
               {isFleetManager && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Service Provider *</Label>
+                  <Label className="text-xs">Supplier *</Label>
                   <Select value={newProviderId} onValueChange={setNewProviderId}>
                     <SelectTrigger><SelectValue placeholder="Select provider" /></SelectTrigger>
                     <SelectContent>
@@ -153,7 +153,7 @@ export default function CommercialTerms() {
                         <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                       ))}
                       {(!allProviders || allProviders.length === 0) && (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">No providers found</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers found</div>
                       )}
                     </SelectContent>
                   </Select>
@@ -201,7 +201,7 @@ export default function CommercialTerms() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {isFleetManager && <TableHead>Service Provider</TableHead>}
+                    {isFleetManager && <TableHead>Supplier</TableHead>}
                     <TableHead>Fleet</TableHead>
                     <TableHead>Start Date</TableHead>
                     <TableHead>Status</TableHead>

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const roleLabels: Record<UserRole, string> = {
   "fleet-manager": "Fleet Manager",
-  "service-provider": "Service Provider",
+  "supplier": "Supplier",
   customer: "Customer",
 };
 

@@ -6,13 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVatBands, useCreateVatBand, useUpdateVatBand, useDeleteVatBand } from "@/hooks/useVatBands";
-import { useCurrentProvider } from "@/hooks/useCurrentProvider";
+import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 export default function VatBandsSettings() {
   const { toast } = useToast();
-  const { data: provider } = useCurrentProvider();
+  const { data: provider } = useCurrentSupplier();
   const providerId = provider?.id;
 
   const { data: vatBands, isLoading } = useVatBands(providerId);

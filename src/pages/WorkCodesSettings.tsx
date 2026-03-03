@@ -9,13 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useWorkCodes, useCreateWorkCode, useUpdateWorkCode, useDeleteWorkCode } from "@/hooks/useWorkCodes";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useVatBands } from "@/hooks/useVatBands";
-import { useCurrentProvider } from "@/hooks/useCurrentProvider";
+import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 export default function WorkCodesSettings() {
   const { toast } = useToast();
-  const { data: provider } = useCurrentProvider();
+  const { data: provider } = useCurrentSupplier();
   const providerId = provider?.id;
 
   const { data: workCodes, isLoading } = useWorkCodes(providerId);
@@ -83,7 +83,7 @@ export default function WorkCodesSettings() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Work Codes</h1>
         <p className="text-muted-foreground text-sm">
-          Manage work codes for your service provider. Each code belongs to a work category and can have an optional VAT band.
+          Manage work codes for your supplier account. Each code belongs to a work category and can have an optional VAT band.
         </p>
 
         {/* Add new */}

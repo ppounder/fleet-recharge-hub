@@ -8,13 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useWorkCategories, useCreateWorkCategory, useUpdateWorkCategory, useDeleteWorkCategory } from "@/hooks/useWorkCategories";
 import { useVatBands } from "@/hooks/useVatBands";
-import { useCurrentProvider } from "@/hooks/useCurrentProvider";
+import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 export default function WorkCategoriesSettings() {
   const { toast } = useToast();
-  const { data: provider } = useCurrentProvider();
+  const { data: provider } = useCurrentSupplier();
   const providerId = provider?.id;
 
   const { data: workCategories, isLoading } = useWorkCategories(providerId);
@@ -72,7 +72,7 @@ export default function WorkCategoriesSettings() {
     <AppLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Work Categories</h1>
-        <p className="text-muted-foreground text-sm">Manage work categories for your service provider. These will be available when setting menu prices.</p>
+        <p className="text-muted-foreground text-sm">Manage work categories for your supplier account. These will be available when setting menu prices.</p>
 
         {/* Add new */}
         <Card>

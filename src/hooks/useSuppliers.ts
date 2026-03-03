@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useServiceProviders() {
+export function useSuppliers() {
   return useQuery({
-    queryKey: ["service_providers"],
+    queryKey: ["suppliers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("service_providers")
+        .from("suppliers" as any)
         .select("*")
         .order("name");
       if (error) throw error;
-      return data;
+      return data as any[];
     },
   });
 }

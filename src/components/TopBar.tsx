@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 
 const roleLabels: Record<UserRole, string> = {
   "fleet-manager": "Fleet Manager",
-  "service-provider": "Service Provider",
+  "supplier": "Supplier",
   "customer": "Customer Portal",
 };
 
@@ -37,7 +37,7 @@ export function TopBar() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="fleet-manager">{roleLabels["fleet-manager"]}</SelectItem>
-            <SelectItem value="service-provider">{roleLabels["service-provider"]}</SelectItem>
+            <SelectItem value="supplier">{roleLabels["supplier"]}</SelectItem>
             <SelectItem value="customer">{roleLabels["customer"]}</SelectItem>
           </SelectContent>
         </Select>

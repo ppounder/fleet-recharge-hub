@@ -54,7 +54,7 @@ export type Database = {
             foreignKeyName: "commercial_terms_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -300,7 +300,7 @@ export type Database = {
             foreignKeyName: "jobs_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -355,7 +355,7 @@ export type Database = {
             foreignKeyName: "labour_rates_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -474,7 +474,7 @@ export type Database = {
             foreignKeyName: "parts_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -628,7 +628,7 @@ export type Database = {
           },
         ]
       }
-      service_providers: {
+      suppliers: {
         Row: {
           address: string | null
           contact_email: string | null
@@ -709,7 +709,7 @@ export type Database = {
             foreignKeyName: "vat_bands_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -806,7 +806,7 @@ export type Database = {
             foreignKeyName: "job_types_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -851,7 +851,7 @@ export type Database = {
             foreignKeyName: "work_codes_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
-            referencedRelation: "service_providers"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -1037,7 +1037,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "fleet-manager" | "service-provider" | "customer"
+      app_role: "fleet-manager" | "supplier" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1165,7 +1165,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["fleet-manager", "service-provider", "customer"],
+      app_role: ["fleet-manager", "supplier", "customer"],
     },
   },
 } as const
