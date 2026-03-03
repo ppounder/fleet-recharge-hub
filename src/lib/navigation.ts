@@ -19,7 +19,7 @@ import {
   Package,
 } from "lucide-react";
 
-export type UserRole = "fleet-manager" | "service-provider" | "customer";
+export type UserRole = "fleet-manager" | "supplier" | "customer";
 
 export interface NavItem {
   label: string;
@@ -42,7 +42,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Settings", href: "/settings", icon: Settings },
   ],
-  "service-provider": [
+  "supplier": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
     { label: "Bookings and Jobs", href: "/jobs", icon: Wrench, badgeKey: "openJobs" },
     { label: "Invoicing", href: "/invoicing", icon: FileText },

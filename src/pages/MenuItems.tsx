@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useServiceProviders } from "@/hooks/useServiceProviders";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 const JOB_TYPES = [
@@ -31,18 +31,18 @@ export default function MenuItems() {
   const deleteItem = useDeleteMenuItem();
   const updateItem = useUpdateMenuItem();
 
-  // Get the service provider record for the current user
+  // Get the supplier record for the current user
   const { data: myProvider } = useQuery({
-    queryKey: ["my_service_provider", user?.id],
+    queryKey: ["my_supplier", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("service_providers")
+        .from("suppliers" as any)
         .select("*")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as unknown as { id: string; name: string; user_id: string } | null;
     },
   });
 
@@ -56,8 +56,8 @@ export default function MenuItems() {
     },
   });
 
-  // Get all service providers (for fleet managers to pick from)
-  const { data: allProviders } = useServiceProviders();
+  // Get all suppliers (for fleet managers to pick from)
+  const { data: allProviders } = useSuppliers();
 
   const [newFleetId, setNewFleetId] = useState("");
   const [newProviderId, setNewProviderId] = useState("");
@@ -127,7 +127,7 @@ export default function MenuItems() {
             <div className={`grid gap-3 items-end ${isFleetManager ? "grid-cols-[1fr_1fr_1fr_1fr_100px_auto]" : "grid-cols-[1fr_1fr_1fr_100px_auto]"}`}>
               {isFleetManager && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Service Provider *</Label>
+                  <Label className="text-xs">Supplier *</Label>
                   <Select value={newProviderId} onValueChange={setNewProviderId}>
                     <SelectTrigger><SelectValue placeholder="Select provider" /></SelectTrigger>
                     <SelectContent>
@@ -135,7 +135,7 @@ export default function MenuItems() {
                         <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                       ))}
                       {(!allProviders || allProviders.length === 0) && (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">No providers found</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers found</div>
                       )}
                     </SelectContent>
                   </Select>
@@ -203,7 +203,7 @@ export default function MenuItems() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Service Provider</TableHead>
+                    <TableHead>Supplier</TableHead>
                     <TableHead>Fleet</TableHead>
                     <TableHead>Work Category</TableHead>
                     <TableHead>Description</TableHead>

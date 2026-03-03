@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useCreateJob } from "@/hooks/useJobs";
-import { useServiceProviders } from "@/hooks/useServiceProviders";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
@@ -104,7 +104,7 @@ export function CreateJobDialog() {
   const logActivity = useLogJobActivity();
   const { user, profile } = useAuth();
   const { toast } = useToast();
-  const { data: serviceProviders, isLoading: loadingProviders } = useServiceProviders();
+  const { data: suppliers, isLoading: loadingProviders } = useSuppliers();
   const { data: vehicles, isLoading: loadingVehicles } = useVehicles();
 
   const selectedVehicle = vehicles?.find((v) => v.id === vehicleId);
@@ -486,9 +486,9 @@ export function CreateJobDialog() {
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* ── Section 1: Vehicle & Service Provider ── */}
+            {/* ── Section 1: Vehicle & Supplier ── */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vehicle & Service Provider</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vehicle & Supplier</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Vehicle *</Label>
@@ -505,15 +505,15 @@ export function CreateJobDialog() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Service Provider *</Label>
+                  <Label>Supplier *</Label>
                   <Select value={providerId} onValueChange={setProviderId}>
-                    <SelectTrigger><SelectValue placeholder={loadingProviders ? "Loading..." : "Select a provider"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={loadingProviders ? "Loading..." : "Select a supplier"} /></SelectTrigger>
                     <SelectContent>
-                      {serviceProviders?.map((sp) => (
+                      {suppliers?.map((sp: any) => (
                         <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                       ))}
-                      {(!serviceProviders || serviceProviders.length === 0) && !loadingProviders && (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">No providers found</div>
+                      {(!suppliers || suppliers.length === 0) && !loadingProviders && (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers found</div>
                       )}
                     </SelectContent>
                   </Select>

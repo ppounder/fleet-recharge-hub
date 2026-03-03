@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 
-export function ServiceProviderDashboard() {
+export function SupplierDashboard() {
   const { data: jobs = [], isLoading } = useJobs();
   const navigate = useNavigate();
 
@@ -28,7 +28,7 @@ export function ServiceProviderDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Service Provider Dashboard</h1>
+        <h1 className="text-2xl font-bold">Supplier Dashboard</h1>
         <p className="text-sm text-muted-foreground">Workshop Overview</p>
       </div>
 

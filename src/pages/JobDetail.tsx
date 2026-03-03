@@ -18,7 +18,7 @@ import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useVatBands } from "@/hooks/useVatBands";
 import { useMenuItemsByProviderAndFleet } from "@/hooks/useMenuItems";
 import { useLabourRates } from "@/hooks/useLabourRates";
-import { useCurrentProvider } from "@/hooks/useCurrentProvider";
+import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,7 +108,7 @@ export default function JobDetail() {
   const updateJob = useUpdateJob();
   const createItem = useCreateWorkItem();
   const deleteItem = useDeleteWorkItem();
-  const { data: currentProvider } = useCurrentProvider();
+  const { data: currentProvider } = useCurrentSupplier();
   const logActivity = useLogJobActivity();
 
   const providerId = job?.provider_id || currentProvider?.id || "";
@@ -652,7 +652,7 @@ export default function JobDetail() {
   };
 
   // ── Actions ──
-  const isProvider = userRole === "service-provider";
+  const isProvider = userRole === "supplier";
   const canConfirm = isProvider && job?.status === "booked";
   const canEditItems = isProvider && job && ["booked", "confirmed"].includes(job.status);
   const canSubmitEstimate = isProvider && job?.status === "confirmed" && workLines.some((l) => l.description.trim());

@@ -8,13 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useParts, useCreatePart, useUpdatePart, useDeletePart } from "@/hooks/useParts";
 import { useVatBands } from "@/hooks/useVatBands";
-import { useCurrentProvider } from "@/hooks/useCurrentProvider";
+import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, X, Save, Package } from "lucide-react";
 
 export default function PartsSettings() {
   const { toast } = useToast();
-  const { data: provider } = useCurrentProvider();
+  const { data: provider } = useCurrentSupplier();
   const providerId = provider?.id;
   const { data: parts, isLoading } = useParts(providerId);
   const { data: vatBands } = useVatBands(providerId);
