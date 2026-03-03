@@ -15,6 +15,14 @@ import {
   useUpdateMenuItemLabour,
   useDeleteMenuItemLabour,
 } from "@/hooks/useMenuItemLabour";
+import { useParts } from "@/hooks/useParts";
+import { useVatBands } from "@/hooks/useVatBands";
+import {
+  useMenuItemParts,
+  useCreateMenuItemPart,
+  useUpdateMenuItemPart,
+  useDeleteMenuItemPart,
+} from "@/hooks/useMenuItemParts";
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useToast } from "@/hooks/use-toast";
@@ -34,10 +42,16 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
   const { data: workCodes } = useWorkCodes(providerId);
   const { data: labourRates } = useLabourRates(providerId, fleetId);
   const { data: menuItemLabour, isLoading: labourLoading } = useMenuItemLabour(item?.id);
+  const { data: parts } = useParts(providerId);
+  const { data: vatBands } = useVatBands(providerId);
+  const { data: menuItemParts, isLoading: partsLoading } = useMenuItemParts(item?.id);
   const updateItem = useUpdateMenuItem();
   const createLabour = useCreateMenuItemLabour();
   const updateLabour = useUpdateMenuItemLabour();
   const deleteLabour = useDeleteMenuItemLabour();
+  const createPart = useCreateMenuItemPart();
+  const updatePartLink = useUpdateMenuItemPart();
+  const deletePartLink = useDeleteMenuItemPart();
 
   // Edit state for the menu item details
   const [jobType, setJobType] = useState("");
@@ -49,6 +63,10 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
   const [newLabourRateId, setNewLabourRateId] = useState("");
   const [newLabourUnits, setNewLabourUnits] = useState("1");
 
+  // New part row state
+  const [newPartId, setNewPartId] = useState("");
+  const [newPartUnitPrice, setNewPartUnitPrice] = useState("");
+  const [newPartQuantity, setNewPartQuantity] = useState("1");
   useEffect(() => {
     if (item) {
       setJobType(item.job_type);
@@ -113,14 +131,78 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
     }
   };
 
+  const handleAddPart = async () => {
+    if (!newPartId || !newPartUnitPrice) {
+      toast({ title: "Select a part and enter a unit price", variant: "destructive" });
+      return;
+    }
+    try {
+      await createPart.mutateAsync({
+        menu_item_id: item.id,
+        part_id: newPartId,
+        unit_price: Number(newPartUnitPrice),
+        quantity: Number(newPartQuantity) || 1,
+      });
+      setNewPartId("");
+      setNewPartUnitPrice("");
+      setNewPartQuantity("1");
+      toast({ title: "Part added" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleUpdatePartRow = async (id: string, field: "unit_price" | "quantity", value: number) => {
+    const existing = menuItemParts?.find((p) => p.id === id);
+    if (!existing) return;
+    try {
+      await updatePartLink.mutateAsync({
+        id,
+        menu_item_id: item.id,
+        unit_price: field === "unit_price" ? value : existing.unit_price,
+        quantity: field === "quantity" ? value : existing.quantity,
+      });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeletePartRow = async (id: string) => {
+    try {
+      await deletePartLink.mutateAsync({ id, menu_item_id: item.id });
+      toast({ title: "Part removed" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const getRateName = (rateId: string): LabourRateRow | undefined =>
     labourRates?.find((r) => r.id === rateId);
+
+  const getPartVatPercent = (partId: string): number => {
+    const part = parts?.find((p) => p.id === partId);
+    if (!part?.vat_band_id) return 0;
+    const band = vatBands?.find((v) => v.id === part.vat_band_id);
+    return band ? Number(band.percentage) : 0;
+  };
 
   // Calculate total labour cost for display
   const labourTotal = (menuItemLabour || []).reduce((sum, ml) => {
     const rate = getRateName(ml.labour_rate_id);
     return sum + (rate ? rate.cost * ml.units : 0);
   }, 0);
+
+  // Calculate parts total (inc VAT)
+  const partsNetTotal = (menuItemParts || []).reduce((sum, mp) => {
+    return sum + mp.unit_price * mp.quantity;
+  }, 0);
+
+  const partsVatTotal = (menuItemParts || []).reduce((sum, mp) => {
+    const vatPc = getPartVatPercent(mp.part_id);
+    return sum + (mp.unit_price * mp.quantity * vatPc / 100);
+  }, 0);
+
+  const grandTotal = Number(price) + labourTotal + partsNetTotal + partsVatTotal;
 
   const catLabel = workCategories?.find((j) => j.id === jobType)?.name || jobType;
 
@@ -129,7 +211,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
       <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
         <SheetHeader className="pb-4">
           <SheetTitle className="text-xl">Edit Menu Price</SheetTitle>
-          <p className="text-sm text-muted-foreground">Configure pricing, labour rates, and (coming soon) parts for this menu item.</p>
+          <p className="text-sm text-muted-foreground">Configure pricing, labour rates, and parts for this menu item.</p>
         </SheetHeader>
 
         {/* Details Section */}
@@ -291,14 +373,147 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
 
           <Separator />
 
-          {/* Parts placeholder */}
-          <Card className="border-dashed">
+          {/* Parts & Materials Section */}
+          <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Package className="w-4 h-4" /> Parts & Materials
               </CardTitle>
-              <p className="text-xs text-muted-foreground">Coming soon — you'll be able to assign parts to this menu price.</p>
+              <p className="text-xs text-muted-foreground">Pre-set parts that will auto-populate when this menu price is added to a job.</p>
             </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Add new part row */}
+              <div className="flex items-end gap-3">
+                <div className="flex-1 space-y-1.5">
+                  <Label className="text-xs">Part</Label>
+                  <Select value={newPartId} onValueChange={setNewPartId}>
+                    <SelectTrigger><SelectValue placeholder="Select part" /></SelectTrigger>
+                    <SelectContent>
+                      {parts?.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.description}{p.part_number ? ` (${p.part_number})` : ""}
+                        </SelectItem>
+                      ))}
+                      {!parts?.length && (
+                        <SelectItem value="none" disabled>No parts — add them in Settings</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-24 space-y-1.5">
+                  <Label className="text-xs">Unit £</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={newPartUnitPrice}
+                    onChange={(e) => setNewPartUnitPrice(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="w-20 space-y-1.5">
+                  <Label className="text-xs">Qty</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={newPartQuantity}
+                    onChange={(e) => setNewPartQuantity(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleAddPart} disabled={createPart.isPending} size="sm" className="h-10">
+                  <Plus className="w-4 h-4 mr-1" /> Add
+                </Button>
+              </div>
+
+              {/* Parts table */}
+              {partsLoading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Loading...</p>
+              ) : !menuItemParts?.length ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No parts assigned yet.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Part</TableHead>
+                      <TableHead className="text-right">Unit £</TableHead>
+                      <TableHead className="text-right w-20">Qty</TableHead>
+                      <TableHead className="text-right">VAT</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {menuItemParts.map((mp) => {
+                      const part = parts?.find((p) => p.id === mp.part_id);
+                      const vatPc = getPartVatPercent(mp.part_id);
+                      const net = mp.unit_price * mp.quantity;
+                      const vat = net * vatPc / 100;
+                      return (
+                        <TableRow key={mp.id}>
+                          <TableCell className="font-medium">
+                            {part?.description || "Unknown"}
+                            {part?.part_number ? <span className="text-muted-foreground text-xs ml-1">({part.part_number})</span> : null}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={mp.unit_price}
+                              onChange={(e) => handleUpdatePartRow(mp.id, "unit_price", Number(e.target.value))}
+                              className="w-20 ml-auto text-right text-sm h-8"
+                            />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={mp.quantity}
+                              onChange={(e) => handleUpdatePartRow(mp.id, "quantity", Number(e.target.value))}
+                              className="w-16 ml-auto text-right text-sm h-8"
+                            />
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">{vatPc}%</TableCell>
+                          <TableCell className="text-right font-mono">£{(net + vat).toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDeletePartRow(mp.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+
+              {menuItemParts && menuItemParts.length > 0 && (
+                <div className="flex justify-end text-sm gap-4">
+                  <span className="text-muted-foreground">Parts Net: <span className="font-mono font-medium text-foreground">£{partsNetTotal.toFixed(2)}</span></span>
+                  <span className="text-muted-foreground">VAT: <span className="font-mono font-medium text-foreground">£{partsVatTotal.toFixed(2)}</span></span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Grand Total */}
+          <Card className="bg-muted/50">
+            <CardContent className="py-4">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Total Agreed Price</span>
+                <span className="text-lg font-mono font-bold">£{grandTotal.toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Base price + Labour + Parts (inc. VAT)</p>
+            </CardContent>
           </Card>
         </div>
       </SheetContent>

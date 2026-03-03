@@ -14,6 +14,7 @@ import {
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useLabourRates } from "@/hooks/useLabourRates";
+import { useVatBands } from "@/hooks/useVatBands";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
   const { data: workCategories } = useWorkCategories(providerId);
   const { data: workCodes } = useWorkCodes(providerId);
   const { data: labourRates } = useLabourRates(providerId, fleetId);
+  const { data: vatBands } = useVatBands(providerId);
   const createItem = useCreateMenuItem();
   const deleteItem = useDeleteMenuItem();
 
@@ -49,14 +51,37 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
     },
   });
 
-  // Calculate total price (unit_price + labour costs) for a menu item
+  // Fetch all menu_item_parts rows for items in this provider+fleet
+  const { data: allMenuItemParts } = useQuery({
+    queryKey: ["menu_item_parts_bulk", providerId, fleetId, menuItemIds],
+    enabled: menuItemIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("menu_item_parts")
+        .select("*, parts:part_id(vat_band_id)")
+        .in("menu_item_id", menuItemIds);
+      if (error) throw error;
+      return data as { id: string; menu_item_id: string; part_id: string; unit_price: number; quantity: number; parts: { vat_band_id: string | null } | null }[];
+    },
+  });
+
+  // Calculate total price (unit_price + labour costs + parts with VAT) for a menu item
   const getTotalPrice = (item: MenuItemRow) => {
     const labourRows = allMenuItemLabour?.filter((l) => l.menu_item_id === item.id) || [];
     const labourTotal = labourRows.reduce((sum, row) => {
       const rate = labourRates?.find((r) => r.id === row.labour_rate_id);
       return sum + (rate ? row.units * rate.cost : 0);
     }, 0);
-    return Number(item.unit_price) + labourTotal;
+
+    const partRows = allMenuItemParts?.filter((p) => p.menu_item_id === item.id) || [];
+    const partsTotal = partRows.reduce((sum, row) => {
+      const net = row.unit_price * row.quantity;
+      const vatBandId = row.parts?.vat_band_id;
+      const vatPc = vatBandId ? Number(vatBands?.find((v) => v.id === vatBandId)?.percentage || 0) : 0;
+      return sum + net + (net * vatPc / 100);
+    }, 0);
+
+    return Number(item.unit_price) + labourTotal + partsTotal;
   };
 
   const [newJobType, setNewJobType] = useState("");
