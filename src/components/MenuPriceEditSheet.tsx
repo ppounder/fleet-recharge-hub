@@ -186,11 +186,35 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
     return band ? Number(band.percentage) : 0;
   };
 
+  // Determine the VAT band for the base price & labour from work code or work category
+  const getServiceVatPercent = (): number => {
+    // Work code VAT band takes priority over work category
+    if (workCodeId && workCodeId !== "none") {
+      const code = workCodes?.find((c) => c.id === workCodeId);
+      if (code?.vat_band_id) {
+        const band = vatBands?.find((v) => v.id === code.vat_band_id);
+        if (band) return Number(band.percentage);
+      }
+    }
+    // Fall back to work category VAT band
+    const cat = workCategories?.find((c) => c.id === jobType);
+    if (cat?.vat_band_id) {
+      const band = vatBands?.find((v) => v.id === cat.vat_band_id);
+      if (band) return Number(band.percentage);
+    }
+    return 0;
+  };
+
+  const serviceVatPc = getServiceVatPercent();
+  const basePrice = Number(price) || 0;
+  const baseVat = basePrice * serviceVatPc / 100;
+
   // Calculate total labour cost for display
   const labourTotal = (menuItemLabour || []).reduce((sum, ml) => {
     const rate = getRateName(ml.labour_rate_id);
     return sum + (rate ? rate.cost * ml.units : 0);
   }, 0);
+  const labourVat = labourTotal * serviceVatPc / 100;
 
   // Calculate parts total (inc VAT)
   const partsNetTotal = (menuItemParts || []).reduce((sum, mp) => {
@@ -202,7 +226,9 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
     return sum + (mp.unit_price * mp.quantity * vatPc / 100);
   }, 0);
 
-  const grandTotal = Number(price) + labourTotal + partsNetTotal + partsVatTotal;
+  const totalNet = basePrice + labourTotal + partsNetTotal;
+  const totalVat = baseVat + labourVat + partsVatTotal;
+  const grandTotal = totalNet + totalVat;
 
   const catLabel = workCategories?.find((j) => j.id === jobType)?.name || jobType;
 
@@ -508,11 +534,29 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
           {/* Grand Total */}
           <Card className="bg-muted/50">
             <CardContent className="py-4">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Total Agreed Price</span>
-                <span className="text-lg font-mono font-bold">£{grandTotal.toFixed(2)}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Base Price</span>
+                  <span className="font-mono">£{basePrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Labour</span>
+                  <span className="font-mono">£{labourTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Parts (net)</span>
+                  <span className="font-mono">£{partsNetTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>VAT ({serviceVatPc}% on base+labour{partsVatTotal > 0 ? " + parts VAT" : ""})</span>
+                  <span className="font-mono">£{totalVat.toFixed(2)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Total Agreed Price (inc. VAT)</span>
+                  <span className="text-lg font-mono font-bold">£{grandTotal.toFixed(2)}</span>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Base price + Labour + Parts (inc. VAT)</p>
             </CardContent>
           </Card>
         </div>
