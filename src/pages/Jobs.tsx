@@ -4,13 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
-import { useJobs, useUpdateJob } from "@/hooks/useJobs";
+import { useJobs } from "@/hooks/useJobs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Wrench, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
 import { jobStatusSteps } from "@/lib/mock-data";
 import { CreateJobDialog } from "@/components/CreateJobDialog";
@@ -20,8 +18,6 @@ const activeJobStatuses = ["approved", "not-started", "in-progress", "awaiting-s
 export default function Jobs() {
   const { data: jobs, isLoading } = useJobs();
   const navigate = useNavigate();
-  const updateJob = useUpdateJob();
-  const { toast } = useToast();
   const { currentRole } = useAppContext();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -36,17 +32,6 @@ export default function Jobs() {
 
   const filterStatuses = isFleetManager ? [...activeJobStatuses] : jobStatusSteps.filter((s) => s !== "closed");
 
-  const advanceStatus = async (jobId: string, currentStatus: string) => {
-    const idx = jobStatusSteps.indexOf(currentStatus as any);
-    if (idx < 0 || idx >= jobStatusSteps.length - 1) return;
-    const nextStatus = jobStatusSteps[idx + 1];
-    try {
-      await updateJob.mutateAsync({ id: jobId, status: nextStatus });
-      toast({ title: "Status updated", description: `Job moved to ${nextStatus}` });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-  };
 
   const title = isFleetManager ? "Jobs" : "Bookings and Jobs";
 
@@ -101,7 +86,6 @@ export default function Jobs() {
                     <TableHead className="text-xs">Status</TableHead>
                     <TableHead className="text-xs">Estimate</TableHead>
                     <TableHead className="text-xs">Progress</TableHead>
-                    <TableHead className="text-xs">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -126,19 +110,6 @@ export default function Jobs() {
                       </TableCell>
                       <TableCell className="min-w-[200px]">
                         <JobProgress currentStatus={job.status} />
-                      </TableCell>
-                      <TableCell>
-                        {job.status !== "closed" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs"
-                            onClick={(e) => { e.stopPropagation(); advanceStatus(job.id, job.status); }}
-                            disabled={updateJob.isPending}
-                          >
-                            Advance →
-                          </Button>
-                        )}
                       </TableCell>
                     </TableRow>
                   ))}

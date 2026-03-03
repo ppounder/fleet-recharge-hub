@@ -5,37 +5,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
 import { CreateJobDialog } from "@/components/CreateJobDialog";
-import { useJobs, useUpdateJob } from "@/hooks/useJobs";
+import { useJobs } from "@/hooks/useJobs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 const bookingStatuses = ["booked", "confirmed"] as const;
 
 export default function Bookings() {
   const { data: jobs, isLoading } = useJobs();
   const navigate = useNavigate();
-  const updateJob = useUpdateJob();
-  const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const filtered = jobs
     ?.filter((j) => bookingStatuses.includes(j.status as any))
     ?.filter((j) => statusFilter === "all" || j.status === statusFilter) ?? [];
 
-  const advanceStatus = async (jobId: string, currentStatus: string) => {
-    const next = currentStatus === "booked" ? "confirmed" : currentStatus === "confirmed" ? "estimated" : null;
-    if (!next) return;
-    try {
-      await updateJob.mutateAsync({ id: jobId, status: next });
-      toast({ title: "Status updated", description: `Job moved to ${next}` });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-  };
 
   return (
     <AppLayout>
@@ -87,7 +73,6 @@ export default function Bookings() {
                     <TableHead className="text-xs">Priority</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
                     <TableHead className="text-xs">Progress</TableHead>
-                    <TableHead className="text-xs">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -109,17 +94,6 @@ export default function Bookings() {
                       <TableCell><StatusBadge status={job.status} /></TableCell>
                       <TableCell className="min-w-[200px]">
                         <JobProgress currentStatus={job.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs"
-                          onClick={(e) => { e.stopPropagation(); advanceStatus(job.id, job.status); }}
-                          disabled={updateJob.isPending}
-                        >
-                          Advance →
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
