@@ -161,10 +161,10 @@ export default function CommercialTerms() {
             <CardDescription>Establish commercial terms with a fleet to start adding menu prices.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`grid gap-3 items-end ${isFleetManager ? "grid-cols-[1fr_1fr_150px_auto]" : "grid-cols-[1fr_150px_auto]"}`}>
-              {isFleetManager && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Supplier *</Label>
+            <div className={`grid gap-3 items-end ${isFleetManager ? "grid-cols-[1fr_1fr_150px_auto]" : "grid-cols-[1fr_1fr_150px_auto]"}`}>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Supplier *</Label>
+                {isFleetManager ? (
                   <Select value={newProviderId} onValueChange={setNewProviderId}>
                     <SelectTrigger><SelectValue placeholder="Select provider" /></SelectTrigger>
                     <SelectContent>
@@ -176,8 +176,10 @@ export default function CommercialTerms() {
                       )}
                     </SelectContent>
                   </Select>
-                </div>
-              )}
+                ) : (
+                  <Input value={myProvider?.name || "Loading..."} disabled className="bg-muted" />
+                )}
+              </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Fleet *</Label>
                 <Select value={newFleetId} onValueChange={setNewFleetId}>
