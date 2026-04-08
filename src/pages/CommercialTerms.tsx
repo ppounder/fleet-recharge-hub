@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -59,6 +59,25 @@ export default function CommercialTerms() {
   });
 
   const { data: allProviders } = useSuppliers();
+
+  const { data: networks } = useQuery({
+    queryKey: ["supplier_networks_for_terms"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("supplier_networks").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Filter to only internal-network suppliers for commercial terms
+  const internalProviders = useMemo(() => {
+    if (!allProviders) return [];
+    return allProviders.filter((sp: any) => {
+      if (!sp.network_id) return true;
+      const network = networks?.find((n: any) => n.id === sp.network_id);
+      return !network || network.type === "internal";
+    });
+  }, [allProviders, networks]);
 
   const selectedTerm = terms?.find((t) => t.id === selectedTermId);
 
@@ -149,10 +168,10 @@ export default function CommercialTerms() {
                   <Select value={newProviderId} onValueChange={setNewProviderId}>
                     <SelectTrigger><SelectValue placeholder="Select provider" /></SelectTrigger>
                     <SelectContent>
-                      {allProviders?.map((sp) => (
+                      {internalProviders?.map((sp) => (
                         <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                       ))}
-                      {(!allProviders || allProviders.length === 0) && (
+                      {(!internalProviders || internalProviders.length === 0) && (
                         <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers found</div>
                       )}
                     </SelectContent>
