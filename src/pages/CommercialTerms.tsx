@@ -168,10 +168,10 @@ export default function CommercialTerms() {
                   <Select value={newProviderId} onValueChange={setNewProviderId}>
                     <SelectTrigger><SelectValue placeholder="Select provider" /></SelectTrigger>
                     <SelectContent>
-                      {allProviders?.map((sp) => (
+                      {internalProviders?.map((sp) => (
                         <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                       ))}
-                      {(!allProviders || allProviders.length === 0) && (
+                      {(!internalProviders || internalProviders.length === 0) && (
                         <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers found</div>
                       )}
                     </SelectContent>
