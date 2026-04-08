@@ -17,6 +17,7 @@ import {
   ListChecks,
   Percent,
   Package,
+  Network,
 } from "lucide-react";
 
 export type UserRole = "fleet-manager" | "supplier" | "customer";
@@ -39,6 +40,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
     { label: "Fleet", href: "/fleet", icon: Car },
     { label: "Suppliers", href: "/suppliers", icon: Truck },
+    { label: "Supplier Networks", href: "/supplier-networks", icon: Network },
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Settings", href: "/settings", icon: Settings },
   ],
