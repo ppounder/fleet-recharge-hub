@@ -25,6 +25,7 @@ import PartsSettings from "./pages/PartsSettings";
 import CustomerVehicles from "./pages/CustomerVehicles";
 import CustomerActiveWork from "./pages/CustomerActiveWork";
 import NotFound from "./pages/NotFound";
+import SupplierNetworks from "./pages/SupplierNetworks";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ const AppRoutes = () => (
     <Route path="/suppliers" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/compliance" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
+    <Route path="/supplier-networks" element={<ProtectedRoute><SupplierNetworks /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
