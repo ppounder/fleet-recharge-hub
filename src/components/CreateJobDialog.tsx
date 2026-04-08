@@ -79,8 +79,9 @@ const emptyWorkLine = (): WorkLine => ({
 export function CreateJobDialog() {
   const [open, setOpen] = useState(false);
 
-  // Step 1: Vehicle & Provider
+  // Step 1: Vehicle, Network & Provider
   const [vehicleId, setVehicleId] = useState("");
+  const [networkId, setNetworkId] = useState("");
   const [providerId, setProviderId] = useState("");
 
   // Step 2: Booking details
@@ -104,8 +105,33 @@ export function CreateJobDialog() {
   const logActivity = useLogJobActivity();
   const { user, profile } = useAuth();
   const { toast } = useToast();
-  const { data: suppliers, isLoading: loadingProviders } = useSuppliers();
+  const { data: allSuppliers, isLoading: loadingProviders } = useSuppliers();
   const { data: vehicles, isLoading: loadingVehicles } = useVehicles();
+
+  // Fetch supplier networks
+  const { data: supplierNetworks } = useQuery({
+    queryKey: ["supplier_networks"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("supplier_networks")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return data as { id: string; name: string; type: string; api_endpoint: string | null }[];
+    },
+  });
+
+  // Filter suppliers by selected network
+  const suppliers = useMemo(() => {
+    if (!networkId || !allSuppliers) return [];
+    return allSuppliers.filter((s: any) => s.network_id === networkId);
+  }, [networkId, allSuppliers]);
+
+  // Reset provider when network changes
+  const handleNetworkChange = (val: string) => {
+    setNetworkId(val);
+    setProviderId("");
+  };
 
   const selectedVehicle = vehicles?.find((v) => v.id === vehicleId);
 
@@ -355,7 +381,7 @@ export function CreateJobDialog() {
   const grandTotal = workLines.reduce((sum, l) => sum + lineTotal(l), 0);
 
   const resetForm = () => {
-    setVehicleId(""); setProviderId(""); setPriority("normal"); setDescription("");
+    setVehicleId(""); setNetworkId(""); setProviderId(""); setPriority("normal"); setDescription("");
     setFleetReference(""); setBookingReference(""); setDepot("");
     setBookingDate(undefined); setBookingTime("09:00");
     setContactName(""); setContactEmail(""); setContactPhone("");
@@ -486,10 +512,10 @@ export function CreateJobDialog() {
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* ── Section 1: Vehicle & Supplier ── */}
+            {/* ── Section 1: Vehicle, Network & Supplier ── */}
             <section className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vehicle & Supplier</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Vehicle *</Label>
                   <Select value={vehicleId} onValueChange={setVehicleId}>
@@ -505,15 +531,29 @@ export function CreateJobDialog() {
                   </Select>
                 </div>
                 <div className="space-y-2">
+                  <Label>Supplier Network *</Label>
+                  <Select value={networkId} onValueChange={handleNetworkChange}>
+                    <SelectTrigger><SelectValue placeholder="Select a network" /></SelectTrigger>
+                    <SelectContent>
+                      {supplierNetworks?.map((n) => (
+                        <SelectItem key={n.id} value={n.id}>
+                          {n.name}
+                          <span className="ml-2 text-xs text-muted-foreground capitalize">({n.type})</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label>Supplier *</Label>
-                  <Select value={providerId} onValueChange={setProviderId}>
-                    <SelectTrigger><SelectValue placeholder={loadingProviders ? "Loading..." : "Select a supplier"} /></SelectTrigger>
+                  <Select value={providerId} onValueChange={setProviderId} disabled={!networkId}>
+                    <SelectTrigger><SelectValue placeholder={!networkId ? "Select network first" : loadingProviders ? "Loading..." : "Select a supplier"} /></SelectTrigger>
                     <SelectContent>
                       {suppliers?.map((sp: any) => (
                         <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                       ))}
-                      {(!suppliers || suppliers.length === 0) && !loadingProviders && (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers found</div>
+                      {suppliers?.length === 0 && (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No suppliers in this network</div>
                       )}
                     </SelectContent>
                   </Select>
