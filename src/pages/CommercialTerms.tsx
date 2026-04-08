@@ -60,6 +60,26 @@ export default function CommercialTerms() {
 
   const { data: allProviders } = useSuppliers();
 
+  // Filter to only internal-network suppliers for commercial terms
+  const internalProviders = useMemo(() => {
+    if (!allProviders) return [];
+    return allProviders.filter((sp: any) => {
+      // Include suppliers with no network (legacy) or those linked to an internal network
+      if (!sp.network_id) return true;
+      const network = networks?.find((n: any) => n.id === sp.network_id);
+      return !network || network.type === "internal";
+    });
+  }, [allProviders, networks]);
+
+  const { data: networks } = useQuery({
+    queryKey: ["supplier_networks_for_terms"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("supplier_networks").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const selectedTerm = terms?.find((t) => t.id === selectedTermId);
 
   const handleAdd = async () => {
