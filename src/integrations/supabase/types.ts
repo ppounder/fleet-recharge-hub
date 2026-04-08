@@ -661,6 +661,33 @@ export type Database = {
           },
         ]
       }
+      supplier_networks: {
+        Row: {
+          api_endpoint: string | null
+          created_at: string
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["network_type"]
+          updated_at: string
+        }
+        Insert: {
+          api_endpoint?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          type?: Database["public"]["Enums"]["network_type"]
+          updated_at?: string
+        }
+        Update: {
+          api_endpoint?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["network_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -669,6 +696,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          network_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -679,6 +707,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          network_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -689,10 +718,19 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          network_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_networks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -1086,6 +1124,7 @@ export type Database = {
     }
     Enums: {
       app_role: "fleet-manager" | "supplier" | "customer"
+      network_type: "internal" | "external"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1214,6 +1253,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["fleet-manager", "supplier", "customer"],
+      network_type: ["internal", "external"],
     },
   },
 } as const
