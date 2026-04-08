@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -60,17 +60,6 @@ export default function CommercialTerms() {
 
   const { data: allProviders } = useSuppliers();
 
-  // Filter to only internal-network suppliers for commercial terms
-  const internalProviders = useMemo(() => {
-    if (!allProviders) return [];
-    return allProviders.filter((sp: any) => {
-      // Include suppliers with no network (legacy) or those linked to an internal network
-      if (!sp.network_id) return true;
-      const network = networks?.find((n: any) => n.id === sp.network_id);
-      return !network || network.type === "internal";
-    });
-  }, [allProviders, networks]);
-
   const { data: networks } = useQuery({
     queryKey: ["supplier_networks_for_terms"],
     queryFn: async () => {
@@ -79,6 +68,16 @@ export default function CommercialTerms() {
       return data;
     },
   });
+
+  // Filter to only internal-network suppliers for commercial terms
+  const internalProviders = useMemo(() => {
+    if (!allProviders) return [];
+    return allProviders.filter((sp: any) => {
+      if (!sp.network_id) return true;
+      const network = networks?.find((n: any) => n.id === sp.network_id);
+      return !network || network.type === "internal";
+    });
+  }, [allProviders, networks]);
 
   const selectedTerm = terms?.find((t) => t.id === selectedTermId);
 
