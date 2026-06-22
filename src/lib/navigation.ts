@@ -43,6 +43,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Supplier Networks", href: "/supplier-networks", icon: Network },
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Settings", href: "/settings", icon: Settings },
+    { label: "Reset Password", href: "/admin/reset-password", icon: Shield },
   ],
   "supplier": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
