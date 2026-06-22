@@ -26,6 +26,7 @@ import CustomerVehicles from "./pages/CustomerVehicles";
 import CustomerActiveWork from "./pages/CustomerActiveWork";
 import NotFound from "./pages/NotFound";
 import SupplierNetworks from "./pages/SupplierNetworks";
+import AdminPasswordReset from "./pages/AdminPasswordReset";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const AppRoutes = () => (
     <Route path="/compliance" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
     <Route path="/supplier-networks" element={<ProtectedRoute><SupplierNetworks /></ProtectedRoute>} />
+    <Route path="/admin/reset-password" element={<ProtectedRoute><AdminPasswordReset /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
