@@ -11,9 +11,40 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { Vehicle } from "@/hooks/useVehicles";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO } from "date-fns";
+
+function DateField({ id, value, onChange, disabled }: { id: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
+  const date = value ? parseISO(value) : undefined;
+  return (
+    <Popover>
+      <PopoverTrigger asChild disabled={disabled}>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          disabled={disabled}
+          className={cn("w-full justify-start font-normal", !date && "text-muted-foreground", disabled && "bg-muted")}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? format(date, "dd MMM yyyy") : "Pick a date"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : "")}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 interface Props {
   vehicle: Vehicle;
