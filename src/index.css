@@ -6,64 +6,64 @@
 
 @layer base {
   :root {
-    --background: 210 20% 96%;
-    --foreground: 220 30% 15%;
+    --background: 210 25% 96%;
+    --foreground: 216 40% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
+    --card-foreground: 216 40% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
+    --popover-foreground: 216 40% 16%;
 
-    --primary: 174 62% 47%;
+    --primary: 214 89% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 18% 93%;
-    --secondary-foreground: 220 30% 15%;
+    --secondary: 210 22% 92%;
+    --secondary-foreground: 216 40% 16%;
 
-    --muted: 210 14% 95%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 216 12% 42%;
 
-    --accent: 38 92% 55%;
-    --accent-foreground: 220 30% 15%;
+    --accent: 214 89% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 160 60% 45%;
+    --success: 152 58% 40%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 55%;
-    --warning-foreground: 220 30% 15%;
+    --warning-foreground: 216 40% 16%;
 
-    --info: 174 62% 47%;
+    --info: 214 89% 45%;
     --info-foreground: 0 0% 100%;
 
-    --border: 210 14% 89%;
-    --input: 210 14% 89%;
-    --ring: 174 62% 47%;
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 214 89% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 220 30% 15%;
-    --sidebar-foreground: 210 14% 90%;
-    --sidebar-primary: 174 62% 47%;
+    --sidebar-background: 216 55% 18%;
+    --sidebar-foreground: 210 30% 92%;
+    --sidebar-primary: 214 89% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 25% 22%;
-    --sidebar-accent-foreground: 210 14% 90%;
-    --sidebar-border: 220 25% 22%;
-    --sidebar-ring: 174 62% 47%;
-    --sidebar-muted: 220 9% 55%;
+    --sidebar-accent: 216 50% 24%;
+    --sidebar-accent-foreground: 210 30% 95%;
+    --sidebar-border: 216 50% 24%;
+    --sidebar-ring: 214 89% 55%;
+    --sidebar-muted: 216 15% 65%;
     --sidebar-width: 16rem;
 
-    --chart-1: 174 62% 47%;
-    --chart-2: 38 92% 55%;
-    --chart-3: 160 60% 45%;
+    --chart-1: 214 89% 45%;
+    --chart-2: 216 55% 22%;
+    --chart-3: 152 58% 40%;
     --chart-4: 0 72% 51%;
-    --chart-5: 280 65% 60%;
+    --chart-5: 38 92% 55%;
 
-    --stat-card-bg: 38 92% 55%;
-    --stat-card-foreground: 220 30% 15%;
+    --stat-card-bg: 214 89% 45%;
+    --stat-card-foreground: 0 0% 100%;
   }
 
   .dark {
