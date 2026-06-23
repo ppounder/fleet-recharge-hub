@@ -137,6 +137,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
   const [sornReturned, setSornReturned] = useState(false);
   const [sornDate, setSornDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const [msgDialogOpen, setMsgDialogOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
