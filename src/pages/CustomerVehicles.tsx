@@ -213,7 +213,7 @@ export default function CustomerVehicles() {
 
               <CollapsibleCard title="Maintenance messages">
                 <div className="space-y-1.5">
-                  <Label htmlFor="maintenance-msg">Latest message</Label>
+                  
                   <div className="relative">
                     <Textarea
                       id="maintenance-msg"
