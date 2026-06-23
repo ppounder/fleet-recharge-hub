@@ -174,7 +174,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <DateField id="date" value={date} onChange={setDate} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="time">Time</Label>
