@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
