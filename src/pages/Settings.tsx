@@ -90,9 +90,26 @@ function Row({ icon, label, value, onEdit, trailing }: RowProps) {
 
 export default function Settings() {
   const { profile, user, signOut } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [alerts, setAlerts] = useState(false);
   const [open, setOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "password") {
+      setPasswordOpen(true);
+    }
+  }, [searchParams]);
+
+  const handlePasswordOpenChange = (next: boolean) => {
+    setPasswordOpen(next);
+    if (!next && searchParams.get("action") === "password") {
+      searchParams.delete("action");
+      setSearchParams(searchParams, { replace: true });
+    }
+  };
+
 
   const fullName = profile?.full_name || "";
   const email = profile?.email || "";
