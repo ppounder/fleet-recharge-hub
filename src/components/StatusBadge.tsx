@@ -21,7 +21,8 @@ const statusLabels: Record<string, string> = {
   "declined": "Declined",
   "disputed": "Disputed",
   "settled": "Settled",
-  "active": "Active",
+  "active": "On Road",
+  "on-road": "On Road",
   "in-service": "In Service",
   "off-road": "Off Road",
 };

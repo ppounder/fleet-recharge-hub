@@ -23,7 +23,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
   const [mileage, setMileage] = useState("");
   const [motDue, setMotDue] = useState("");
   const [nextService, setNextService] = useState("");
-  const [status, setStatus] = useState("active");
+  const [status, setStatus] = useState("on-road");
   const [customerId, setCustomerId] = useState("");
   const updateVehicle = useUpdateVehicle();
   const { data: customers } = useCustomers();
@@ -110,7 +110,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="on-road">On Road</SelectItem>
                   <SelectItem value="off-road">Off Road</SelectItem>
                   <SelectItem value="in-service">In Service</SelectItem>
                   <SelectItem value="disposed">Disposed</SelectItem>
