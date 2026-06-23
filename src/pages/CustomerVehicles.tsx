@@ -166,7 +166,7 @@ export default function CustomerVehicles() {
                             </Select>
                           ) : k === "status" ? (
                             <div className="relative">
-                              <Input id={k} value={form[k]} readOnly className="bg-card pr-9" />
+                              <Input id={k} value={form[k] === "off-road" ? "Off Road" : form[k] ? "On Road" : ""} readOnly className="bg-card pr-9" />
                               <button
                                 type="button"
                                 onClick={() => setStatusDialogOpen(true)}
