@@ -113,14 +113,15 @@ export default function Settings() {
 
   const fullName = profile?.full_name || "";
   const email = profile?.email || "";
+  const mobile = profile?.mobile || "";
   const [first, last] = fullName.split(" ");
-  const username = email ? email.split("@")[0] : "user";
+  const username = profile?.username || (email ? email.split("@")[0] : "user");
 
   const [form, setForm] = useState({
     username,
     firstName: first || "",
     lastName: last || "",
-    mobile: "",
+    mobile,
     email,
     alerts: false,
   });
@@ -138,7 +139,7 @@ export default function Settings() {
       username,
       firstName: first || "",
       lastName: last || "",
-      mobile: "",
+      mobile,
       email,
       alerts,
     });
