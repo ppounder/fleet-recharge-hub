@@ -221,7 +221,9 @@ export default function CustomerVehicles() {
                       readOnly
                       rows={3}
                       placeholder="No maintenance message recorded"
-                      className="bg-card pr-9"
+                      onFocus={(e) => { e.target.blur(); setMsgDialogOpen(true); }}
+                      onClick={() => setMsgDialogOpen(true)}
+                      className="bg-card pr-9 cursor-pointer"
                     />
                     <button
                       type="button"
