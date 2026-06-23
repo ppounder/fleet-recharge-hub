@@ -228,6 +228,12 @@ export default function CustomerVehicles() {
             </Button>
           </div>
         </div>
+        <VehicleStatusDialog
+          vehicle={selected}
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
+        />
       </AppLayout>
     );
   }
