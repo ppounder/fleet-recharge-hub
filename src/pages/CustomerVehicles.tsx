@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
-import { ArrowLeft, Car, Loader2 } from "lucide-react";
+import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
+import { ArrowLeft, ArrowUpDown, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 type EditableFields = {
   registration: string;
