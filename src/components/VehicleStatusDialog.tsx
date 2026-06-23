@@ -105,7 +105,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[95vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Vehicle on/off road status</DialogTitle>
           <DialogDescription>
@@ -118,90 +118,96 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <div>
-              <p className="text-sm font-medium">Asset off-road</p>
-              <p className="text-xs text-muted-foreground">Mark this vehicle as off the road</p>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3 flex-1 min-h-0">
+          {/* Left column */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5">
+              <div>
+                <p className="text-sm font-medium">Asset off-road</p>
+                <p className="text-xs text-muted-foreground">Mark this vehicle as off the road</p>
+              </div>
+              <Switch checked={offRoad} onCheckedChange={(v) => { setOffRoad(v); if (!v) { setSornReturned(false); setSornDate(""); } }} />
             </div>
-            <Switch checked={offRoad} onCheckedChange={(v) => { setOffRoad(v); if (!v) { setSornReturned(false); setSornDate(""); } }} />
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="reason">Reason</Label>
+                <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="location">Location</Label>
+                <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="date">Date</Label>
+                <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="time">Time</Label>
+                <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="odo">ODO reading (Miles)</Label>
+                <Input id="odo" value={odo} onChange={(e) => setOdo(e.target.value.replace(/[^\d.]/g, ""))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="changed-by">Changed by</Label>
+                <Input id="changed-by" value={changedBy} onChange={(e) => setChangedBy(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="msg">Maintenance message</Label>
+              <Textarea id="msg" rows={2} value={message} onChange={(e) => setMessage(e.target.value)} />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="reason">Reason</Label>
-              <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="location">Location</Label>
-              <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="date">Date</Label>
-              <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="time">Time</Label>
-              <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="odo">Vehicle ODO reading (Miles)</Label>
-              <Input id="odo" value={odo} onChange={(e) => setOdo(e.target.value.replace(/[^\d.]/g, ""))} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="changed-by">Changed by</Label>
-              <Input id="changed-by" value={changedBy} onChange={(e) => setChangedBy(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="msg">Maintenance message</Label>
-            <Textarea id="msg" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Status history</Label>
-            <div className="max-h-48 overflow-y-auto rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Status amended to</TableHead>
-                    <TableHead>Status amended date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {history.length === 0 ? (
-                    <TableRow><TableCell colSpan={2} className="text-center text-sm text-muted-foreground">No history yet</TableCell></TableRow>
-                  ) : history.map((h: any) => (
-                    <TableRow key={h.id}>
-                      <TableCell>{statusLabel(h.status)}</TableCell>
-                      <TableCell>{new Date(h.changed_at).toLocaleDateString()}</TableCell>
+          {/* Right column */}
+          <div className="space-y-3 flex flex-col min-h-0">
+            <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
+              <Label>Status history</Label>
+              <div className="flex-1 min-h-0 overflow-y-auto rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Status amended to</TableHead>
+                      <TableHead>Status amended date</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {history.length === 0 ? (
+                      <TableRow><TableCell colSpan={2} className="text-center text-sm text-muted-foreground">No history yet</TableCell></TableRow>
+                    ) : history.map((h: any) => (
+                      <TableRow key={h.id}>
+                        <TableCell>{statusLabel(h.status)}</TableCell>
+                        <TableCell>{new Date(h.changed_at).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
 
-          <div className={cn("flex items-center justify-between rounded-lg border p-3", !offRoad && "opacity-60")}>
-            <div>
-              <p className="text-sm font-medium">DVLA SORN returned</p>
-              <p className="text-xs text-muted-foreground">
-                {offRoad ? "Mark when SORN has been returned to DVLA" : "Available when the asset is off-road"}
-              </p>
+            <div className={cn("flex items-center justify-between rounded-lg border p-2.5", !offRoad && "opacity-60")}>
+              <div>
+                <p className="text-sm font-medium">DVLA SORN returned</p>
+                <p className="text-xs text-muted-foreground">
+                  {offRoad ? "Mark when SORN has been returned to DVLA" : "Available when the asset is off-road"}
+                </p>
+              </div>
+              <Switch checked={sornReturned} onCheckedChange={setSornReturned} disabled={!offRoad} />
             </div>
-            <Switch checked={sornReturned} onCheckedChange={setSornReturned} disabled={!offRoad} />
-          </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="sorn-date">Date SORN to DVLA</Label>
-            <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} readOnly={!offRoad || !sornReturned} className={cn((!offRoad || !sornReturned) && lockedClass)} />
+            <div className="space-y-1.5">
+              <Label htmlFor="sorn-date">Date SORN to DVLA</Label>
+              <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} readOnly={!offRoad || !sornReturned} className={cn((!offRoad || !sornReturned) && lockedClass)} />
+            </div>
           </div>
         </div>
 
