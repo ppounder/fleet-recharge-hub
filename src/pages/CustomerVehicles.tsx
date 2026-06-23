@@ -68,6 +68,7 @@ export default function CustomerVehicles() {
   const update = useUpdateVehicle();
   const [selected, setSelected] = useState<Vehicle | null>(null);
   const [form, setForm] = useState<EditableFields>(blank);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
