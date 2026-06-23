@@ -224,8 +224,8 @@ export default function CustomerVehicles() {
                 <CardContent className="space-y-1 text-sm">
                   <p className="font-medium">{v.make} {v.model} {v.year && `(${v.year})`}</p>
                   {v.mileage && <p className="text-muted-foreground">{v.mileage.toLocaleString()} miles</p>}
-                  {v.mot_due && <p className="text-muted-foreground">MOT Due: {v.mot_due}</p>}
-                  {v.next_service && <p className="text-muted-foreground">Next Service: {v.next_service}</p>}
+                  {v.mot_due && <p className="text-muted-foreground">MOT Due: {formatDate(v.mot_due)}</p>}
+                  {v.next_service && <p className="text-muted-foreground">Next Service: {formatDate(v.next_service)}</p>}
                 </CardContent>
               </Card>
             ))}
