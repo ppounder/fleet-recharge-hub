@@ -210,6 +210,30 @@ export default function CustomerVehicles() {
               </CollapsibleCard>
 
               <CompanyDetails vehicle={selected} />
+
+              <CollapsibleCard title="Maintenance messages">
+                <div className="space-y-1.5">
+                  <Label htmlFor="maintenance-msg">Latest message</Label>
+                  <div className="relative">
+                    <Textarea
+                      id="maintenance-msg"
+                      value={latestMessage}
+                      readOnly
+                      rows={3}
+                      placeholder="No maintenance message recorded"
+                      className="bg-card pr-9"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMsgDialogOpen(true)}
+                      className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
+                      aria-label="Edit maintenance messages"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </CollapsibleCard>
             </TabsContent>
 
             <TabsContent value="dates">
