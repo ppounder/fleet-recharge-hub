@@ -53,35 +53,48 @@ function TimeField({ id, value, onChange, disabled }: { id: string; value: strin
   const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
   const setH = (nh: string) => onChange(`${nh}:${m || "00"}`);
   const setM = (nm: string) => onChange(`${h || "00"}:${nm}`);
+  const handleType = (v: string) => {
+    // accept partial typing like "9", "09", "09:3", "09:30"
+    const cleaned = v.replace(/[^\d:]/g, "").slice(0, 5);
+    onChange(cleaned);
+  };
   return (
-    <Popover>
-      <PopoverTrigger asChild disabled={disabled}>
-        <Button
-          id={id}
-          type="button"
-          variant="outline"
-          disabled={disabled}
-          className={cn("w-full justify-start font-normal", !value && "text-muted-foreground", disabled && "bg-muted")}
-        >
-          <Clock className="mr-2 h-4 w-4" />
-          {value || "Pick a time"}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-2" align="start">
-        <div className="flex gap-2">
-          <div className="h-48 w-16 overflow-y-auto rounded border">
-            {hours.map((hh) => (
-              <button key={hh} type="button" onClick={() => setH(hh)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", h === hh && "bg-primary text-primary-foreground hover:bg-primary")}>{hh}</button>
-            ))}
+    <div className="relative">
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => handleType(e.target.value)}
+        placeholder="HH:MM"
+        disabled={disabled}
+        className={cn("pr-9", disabled && "bg-muted")}
+      />
+      <Popover>
+        <PopoverTrigger asChild disabled={disabled}>
+          <button
+            type="button"
+            disabled={disabled}
+            aria-label="Open time picker"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground disabled:opacity-50"
+          >
+            <Clock className="h-4 w-4" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-2" align="end">
+          <div className="flex gap-2">
+            <div className="h-48 w-16 overflow-y-auto rounded border">
+              {hours.map((hh) => (
+                <button key={hh} type="button" onClick={() => setH(hh)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", h === hh && "bg-primary text-primary-foreground hover:bg-primary")}>{hh}</button>
+              ))}
+            </div>
+            <div className="h-48 w-16 overflow-y-auto rounded border">
+              {minutes.map((mm) => (
+                <button key={mm} type="button" onClick={() => setM(mm)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", m === mm && "bg-primary text-primary-foreground hover:bg-primary")}>{mm}</button>
+              ))}
+            </div>
           </div>
-          <div className="h-48 w-16 overflow-y-auto rounded border">
-            {minutes.map((mm) => (
-              <button key={mm} type="button" onClick={() => setM(mm)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", m === mm && "bg-primary text-primary-foreground hover:bg-primary")}>{mm}</button>
-            ))}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
