@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2, Pencil } from "lucide-react";
+import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
@@ -67,6 +68,7 @@ export default function CustomerVehicles() {
   const update = useUpdateVehicle();
   const [selected, setSelected] = useState<Vehicle | null>(null);
   const [form, setForm] = useState<EditableFields>(blank);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
@@ -162,6 +164,18 @@ export default function CustomerVehicles() {
                                 ))}
                               </SelectContent>
                             </Select>
+                          ) : k === "status" ? (
+                            <div className="relative">
+                              <Input id={k} value={form[k]} readOnly className="bg-card pr-9" />
+                              <button
+                                type="button"
+                                onClick={() => setStatusDialogOpen(true)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground"
+                                aria-label="Edit status"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                            </div>
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
@@ -214,6 +228,12 @@ export default function CustomerVehicles() {
             </Button>
           </div>
         </div>
+        <VehicleStatusDialog
+          vehicle={selected}
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
+        />
       </AppLayout>
     );
   }

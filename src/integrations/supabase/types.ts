@@ -848,6 +848,65 @@ export type Database = {
           },
         ]
       }
+      vehicle_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          created_at: string
+          fleet_id: string | null
+          id: string
+          location: string | null
+          maintenance_message: string | null
+          odometer: number | null
+          odometer_unit: string | null
+          reason: string | null
+          sorn_date: string | null
+          sorn_returned: boolean | null
+          status: string
+          vehicle_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          fleet_id?: string | null
+          id?: string
+          location?: string | null
+          maintenance_message?: string | null
+          odometer?: number | null
+          odometer_unit?: string | null
+          reason?: string | null
+          sorn_date?: string | null
+          sorn_returned?: boolean | null
+          status: string
+          vehicle_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          fleet_id?: string | null
+          id?: string
+          location?: string | null
+          maintenance_message?: string | null
+          odometer?: number | null
+          odometer_unit?: string | null
+          reason?: string | null
+          sorn_date?: string | null
+          sorn_returned?: boolean | null
+          status?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_status_history_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vehicles: {
         Row: {
           asset_number: string | null
