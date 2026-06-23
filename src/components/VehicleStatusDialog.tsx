@@ -313,7 +313,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                   <TableHeader className="sticky top-0 bg-muted/40 z-10">
                     <TableRow>
                       <TableHead>Status amended to</TableHead>
-                      <TableHead>Status amended date</TableHead>
+                      <TableHead>Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
