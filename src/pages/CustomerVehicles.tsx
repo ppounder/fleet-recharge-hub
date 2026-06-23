@@ -178,7 +178,7 @@ export default function CustomerVehicles() {
           </Tabs>
 
 
-          <div className="flex justify-end gap-2">
+          <div className="sticky bottom-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-t flex justify-end gap-2">
             <Button variant="outline" onClick={() => setSelected(null)} disabled={update.isPending}>
               Cancel
             </Button>
