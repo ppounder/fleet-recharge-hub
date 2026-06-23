@@ -13,13 +13,16 @@ import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
 import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2, Pencil } from "lucide-react";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
+import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type EditableFields = {
   status: string;
@@ -69,6 +72,26 @@ export default function CustomerVehicles() {
   const [selected, setSelected] = useState<Vehicle | null>(null);
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [msgDialogOpen, setMsgDialogOpen] = useState(false);
+  const { profile } = useAuth();
+
+  const { data: latestMessage = "" } = useQuery({
+    queryKey: ["vehicle-latest-maintenance-message", selected?.id],
+    enabled: !!selected?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vehicle_status_history")
+        .select("maintenance_message")
+        .eq("vehicle_id", selected!.id)
+        .not("maintenance_message", "is", null)
+        .neq("maintenance_message", "")
+        .order("changed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.maintenance_message ?? "";
+    },
+  });
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
@@ -187,6 +210,30 @@ export default function CustomerVehicles() {
               </CollapsibleCard>
 
               <CompanyDetails vehicle={selected} />
+
+              <CollapsibleCard title="Maintenance messages">
+                <div className="space-y-1.5">
+                  <Label htmlFor="maintenance-msg">Latest message</Label>
+                  <div className="relative">
+                    <Textarea
+                      id="maintenance-msg"
+                      value={latestMessage}
+                      readOnly
+                      rows={3}
+                      placeholder="No maintenance message recorded"
+                      className="bg-card pr-9"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMsgDialogOpen(true)}
+                      className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
+                      aria-label="Edit maintenance messages"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </CollapsibleCard>
             </TabsContent>
 
             <TabsContent value="dates">
@@ -233,6 +280,16 @@ export default function CustomerVehicles() {
           open={statusDialogOpen}
           onOpenChange={setStatusDialogOpen}
           onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
+        />
+        <MaintenanceMessageDialog
+          vehicleId={selected.id}
+          vehicleStatus={selected.status}
+          fleetId={(selected as any).fleet_id ?? null}
+          changedBy={profile?.full_name || ""}
+          open={msgDialogOpen}
+          onOpenChange={setMsgDialogOpen}
+          currentMessage={latestMessage}
+          onCurrentMessageChange={() => {}}
         />
       </AppLayout>
     );
