@@ -9,6 +9,7 @@ import { useVehicles, Vehicle } from "@/hooks/useVehicles";
 import { useCustomers } from "@/hooks/useCustomers";
 import { Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { formatDate } from "@/lib/utils";
 
 export default function Fleet() {
   const { data: vehicles, isLoading } = useVehicles();
