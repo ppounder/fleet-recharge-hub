@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { CalendarIcon, Clock, Loader2, Pencil } from "lucide-react";
 import { Vehicle } from "@/hooks/useVehicles";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -281,22 +281,26 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
             <div className="space-y-1.5">
               <Label htmlFor="msg">Notes</Label>
-              <button
-                id="msg"
-                type="button"
-                onClick={() => setMsgDialogOpen(true)}
-                className="w-full min-h-[64px] rounded-md border border-input bg-background px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors"
-              >
-                {(() => {
-                  const lastNote = (history as any[]).find((h) => h.maintenance_message)?.maintenance_message;
-                  const display = message || lastNote;
-                  return display ? (
-                    <span className="whitespace-pre-wrap">{display}</span>
-                  ) : (
-                    <span className="text-muted-foreground">Click to add or manage notes...</span>
-                  );
-                })()}
-              </button>
+              <div className="relative">
+                <Textarea
+                  id="msg"
+                  value={message || (history as any[]).find((h) => h.maintenance_message)?.maintenance_message || ""}
+                  readOnly
+                  rows={3}
+                  placeholder="No note recorded"
+                  onFocus={(e) => { e.target.blur(); setMsgDialogOpen(true); }}
+                  onClick={() => setMsgDialogOpen(true)}
+                  className="bg-card pr-9 cursor-pointer"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMsgDialogOpen(true)}
+                  className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
+                  aria-label="Edit notes"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
