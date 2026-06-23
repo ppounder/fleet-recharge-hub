@@ -110,7 +110,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="on-road">On Road</SelectItem>
                   <SelectItem value="off-road">Off Road</SelectItem>
                   <SelectItem value="in-service">In Service</SelectItem>
                   <SelectItem value="disposed">Disposed</SelectItem>
