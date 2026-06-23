@@ -189,17 +189,19 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className={cn("flex items-center justify-between rounded-lg border p-3", !offRoad && "opacity-60")}>
             <div>
               <p className="text-sm font-medium">DVLA SORN returned</p>
-              <p className="text-xs text-muted-foreground">Mark when SORN has been returned to DVLA</p>
+              <p className="text-xs text-muted-foreground">
+                {offRoad ? "Mark when SORN has been returned to DVLA" : "Available when the asset is off-road"}
+              </p>
             </div>
-            <Switch checked={sornReturned} onCheckedChange={setSornReturned} />
+            <Switch checked={sornReturned} onCheckedChange={setSornReturned} disabled={!offRoad} />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="sorn-date">Date SORN to DVLA</Label>
-            <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} readOnly={!sornReturned} className={cn(!sornReturned && lockedClass)} />
+            <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} readOnly={!offRoad || !sornReturned} className={cn((!offRoad || !sornReturned) && lockedClass)} />
           </div>
         </div>
 
