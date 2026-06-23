@@ -83,7 +83,7 @@ export function CustomerDashboard() {
                         <StatusBadge status={v.status} />
                       </div>
                       <p className="text-xs text-muted-foreground">{v.make} {v.model} {v.year && `· ${v.year}`}</p>
-                      <p className="text-xs text-muted-foreground">{v.mileage ? `${v.mileage.toLocaleString()} miles` : ""} {v.mot_due && `· MOT: ${v.mot_due}`}</p>
+                      <p className="text-xs text-muted-foreground">{v.mileage ? `${v.mileage.toLocaleString()} miles` : ""} {v.mot_due && `· MOT: ${formatDate(v.mot_due)}`}</p>
                     </div>
                   </div>
                 </div>
