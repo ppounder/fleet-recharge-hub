@@ -123,53 +123,41 @@ export default function CustomerVehicles() {
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Vehicle Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                    {fields.map((f) => (
-                      <div key={f.key} className="space-y-1.5">
-                        <Label htmlFor={f.key}>
-                          {f.label}
-                        </Label>
-                        <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <CollapsibleCard title="Vehicle Information">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  {fields.map((f) => (
+                    <div key={f.key} className="space-y-1.5">
+                      <Label htmlFor={f.key}>{f.label}</Label>
+                      <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleCard>
 
               <CompanyDetails vehicle={selected} />
             </TabsContent>
 
             <TabsContent value="dates">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Key Dates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="year">Year</Label>
-                      <Input id="year" value={selected.year ?? ""} readOnly />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="mot_due">MOT Due</Label>
-                      <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="next_service">Next Service</Label>
-                      <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="mileage">Mileage</Label>
-                      <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly />
-                    </div>
+              <CollapsibleCard title="Key Dates">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="year">Year</Label>
+                    <Input id="year" value={selected.year ?? ""} readOnly />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_due">MOT Due</Label>
+                    <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_service">Next Service</Label>
+                    <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mileage">Mileage</Label>
+                    <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly />
+                  </div>
+                </div>
+              </CollapsibleCard>
             </TabsContent>
 
             <TabsContent value="defects">
