@@ -174,8 +174,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
         <div className="rounded-lg border overflow-hidden">
           <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Notes history</div>
+          <div className="max-h-72 overflow-y-auto">
           <Table>
-            <TableHeader>
+
+            <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
                 <TableHead className="w-36">Date / Time</TableHead>
                 <TableHead className="w-32">Name</TableHead>
@@ -222,7 +224,9 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               })}
             </TableBody>
           </Table>
+          </div>
         </div>
+
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
