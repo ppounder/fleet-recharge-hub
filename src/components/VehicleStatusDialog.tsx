@@ -124,7 +124,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
               <p className="text-sm font-medium">Asset off-road</p>
               <p className="text-xs text-muted-foreground">Mark this vehicle as off the road</p>
             </div>
-            <Switch checked={offRoad} onCheckedChange={setOffRoad} />
+            <Switch checked={offRoad} onCheckedChange={(v) => { setOffRoad(v); if (!v) { setSornReturned(false); setSornDate(""); } }} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
