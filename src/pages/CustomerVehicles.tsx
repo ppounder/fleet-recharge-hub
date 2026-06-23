@@ -410,14 +410,14 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
             {rows.map((r) => (
-              <div key={r.label} className="flex flex-col gap-1 border-b pb-3">
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">{r.label}</dt>
-                <dd className="font-medium">{r.value}</dd>
+              <div key={r.label} className="space-y-1.5">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">{r.label}</Label>
+                <Input value={r.value} readOnly />
               </div>
             ))}
-          </dl>
+          </div>
         )}
       </CardContent>
     </Card>
