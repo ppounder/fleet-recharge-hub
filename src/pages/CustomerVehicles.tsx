@@ -17,6 +17,8 @@ import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type EditableFields = {
   registration: string;
@@ -120,7 +122,7 @@ export default function CustomerVehicles() {
               <TabsTrigger value="defects">Defect History</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="info">
+            <TabsContent value="info" className="space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Vehicle Information</CardTitle>
@@ -138,6 +140,8 @@ export default function CustomerVehicles() {
                   </div>
                 </CardContent>
               </Card>
+
+              <CompanyDetails vehicle={selected} />
             </TabsContent>
 
             <TabsContent value="dates">
@@ -368,4 +372,56 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
     </Card>
   );
 }
+
+function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["vehicle_company_details", vehicle.id],
+    queryFn: async () => {
+      const [customerRes, managerRes] = await Promise.all([
+        vehicle.customer_id
+          ? supabase.from("customers").select("name").eq("id", vehicle.customer_id).maybeSingle()
+          : Promise.resolve({ data: null, error: null } as any),
+        vehicle.fleet_manager_id
+          ? supabase.from("profiles").select("full_name,email").eq("id", vehicle.fleet_manager_id).maybeSingle()
+          : Promise.resolve({ data: null, error: null } as any),
+      ]);
+      return {
+        customer: (customerRes as any).data as { name?: string; depot?: string | null; home_dealer?: string | null } | null,
+        manager: (managerRes as any).data as { full_name?: string; email?: string } | null,
+      };
+    },
+  });
+
+  const rows: { label: string; value: string }[] = [
+    { label: "Customer", value: data?.customer?.name || "—" },
+    { label: "Depot", value: (data?.customer as any)?.depot || "—" },
+    { label: "Fleet Manager", value: data?.manager?.full_name || data?.manager?.email || "—" },
+    { label: "Home Dealer", value: (data?.customer as any)?.home_dealer || "—" },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Company Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+            {rows.map((r) => (
+              <div key={r.label} className="flex flex-col gap-1 border-b pb-3">
+                <dt className="text-xs uppercase tracking-wide text-muted-foreground">{r.label}</dt>
+                <dd className="font-medium">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 
