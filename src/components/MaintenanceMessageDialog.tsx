@@ -209,7 +209,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={applyDraft}>Save</Button>
+          <Button onClick={applyDraft} disabled={savingDraft}>
+            {savingDraft && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {savingDraft ? "Saving..." : "Save"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
