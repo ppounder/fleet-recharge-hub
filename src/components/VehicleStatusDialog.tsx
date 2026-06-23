@@ -287,11 +287,15 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                 onClick={() => setMsgDialogOpen(true)}
                 className="w-full min-h-[64px] rounded-md border border-input bg-background px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors"
               >
-                {message ? (
-                  <span className="whitespace-pre-wrap">{message}</span>
-                ) : (
-                  <span className="text-muted-foreground">Click to add or manage notes...</span>
-                )}
+                {(() => {
+                  const lastNote = (history as any[]).find((h) => h.maintenance_message)?.maintenance_message;
+                  const display = message || lastNote;
+                  return display ? (
+                    <span className="whitespace-pre-wrap">{display}</span>
+                  ) : (
+                    <span className="text-muted-foreground">Click to add or manage notes...</span>
+                  );
+                })()}
               </button>
             </div>
           </div>
