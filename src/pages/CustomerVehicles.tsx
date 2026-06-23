@@ -150,24 +150,24 @@ export default function CustomerVehicles() {
                   <CardTitle className="text-base">Key Dates</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
-                    <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt>Year</dt>
-                      <dd className="font-medium">{selected.year ?? "—"}</dd>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="year">Year</Label>
+                      <Input id="year" value={selected.year ?? ""} readOnly />
                     </div>
-                    <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt>MOT Due</dt>
-                      <dd className="font-medium">{formatDate(selected.mot_due)}</dd>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mot_due">MOT Due</Label>
+                      <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly />
                     </div>
-                    <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt>Next Service</dt>
-                      <dd className="font-medium">{formatDate(selected.next_service)}</dd>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="next_service">Next Service</Label>
+                      <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly />
                     </div>
-                    <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt>Mileage</dt>
-                      <dd className="font-medium">{selected.mileage ? `${selected.mileage.toLocaleString()} mi` : "—"}</dd>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mileage">Mileage</Label>
+                      <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly />
                     </div>
-                  </dl>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
