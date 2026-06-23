@@ -58,7 +58,9 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["vehicle-maintenance-messages", vehicleId] });
     qc.invalidateQueries({ queryKey: ["vehicle-status-history", vehicleId] });
+    qc.invalidateQueries({ queryKey: ["vehicle-recent-maintenance-messages", vehicleId] });
   };
+
 
   const startEdit = (id: string, text: string) => {
     setEditingId(id);
