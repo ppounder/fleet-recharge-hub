@@ -200,7 +200,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                             <Button size="icon" variant="ghost" onClick={() => startEdit(h.id, h.maintenance_message)} disabled={isBusy}>
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:text-destructive")}>
+                            <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:bg-destructive hover:text-white")}>
                               {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
                           </>
