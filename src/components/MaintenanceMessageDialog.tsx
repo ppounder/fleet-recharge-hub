@@ -12,13 +12,16 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   vehicleId: string;
+  vehicleStatus?: string | null;
+  fleetId?: string | null;
+  changedBy?: string | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   currentMessage: string;
   onCurrentMessageChange: (v: string) => void;
 }
 
-export function MaintenanceMessageDialog({ vehicleId, open, onOpenChange, currentMessage, onCurrentMessageChange }: Props) {
+export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, changedBy, open, onOpenChange, currentMessage, onCurrentMessageChange }: Props) {
   const qc = useQueryClient();
   const [draft, setDraft] = useState(currentMessage);
   const [editingId, setEditingId] = useState<string | null>(null);
