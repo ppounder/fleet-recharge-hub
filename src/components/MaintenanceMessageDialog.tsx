@@ -90,8 +90,31 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     toast({ title: "Message deleted" });
   };
 
-  const applyDraft = () => {
-    onCurrentMessageChange(draft);
+  const applyDraft = async () => {
+    const text = draft.trim();
+    if (!text) {
+      onCurrentMessageChange("");
+      onOpenChange(false);
+      return;
+    }
+    setSavingDraft(true);
+    const { error } = await supabase.from("vehicle_status_history").insert({
+      vehicle_id: vehicleId,
+      fleet_id: fleetId ?? null,
+      status: vehicleStatus ?? "on-road",
+      changed_at: new Date().toISOString(),
+      changed_by: changedBy ?? null,
+      maintenance_message: text,
+      sorn_returned: false,
+    });
+    setSavingDraft(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    onCurrentMessageChange(text);
+    invalidate();
+    toast({ title: "Message saved" });
     onOpenChange(false);
   };
 
