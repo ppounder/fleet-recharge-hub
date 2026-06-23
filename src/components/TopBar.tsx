@@ -82,7 +82,7 @@ export function TopBar() {
             <DropdownMenuItem onClick={() => navigate("/settings")}>
               <UserCog className="w-4 h-4 mr-2" /> Change user details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings")}>
+            <DropdownMenuItem onClick={() => navigate("/settings?action=password")}>
               <KeyRound className="w-4 h-4 mr-2" /> Change password
             </DropdownMenuItem>
             <DropdownMenuSeparator />
