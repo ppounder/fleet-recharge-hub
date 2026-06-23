@@ -35,10 +35,8 @@ export function TopBar() {
 
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-6 shrink-0">
-      <div>
-        <h2 className="text-sm font-semibold">Welcome back{profile?.full_name ? `, ${profile.full_name}` : ""}</h2>
-        <p className="text-xs text-muted-foreground">Thursday, 27 Feb 2026</p>
-      </div>
+      <div />
+
 
       <div className="flex items-center gap-4">
         {/* Role switcher for demo */}
