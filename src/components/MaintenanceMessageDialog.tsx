@@ -78,7 +78,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     }
     setEditingId(null);
     invalidate();
-    toast({ title: "Message updated" });
+    toast({ title: "Note updated" });
   };
 
   const deleteMessage = async (id: string) => {
@@ -93,7 +93,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
       return;
     }
     invalidate();
-    toast({ title: "Message deleted" });
+    toast({ title: "Note deleted" });
   };
 
   const applyDraft = async () => {
@@ -111,7 +111,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
       }
       setEditingId(null);
       invalidate();
-      toast({ title: "Message updated" });
+      toast({ title: "Note updated" });
       onOpenChange(false);
       return;
     }
@@ -137,7 +137,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     }
     onCurrentMessageChange(text);
     invalidate();
-    toast({ title: "Message saved" });
+    toast({ title: "Note saved" });
     onOpenChange(false);
   };
 
@@ -153,7 +153,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="new-msg">{editingId ? "Edit message" : "New message"}</Label>
+            <Label htmlFor="new-msg">{editingId ? "Edit note" : "New note"}</Label>
             {editingId && (
               <Button size="sm" variant="ghost" onClick={() => { setEditingId(null); setDraft(currentMessage); }}>
                 Cancel edit
@@ -168,18 +168,18 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             placeholder="Describe the maintenance required..."
           />
           <p className="text-xs text-muted-foreground">
-            {editingId ? "Editing an existing message. Save to update it." : "This will be attached to the status update when you save."}
+            {editingId ? "Editing an existing note. Save to update it." : "This will be attached to the status update when you save."}
           </p>
         </div>
 
         <div className="rounded-lg border overflow-hidden">
-          <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Message history</div>
+          <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Note history</div>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-44">Date / Time</TableHead>
                 <TableHead className="w-40">Name</TableHead>
-                <TableHead>Message</TableHead>
+                <TableHead>Note</TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -187,7 +187,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               {isLoading ? (
                 <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">Loading...</TableCell></TableRow>
               ) : history.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No previous messages</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No previous notes</TableCell></TableRow>
               ) : history.map((h: any) => {
                 const isBusy = busyId === h.id;
                 const isRowEditing = editingId === h.id;
@@ -235,8 +235,8 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
         <AlertDialog open={confirmDeleteId !== null} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete message?</AlertDialogTitle>
-              <AlertDialogDescription>Are you sure you want to delete this message?</AlertDialogDescription>
+              <AlertDialogTitle>Delete note?</AlertDialogTitle>
+              <AlertDialogDescription>Are you sure you want to delete this note?</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>No</AlertDialogCancel>
