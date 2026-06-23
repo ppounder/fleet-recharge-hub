@@ -290,7 +290,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                   placeholder="No note recorded"
                   onFocus={(e) => { e.target.blur(); setMsgDialogOpen(true); }}
                   onClick={() => setMsgDialogOpen(true)}
-                  className="bg-card pr-9 cursor-pointer"
+                  className="pr-9 cursor-pointer"
                 />
                 <button
                   type="button"
