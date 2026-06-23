@@ -95,7 +95,7 @@ export function JobHistory({ jobId }: JobHistoryProps) {
                 )}
 
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  {format(ts, "d MMM yyyy 'at' HH:mm")}
+                  {format(ts, "dd MMM yyyy 'at' HH:mm")}
                 </p>
               </div>
             </div>
