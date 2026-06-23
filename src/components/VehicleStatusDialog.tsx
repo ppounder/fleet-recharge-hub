@@ -121,11 +121,11 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="reason">Reason</Label>
-              <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+              <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!offRoad} className={!offRoad ? "bg-muted" : undefined} />
             </div>
             <div className="space-y-1.5 col-span-2">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} readOnly={!offRoad} className={!offRoad ? "bg-muted" : undefined} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="date">Date</Label>
