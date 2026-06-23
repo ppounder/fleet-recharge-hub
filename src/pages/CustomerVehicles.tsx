@@ -1,27 +1,62 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useVehicles, Vehicle } from "@/hooks/useVehicles";
-import { Car, Loader2 } from "lucide-react";
+import { ArrowLeft, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const [selected, setSelected] = useState<Vehicle | null>(null);
 
-  const detailFields: { label: string; value: React.ReactNode }[] = selected
-    ? [
-        { label: "Registration", value: <UKNumberPlate registration={selected.registration} /> },
-        { label: "Fleet Number", value: (selected as any).fleet_number || "—" },
-        { label: "VIN", value: selected.vin || "—" },
-        { label: "Asset Type", value: (selected as any).asset_type || "—" },
-        { label: "Make", value: selected.make || "—" },
-        { label: "Model", value: selected.model || "—" },
-        { label: "Derivative", value: (selected as any).derivative || "—" },
-      ]
-    : [];
+  if (selected) {
+    const fields: { label: string; value: React.ReactNode }[] = [
+      { label: "Registration", value: <UKNumberPlate registration={selected.registration} /> },
+      { label: "Fleet Number", value: (selected as any).fleet_number || "—" },
+      { label: "VIN", value: selected.vin || "—" },
+      { label: "Asset Type", value: (selected as any).asset_type || "—" },
+      { label: "Make", value: selected.make || "—" },
+      { label: "Model", value: selected.model || "—" },
+      { label: "Derivative", value: (selected as any).derivative || "—" },
+    ];
+
+    return (
+      <AppLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+                <ArrowLeft className="w-4 h-4 mr-1" /> Back
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Vehicle Details</h1>
+                <p className="text-sm text-muted-foreground">{selected.make} {selected.model}</p>
+              </div>
+            </div>
+            <StatusBadge status={selected.status} />
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Vehicle Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+                {fields.map((f) => (
+                  <div key={f.label} className="flex flex-col gap-1 border-b pb-3">
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">{f.label}</dt>
+                    <dd className="font-medium">{f.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -67,24 +102,6 @@ export default function CustomerVehicles() {
           </div>
         )}
       </div>
-
-      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Vehicle Details</DialogTitle>
-          </DialogHeader>
-          {selected && (
-            <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm pt-2">
-              {detailFields.map((f) => (
-                <div key={f.label} className="contents">
-                  <div className="text-muted-foreground">{f.label}</div>
-                  <div className="font-medium">{f.value}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </AppLayout>
   );
 }
