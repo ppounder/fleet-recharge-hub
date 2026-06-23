@@ -164,13 +164,13 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                 const isBusy = busyId === h.id;
                 return (
                   <TableRow key={h.id}>
-                    <TableCell className="text-xs text-muted-foreground align-top whitespace-nowrap">
+                    <TableCell className="text-xs text-muted-foreground align-middle whitespace-nowrap">
                       {format(new Date(h.changed_at), "dd MMM yyyy - HH:mm")}
                     </TableCell>
-                    <TableCell className="text-sm align-top whitespace-nowrap">
+                    <TableCell className="text-sm align-middle whitespace-nowrap">
                       {h.changed_by || <span className="text-muted-foreground">—</span>}
                     </TableCell>
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       {isEditing ? (
                         <Textarea
                           rows={2}
@@ -182,7 +182,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                         <p className="text-sm whitespace-pre-wrap">{h.maintenance_message}</p>
                       )}
                     </TableCell>
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       <div className="flex justify-end gap-1">
                         {isEditing ? (
                           <>
