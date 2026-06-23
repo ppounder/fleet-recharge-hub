@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO } from "date-fns";
+import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
 
 function DateField({ id, value, onChange, disabled }: { id: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
   const date = value ? parseISO(value) : undefined;
@@ -136,6 +137,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
   const [sornReturned, setSornReturned] = useState(false);
   const [sornDate, setSornDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const [msgDialogOpen, setMsgDialogOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -279,7 +281,18 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
             <div className="space-y-1.5">
               <Label htmlFor="msg">Maintenance message</Label>
-              <Textarea id="msg" rows={2} value={message} onChange={(e) => setMessage(e.target.value)} />
+              <button
+                id="msg"
+                type="button"
+                onClick={() => setMsgDialogOpen(true)}
+                className="w-full min-h-[64px] rounded-md border border-input bg-background px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors"
+              >
+                {message ? (
+                  <span className="whitespace-pre-wrap">{message}</span>
+                ) : (
+                  <span className="text-muted-foreground">Click to add or manage maintenance messages...</span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -334,6 +347,13 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           </Button>
         </DialogFooter>
       </DialogContent>
+      <MaintenanceMessageDialog
+        vehicleId={vehicle.id}
+        open={msgDialogOpen}
+        onOpenChange={setMsgDialogOpen}
+        currentMessage={message}
+        onCurrentMessageChange={setMessage}
+      />
     </Dialog>
   );
 }
