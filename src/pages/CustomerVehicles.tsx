@@ -641,29 +641,16 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
               emptyText="No customers found."
               onChange={setCustomerId}
             />
-            <div className="pl-4 border-l-2 border-border ml-2 mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Depot</Label>
-                <SearchableSelect
-                  value={depot}
-                  options={depotOpts}
-                  placeholder="—"
-                  searchPlaceholder="Search depots..."
-                  emptyText="No depots found."
-                  onChange={setDepot}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Home Dealer</Label>
-                <SearchableSelect
-                  value={homeDealer}
-                  options={homeDealerOpts}
-                  placeholder="—"
-                  searchPlaceholder="Search dealers..."
-                  emptyText="No dealers found."
-                  onChange={setHomeDealer}
-                />
-              </div>
+            <div className="pl-4 border-l-2 border-border ml-2 mt-2 space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Depot</Label>
+              <SearchableSelect
+                value={depot}
+                options={depotOpts}
+                placeholder="—"
+                searchPlaceholder="Search depots..."
+                emptyText="No depots found."
+                onChange={setDepot}
+              />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -686,6 +673,17 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
               searchPlaceholder="Search drivers..."
               emptyText="No drivers found."
               onChange={setAllocatedDriver}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Home Dealer</Label>
+            <SearchableSelect
+              value={homeDealer}
+              options={homeDealerOpts}
+              placeholder="—"
+              searchPlaceholder="Search dealers..."
+              emptyText="No dealers found."
+              onChange={setHomeDealer}
             />
           </div>
         </div>
