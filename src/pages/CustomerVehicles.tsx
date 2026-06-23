@@ -619,6 +619,11 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
       ? [{ value: customerId, label: currentCustomerLabel }]
       : [];
 
+  const currentManagerLabel = data?.manager?.full_name || data?.manager?.email || "";
+  const managerOpts = managerId && !managerOptions.some((o) => o.value === managerId) && currentManagerLabel
+    ? [{ value: managerId, label: currentManagerLabel }, ...managerOptions]
+    : managerOptions;
+
   const depotOpts = depot ? [{ value: depot, label: depot }] : [];
   const homeDealerOpts = homeDealer ? [{ value: homeDealer, label: homeDealer }] : [];
   const allocatedDriverOpts = allocatedDriver ? [{ value: allocatedDriver, label: allocatedDriver }] : [];
@@ -657,7 +662,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
             <Label>Fleet Manager</Label>
             <SearchableSelect
               value={managerId}
-              options={managerOptions}
+              options={managerOpts}
               placeholder="—"
               searchPlaceholder="Search fleet managers..."
               emptyText="No fleet managers found."
