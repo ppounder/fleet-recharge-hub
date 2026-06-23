@@ -215,7 +215,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {saving ? "Saving..." : "Save changes"}
+            {saving ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>
