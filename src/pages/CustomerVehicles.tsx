@@ -663,17 +663,17 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
               emptyText="No fleet managers found."
               onChange={setManagerId}
             />
-            <div className="pl-4 border-l-2 border-border ml-2 mt-2 space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Allocated Driver</Label>
-              <SearchableSelect
-                value={allocatedDriver}
-                options={allocatedDriverOpts}
-                placeholder="—"
-                searchPlaceholder="Search drivers..."
-                emptyText="No drivers found."
-                onChange={setAllocatedDriver}
-              />
-            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Allocated Driver</Label>
+            <SearchableSelect
+              value={allocatedDriver}
+              options={allocatedDriverOpts}
+              placeholder="—"
+              searchPlaceholder="Search drivers..."
+              emptyText="No drivers found."
+              onChange={setAllocatedDriver}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Home Dealer</Label>
