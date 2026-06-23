@@ -787,10 +787,13 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          asset_type: string | null
           created_at: string
           customer_id: string | null
+          derivative: string | null
           fleet_id: string | null
           fleet_manager_id: string | null
+          fleet_number: string | null
           id: string
           make: string
           mileage: number | null
@@ -804,10 +807,13 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          asset_type?: string | null
           created_at?: string
           customer_id?: string | null
+          derivative?: string | null
           fleet_id?: string | null
           fleet_manager_id?: string | null
+          fleet_number?: string | null
           id?: string
           make: string
           mileage?: number | null
@@ -821,10 +827,13 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          asset_type?: string | null
           created_at?: string
           customer_id?: string | null
+          derivative?: string | null
           fleet_id?: string | null
           fleet_manager_id?: string | null
+          fleet_number?: string | null
           id?: string
           make?: string
           mileage?: number | null
