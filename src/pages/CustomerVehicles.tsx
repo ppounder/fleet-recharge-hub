@@ -80,10 +80,13 @@ export default function CustomerVehicles() {
     try {
       await update.mutateAsync({
         id: selected.id,
+        status: form.status || null,
+        vin: form.vin || null,
         registration: form.registration,
         fleet_number: form.fleet_number || null,
-        vin: form.vin || null,
+        asset_number: form.asset_number || null,
         asset_type: form.asset_type || null,
+        body_type: form.body_type || null,
         make: form.make,
         model: form.model,
         derivative: form.derivative || null,
