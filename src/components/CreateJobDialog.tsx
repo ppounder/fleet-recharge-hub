@@ -587,7 +587,7 @@ export function CreateJobDialog() {
                     <PopoverTrigger asChild>
                       <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !bookingDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {bookingDate ? format(bookingDate, "PPP") : "Pick a date"}
+                        {bookingDate ? format(bookingDate, "dd MMM yyyy") : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">

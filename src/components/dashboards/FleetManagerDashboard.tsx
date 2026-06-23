@@ -1,5 +1,6 @@
 import { Shield, Wrench, CreditCard, AlertTriangle, TrendingUp, Clock, Car } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { formatDate } from "@/lib/utils";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
@@ -94,8 +95,8 @@ export function FleetManagerDashboard() {
                         <TableCell className="text-xs">{v.model}</TableCell>
                         <TableCell className="text-xs">{v.year ?? "—"}</TableCell>
                         <TableCell className="text-xs">{v.mileage ? `${v.mileage.toLocaleString()} mi` : "—"}</TableCell>
-                        <TableCell className="text-xs">{v.mot_due ?? "—"}</TableCell>
-                        <TableCell className="text-xs">{v.next_service ?? "—"}</TableCell>
+                        <TableCell className="text-xs">{formatDate(v.mot_due)}</TableCell>
+                        <TableCell className="text-xs">{formatDate(v.next_service)}</TableCell>
                         <TableCell><StatusBadge status={v.status} /></TableCell>
                       </TableRow>
                     ))}

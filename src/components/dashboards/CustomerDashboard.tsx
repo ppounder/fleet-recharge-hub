@@ -1,5 +1,6 @@
 import { Car, Wrench, CreditCard, FileText } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { formatDate } from "@/lib/utils";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
@@ -82,7 +83,7 @@ export function CustomerDashboard() {
                         <StatusBadge status={v.status} />
                       </div>
                       <p className="text-xs text-muted-foreground">{v.make} {v.model} {v.year && `· ${v.year}`}</p>
-                      <p className="text-xs text-muted-foreground">{v.mileage ? `${v.mileage.toLocaleString()} miles` : ""} {v.mot_due && `· MOT: ${v.mot_due}`}</p>
+                      <p className="text-xs text-muted-foreground">{v.mileage ? `${v.mileage.toLocaleString()} miles` : ""} {v.mot_due && `· MOT: ${formatDate(v.mot_due)}`}</p>
                     </div>
                   </div>
                 </div>

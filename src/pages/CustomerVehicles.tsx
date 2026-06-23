@@ -14,6 +14,7 @@ import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehic
 import { ArrowLeft, ArrowUpDown, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
+import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -152,11 +153,11 @@ export default function CustomerVehicles() {
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">MOT Due</dt>
-                      <dd className="font-medium">{selected.mot_due ?? "—"}</dd>
+                      <dd className="font-medium">{formatDate(selected.mot_due)}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">Next Service</dt>
-                      <dd className="font-medium">{selected.next_service ?? "—"}</dd>
+                      <dd className="font-medium">{formatDate(selected.next_service)}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">Mileage</dt>
@@ -223,8 +224,8 @@ export default function CustomerVehicles() {
                 <CardContent className="space-y-1 text-sm">
                   <p className="font-medium">{v.make} {v.model} {v.year && `(${v.year})`}</p>
                   {v.mileage && <p className="text-muted-foreground">{v.mileage.toLocaleString()} miles</p>}
-                  {v.mot_due && <p className="text-muted-foreground">MOT Due: {v.mot_due}</p>}
-                  {v.next_service && <p className="text-muted-foreground">Next Service: {v.next_service}</p>}
+                  {v.mot_due && <p className="text-muted-foreground">MOT Due: {formatDate(v.mot_due)}</p>}
+                  {v.next_service && <p className="text-muted-foreground">Next Service: {formatDate(v.next_service)}</p>}
                 </CardContent>
               </Card>
             ))}
@@ -332,7 +333,7 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
               {rows.map((d) => (
                 <TableRow key={d.id}>
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                    {new Date(d.reported_at).toLocaleDateString()}
+                    {formatDate(d.reported_at)}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{d.title}</div>
