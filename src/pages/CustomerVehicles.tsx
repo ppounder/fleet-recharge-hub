@@ -281,6 +281,16 @@ export default function CustomerVehicles() {
           onOpenChange={setStatusDialogOpen}
           onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
         />
+        <MaintenanceMessageDialog
+          vehicleId={selected.id}
+          vehicleStatus={selected.status}
+          fleetId={(selected as any).fleet_id ?? null}
+          changedBy={profile?.full_name || ""}
+          open={msgDialogOpen}
+          onOpenChange={setMsgDialogOpen}
+          currentMessage={latestMessage}
+          onCurrentMessageChange={() => {}}
+        />
       </AppLayout>
     );
   }
