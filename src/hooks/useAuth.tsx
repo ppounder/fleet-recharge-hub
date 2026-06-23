@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             const [roleRes, profileRes] = await Promise.all([
               supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
-              supabase.from("profiles").select("full_name, company_name, email, fleet_id").eq("id", session.user.id).maybeSingle(),
+              supabase.from("profiles").select("full_name, company_name, email, fleet_id, username, mobile").eq("id", session.user.id).maybeSingle(),
             ]);
             setUserRole((roleRes.data?.role as UserRole) ?? null);
             setProfile(profileRes.data ?? null);
