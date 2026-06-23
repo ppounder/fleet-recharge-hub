@@ -170,7 +170,12 @@ export default function Settings() {
     const newFullName = `${result.data.firstName} ${result.data.lastName}`.trim();
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: newFullName, email: result.data.email })
+      .update({
+        full_name: newFullName,
+        email: result.data.email,
+        username: result.data.username,
+        mobile: result.data.mobile,
+      })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
