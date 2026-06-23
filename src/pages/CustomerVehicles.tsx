@@ -214,29 +214,41 @@ export default function CustomerVehicles() {
 
               <CollapsibleCard title="Notes">
                 <div className="space-y-1.5">
-                  
-                  <div className="relative">
-                    <Textarea
-                      id="maintenance-msg"
-                      value={latestMessage}
-                      readOnly
-                      rows={3}
-                      placeholder="No note recorded"
-                      onFocus={(e) => { e.target.blur(); setMsgDialogOpen(true); }}
-                      onClick={() => setMsgDialogOpen(true)}
-                      className="bg-card pr-9 cursor-pointer"
-                    />
+                  <div className="relative rounded-md border bg-card">
                     <button
                       type="button"
                       onClick={() => setMsgDialogOpen(true)}
-                      className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
+                      className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground z-10"
                       aria-label="Edit notes"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
+                    {recentNotes.length === 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setMsgDialogOpen(true)}
+                        className="w-full text-left text-sm text-muted-foreground px-3 py-6"
+                      >
+                        No note recorded
+                      </button>
+                    ) : (
+                      <ul className="divide-y">
+                        {recentNotes.map((n: any) => (
+                          <li
+                            key={n.id}
+                            onClick={() => setMsgDialogOpen(true)}
+                            className="px-3 py-2 cursor-pointer hover:bg-muted/40"
+                          >
+                            <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
+                            <div className="text-sm whitespace-pre-wrap break-words pr-8">{n.maintenance_message}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
               </CollapsibleCard>
+
             </TabsContent>
 
             <TabsContent value="dates">
