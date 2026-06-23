@@ -153,7 +153,18 @@ export default function CustomerVehicles() {
                       {row.map((k) => (
                         <div key={k} className="space-y-1.5">
                           <Label htmlFor={k}>{labels[k]}</Label>
-                          <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
+                          {k === "asset_type" ? (
+                            <Select value={form.asset_type || ""} onValueChange={(v) => setForm((f) => ({ ...f, asset_type: v }))}>
+                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select asset type" /></SelectTrigger>
+                              <SelectContent>
+                                {["Car", "Van", "HGV", "Trailer", "Plant", "Tail Lift"].map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
+                          )}
                         </div>
                       ))}
                     </div>
