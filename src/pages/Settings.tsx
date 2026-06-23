@@ -113,14 +113,15 @@ export default function Settings() {
 
   const fullName = profile?.full_name || "";
   const email = profile?.email || "";
+  const mobile = profile?.mobile || "";
   const [first, last] = fullName.split(" ");
-  const username = email ? email.split("@")[0] : "user";
+  const username = profile?.username || (email ? email.split("@")[0] : "user");
 
   const [form, setForm] = useState({
     username,
     firstName: first || "",
     lastName: last || "",
-    mobile: "",
+    mobile,
     email,
     alerts: false,
   });
@@ -138,7 +139,7 @@ export default function Settings() {
       username,
       firstName: first || "",
       lastName: last || "",
-      mobile: "",
+      mobile,
       email,
       alerts,
     });
@@ -169,7 +170,12 @@ export default function Settings() {
     const newFullName = `${result.data.firstName} ${result.data.lastName}`.trim();
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: newFullName, email: result.data.email })
+      .update({
+        full_name: newFullName,
+        email: result.data.email,
+        username: result.data.username,
+        mobile: result.data.mobile,
+      })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
@@ -194,7 +200,7 @@ export default function Settings() {
         <div className="rounded-2xl bg-card border shadow-sm overflow-hidden">
           <Row icon={<AtSign className="w-4 h-4" />} label="Username" value={username} onEdit={openEdit} />
           <Row icon={<User className="w-4 h-4" />} label="Name" value={fullName || "—"} onEdit={openEdit} />
-          <Row icon={<Phone className="w-4 h-4" />} label="Mobile" value="—" onEdit={openEdit} />
+          <Row icon={<Phone className="w-4 h-4" />} label="Mobile" value={mobile || "—"} onEdit={openEdit} />
           <Row icon={<Mail className="w-4 h-4" />} label="Email" value={email} onEdit={openEdit} />
           <Row
             icon={<Bell className="w-4 h-4" />}
