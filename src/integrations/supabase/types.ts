@@ -850,7 +850,9 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          asset_number: string | null
           asset_type: string | null
+          body_type: string | null
           created_at: string
           customer_id: string | null
           derivative: string | null
@@ -870,7 +872,9 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          asset_number?: string | null
           asset_type?: string | null
+          body_type?: string | null
           created_at?: string
           customer_id?: string | null
           derivative?: string | null
@@ -890,7 +894,9 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          asset_number?: string | null
           asset_type?: string | null
+          body_type?: string | null
           created_at?: string
           customer_id?: string | null
           derivative?: string | null

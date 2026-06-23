@@ -21,20 +21,26 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 type EditableFields = {
+  status: string;
+  vin: string;
   registration: string;
   fleet_number: string;
-  vin: string;
+  asset_number: string;
   asset_type: string;
+  body_type: string;
   make: string;
   model: string;
   derivative: string;
 };
 
 const blank: EditableFields = {
+  status: "",
+  vin: "",
   registration: "",
   fleet_number: "",
-  vin: "",
+  asset_number: "",
   asset_type: "",
+  body_type: "",
   make: "",
   model: "",
   derivative: "",
@@ -42,15 +48,19 @@ const blank: EditableFields = {
 
 function toForm(v: Vehicle): EditableFields {
   return {
+    status: v.status || "",
+    vin: v.vin || "",
     registration: v.registration || "",
     fleet_number: (v as any).fleet_number || "",
-    vin: v.vin || "",
+    asset_number: (v as any).asset_number || "",
     asset_type: (v as any).asset_type || "",
+    body_type: (v as any).body_type || "",
     make: v.make || "",
     model: v.model || "",
     derivative: (v as any).derivative || "",
   };
 }
+
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
@@ -70,10 +80,13 @@ export default function CustomerVehicles() {
     try {
       await update.mutateAsync({
         id: selected.id,
+        status: form.status || null,
+        vin: form.vin || null,
         registration: form.registration,
         fleet_number: form.fleet_number || null,
-        vin: form.vin || null,
+        asset_number: form.asset_number || null,
         asset_type: form.asset_type || null,
+        body_type: form.body_type || null,
         make: form.make,
         model: form.model,
         derivative: form.derivative || null,
@@ -86,15 +99,25 @@ export default function CustomerVehicles() {
   };
 
   if (selected) {
-    const fields: { key: keyof EditableFields; label: string }[] = [
-      { key: "registration", label: "Registration" },
-      { key: "fleet_number", label: "Fleet Number" },
-      { key: "vin", label: "VIN" },
-      { key: "asset_type", label: "Asset Type" },
-      { key: "make", label: "Make" },
-      { key: "model", label: "Model" },
-      { key: "derivative", label: "Derivative" },
+    const labels: Record<keyof EditableFields, string> = {
+      status: "Status",
+      vin: "VIN",
+      registration: "Registration Number",
+      fleet_number: "Fleet Number",
+      asset_number: "Asset Number",
+      asset_type: "Asset Type",
+      body_type: "Body Type",
+      make: "Make",
+      model: "Model",
+      derivative: "Derivative",
+    };
+    const rows: (keyof EditableFields)[][] = [
+      ["status", "vin"],
+      ["registration", "fleet_number", "asset_number"],
+      ["asset_type", "body_type"],
+      ["make", "model", "derivative"],
     ];
+
 
     return (
       <AppLayout>
@@ -124,11 +147,15 @@ export default function CustomerVehicles() {
 
             <TabsContent value="info" className="space-y-4">
               <CollapsibleCard title="Vehicle Information">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                  {fields.map((f) => (
-                    <div key={f.key} className="space-y-1.5">
-                      <Label htmlFor={f.key}>{f.label}</Label>
-                      <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
+                <div className="space-y-5">
+                  {rows.map((row, i) => (
+                    <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                      {row.map((k) => (
+                        <div key={k} className="space-y-1.5">
+                          <Label htmlFor={k}>{labels[k]}</Label>
+                          <Input id={k} value={form[k]} onChange={set(k)} />
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
