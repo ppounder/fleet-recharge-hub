@@ -54,10 +54,24 @@ function TimeField({ id, value, onChange, disabled }: { id: string; value: strin
   const setH = (nh: string) => onChange(`${nh}:${m || "00"}`);
   const setM = (nm: string) => onChange(`${h || "00"}:${nm}`);
   const handleType = (v: string) => {
-    // accept partial typing like "9", "09", "09:3", "09:30"
     const cleaned = v.replace(/[^\d:]/g, "").slice(0, 5);
     onChange(cleaned);
   };
+  const [open, setOpen] = useState(false);
+  const hourColRef = useRef<HTMLDivElement>(null);
+  const minColRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const scroll = (container: HTMLDivElement | null, key: string) => {
+      if (!container || !key) return;
+      const el = container.querySelector<HTMLElement>(`[data-key="${key}"]`);
+      if (el) container.scrollTop = el.offsetTop - container.clientHeight / 2 + el.clientHeight / 2;
+    };
+    requestAnimationFrame(() => {
+      scroll(hourColRef.current, h || "00");
+      scroll(minColRef.current, m || "00");
+    });
+  }, [open, h, m]);
   return (
     <div className="relative">
       <Input
@@ -68,7 +82,7 @@ function TimeField({ id, value, onChange, disabled }: { id: string; value: strin
         disabled={disabled}
         className={cn("pr-9", disabled && "bg-muted")}
       />
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild disabled={disabled}>
           <button
             type="button"
@@ -81,14 +95,14 @@ function TimeField({ id, value, onChange, disabled }: { id: string; value: strin
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2" align="end">
           <div className="flex gap-2">
-            <div className="h-48 w-16 overflow-y-auto rounded border">
+            <div ref={hourColRef} className="h-48 w-16 overflow-y-auto rounded border">
               {hours.map((hh) => (
-                <button key={hh} type="button" onClick={() => setH(hh)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", h === hh && "bg-primary text-primary-foreground hover:bg-primary")}>{hh}</button>
+                <button key={hh} data-key={hh} type="button" onClick={() => setH(hh)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", h === hh && "bg-primary text-primary-foreground hover:bg-primary")}>{hh}</button>
               ))}
             </div>
-            <div className="h-48 w-16 overflow-y-auto rounded border">
+            <div ref={minColRef} className="h-48 w-16 overflow-y-auto rounded border">
               {minutes.map((mm) => (
-                <button key={mm} type="button" onClick={() => setM(mm)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", m === mm && "bg-primary text-primary-foreground hover:bg-primary")}>{mm}</button>
+                <button key={mm} data-key={mm} type="button" onClick={() => setM(mm)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", m === mm && "bg-primary text-primary-foreground hover:bg-primary")}>{mm}</button>
               ))}
             </div>
           </div>
