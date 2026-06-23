@@ -23,7 +23,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
   const [mileage, setMileage] = useState("");
   const [motDue, setMotDue] = useState("");
   const [nextService, setNextService] = useState("");
-  const [status, setStatus] = useState("active");
+  const [status, setStatus] = useState("on-road");
   const [customerId, setCustomerId] = useState("");
   const updateVehicle = useUpdateVehicle();
   const { data: customers } = useCustomers();
