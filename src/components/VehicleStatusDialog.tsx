@@ -183,13 +183,9 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  onMouseDown={(e) => {
+                  onClick={(e) => {
                     const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
-                    if (typeof el.showPicker === "function") {
-                      e.preventDefault();
-                      el.focus();
-                      el.showPicker();
-                    }
+                    try { el.showPicker?.(); } catch {}
                   }}
                   className="cursor-pointer"
                 />
