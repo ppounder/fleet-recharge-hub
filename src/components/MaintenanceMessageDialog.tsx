@@ -177,7 +177,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
           <div className="max-h-72 overflow-y-auto">
           <Table>
 
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
                 <TableHead className="w-36">Date / Time</TableHead>
                 <TableHead className="w-32">Name</TableHead>
