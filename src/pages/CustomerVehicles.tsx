@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { ArrowLeft, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
@@ -105,23 +106,73 @@ export default function CustomerVehicles() {
             <StatusBadge status={selected.status} />
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Vehicle Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-                {fields.map((f) => (
-                  <div key={f.key} className="space-y-1.5">
-                    <Label htmlFor={f.key} className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {f.label}
-                    </Label>
-                    <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
+          <Tabs defaultValue="info">
+            <TabsList>
+              <TabsTrigger value="info">Vehicle Information</TabsTrigger>
+              <TabsTrigger value="dates">Key Dates</TabsTrigger>
+              <TabsTrigger value="defects">Defect History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="info">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Vehicle Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                    {fields.map((f) => (
+                      <div key={f.key} className="space-y-1.5">
+                        <Label htmlFor={f.key} className="text-xs uppercase tracking-wide text-muted-foreground">
+                          {f.label}
+                        </Label>
+                        <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="dates">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Key Dates</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+                    <div className="flex flex-col gap-1 border-b pb-3">
+                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Year</dt>
+                      <dd className="font-medium">{selected.year ?? "—"}</dd>
+                    </div>
+                    <div className="flex flex-col gap-1 border-b pb-3">
+                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">MOT Due</dt>
+                      <dd className="font-medium">{selected.mot_due ?? "—"}</dd>
+                    </div>
+                    <div className="flex flex-col gap-1 border-b pb-3">
+                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Next Service</dt>
+                      <dd className="font-medium">{selected.next_service ?? "—"}</dd>
+                    </div>
+                    <div className="flex flex-col gap-1 border-b pb-3">
+                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Mileage</dt>
+                      <dd className="font-medium">{selected.mileage ? `${selected.mileage.toLocaleString()} mi` : "—"}</dd>
+                    </div>
+                  </dl>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="defects">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Defect History</CardTitle>
+                </CardHeader>
+                <CardContent className="py-12 text-center text-sm text-muted-foreground">
+                  No defects recorded for this vehicle.
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setSelected(null)} disabled={update.isPending}>
