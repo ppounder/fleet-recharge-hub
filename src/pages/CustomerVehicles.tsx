@@ -605,6 +605,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
   const [managerId, setManagerId] = useState<string>(vehicle.fleet_manager_id || "");
   const [depot, setDepot] = useState<string>((data?.customer as any)?.depot || "");
   const [homeDealer, setHomeDealer] = useState<string>((data?.customer as any)?.home_dealer || "");
+  const [allocatedDriver, setAllocatedDriver] = useState<string>("");
 
   useEffect(() => {
     setCustomerId(vehicle.customer_id || "");
@@ -620,6 +621,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
 
   const depotOpts = depot ? [{ value: depot, label: depot }] : [];
   const homeDealerOpts = homeDealer ? [{ value: homeDealer, label: homeDealer }] : [];
+  const allocatedDriverOpts = allocatedDriver ? [{ value: allocatedDriver, label: allocatedDriver }] : [];
 
   return (
     <CollapsibleCard title="Company Details">
@@ -671,6 +673,17 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
               searchPlaceholder="Search dealers..."
               emptyText="No dealers found."
               onChange={setHomeDealer}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Allocated Driver</Label>
+            <SearchableSelect
+              value={allocatedDriver}
+              options={allocatedDriverOpts}
+              placeholder="—"
+              searchPlaceholder="Search drivers..."
+              emptyText="No drivers found."
+              onChange={setAllocatedDriver}
             />
           </div>
         </div>
