@@ -67,14 +67,29 @@ export function TopBar() {
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
         </button>
 
-        <div className="flex items-center gap-2 px-2 h-8 rounded-full bg-primary text-primary-foreground">
-          <span className="text-xs font-medium">{profile?.full_name || "User"}</span>
-          <User className="w-4 h-4" />
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 pl-3 pr-2 h-8 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+              <span className="text-xs font-medium">{profile?.full_name || "User"}</span>
+              <User className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>{profile?.full_name || "User"}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <UserCog className="w-4 h-4 mr-2" /> Change user details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <KeyRound className="w-4 h-4 mr-2" /> Change password
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+              <LogOut className="w-4 h-4 mr-2" /> Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <Button variant="ghost" size="sm" onClick={signOut} className="h-8 text-xs text-muted-foreground">
-          <LogOut className="w-3.5 h-3.5 mr-1" /> Sign Out
-        </Button>
       </div>
     </header>
   );
