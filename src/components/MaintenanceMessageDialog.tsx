@@ -95,6 +95,23 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
   const applyDraft = async () => {
     const text = draft.trim();
+    if (editingId) {
+      setSavingDraft(true);
+      const { error } = await supabase
+        .from("vehicle_status_history")
+        .update({ maintenance_message: text || null })
+        .eq("id", editingId);
+      setSavingDraft(false);
+      if (error) {
+        toast({ title: "Update failed", description: error.message, variant: "destructive" });
+        return;
+      }
+      setEditingId(null);
+      invalidate();
+      toast({ title: "Message updated" });
+      onOpenChange(false);
+      return;
+    }
     if (!text) {
       onCurrentMessageChange("");
       onOpenChange(false);
