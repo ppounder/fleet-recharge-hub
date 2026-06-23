@@ -11,7 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2, Pencil } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Loader2, Pencil } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
@@ -495,6 +498,71 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
   );
 }
 
+function SearchableSelect({
+  value,
+  options,
+  placeholder = "Select...",
+  searchPlaceholder = "Search...",
+  emptyText = "No results.",
+  onChange,
+}: {
+  value: string;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  onChange?: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between bg-card font-normal"
+        >
+          <span className={cn("truncate", !selected && "text-muted-foreground")}>
+            {selected?.label || value || placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandGroup>
+              {options.map((o) => (
+                <CommandItem
+                  key={o.value}
+                  value={o.label}
+                  onSelect={() => {
+                    onChange?.(o.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === o.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {o.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
   const { data, isLoading } = useQuery({
     queryKey: ["vehicle_company_details", vehicle.id],
@@ -514,12 +582,44 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
     },
   });
 
-  const customerName = data?.customer?.name || "—";
-  const depot = (data?.customer as any)?.depot || "—";
-  const rows: { label: string; value: string }[] = [
-    { label: "Fleet Manager", value: data?.manager?.full_name || data?.manager?.email || "—" },
-    { label: "Home Dealer", value: (data?.customer as any)?.home_dealer || "—" },
-  ];
+  const { data: customerOptions = [] } = useQuery({
+    queryKey: ["company_details_customers"],
+    queryFn: async () => {
+      const { data } = await supabase.from("customers").select("id,name").order("name");
+      return (data || []).map((c: any) => ({ value: c.id as string, label: c.name as string }));
+    },
+  });
+
+  const { data: managerOptions = [] } = useQuery({
+    queryKey: ["company_details_fleet_managers"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id,full_name,email").order("full_name");
+      return (data || []).map((p: any) => ({
+        value: p.id as string,
+        label: (p.full_name || p.email || "—") as string,
+      }));
+    },
+  });
+
+  const [customerId, setCustomerId] = useState<string>(vehicle.customer_id || "");
+  const [managerId, setManagerId] = useState<string>(vehicle.fleet_manager_id || "");
+  const [depot, setDepot] = useState<string>((data?.customer as any)?.depot || "");
+  const [homeDealer, setHomeDealer] = useState<string>((data?.customer as any)?.home_dealer || "");
+
+  useEffect(() => {
+    setCustomerId(vehicle.customer_id || "");
+    setManagerId(vehicle.fleet_manager_id || "");
+  }, [vehicle.customer_id, vehicle.fleet_manager_id]);
+
+  const currentCustomerLabel = data?.customer?.name || "";
+  const customerOpts = customerOptions.length
+    ? customerOptions
+    : currentCustomerLabel
+      ? [{ value: customerId, label: currentCustomerLabel }]
+      : [];
+
+  const depotOpts = depot ? [{ value: depot, label: depot }] : [];
+  const homeDealerOpts = homeDealer ? [{ value: homeDealer, label: homeDealer }] : [];
 
   return (
     <CollapsibleCard title="Company Details">
@@ -531,23 +631,54 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
           <div className="space-y-1.5">
             <Label>Customer</Label>
-            <Input value={customerName} readOnly className="bg-card" />
+            <SearchableSelect
+              value={customerId}
+              options={customerOpts}
+              placeholder="—"
+              searchPlaceholder="Search customers..."
+              emptyText="No customers found."
+              onChange={setCustomerId}
+            />
             <div className="pl-4 border-l-2 border-border ml-2 mt-2 space-y-1.5">
               <Label className="text-xs text-muted-foreground">Depot</Label>
-              <Input value={depot} readOnly className="bg-card" />
+              <SearchableSelect
+                value={depot}
+                options={depotOpts}
+                placeholder="—"
+                searchPlaceholder="Search depots..."
+                emptyText="No depots found."
+                onChange={setDepot}
+              />
             </div>
           </div>
-          {rows.map((r) => (
-            <div key={r.label} className="space-y-1.5">
-              <Label>{r.label}</Label>
-              <Input value={r.value} readOnly className="bg-card" />
-            </div>
-          ))}
+          <div className="space-y-1.5">
+            <Label>Fleet Manager</Label>
+            <SearchableSelect
+              value={managerId}
+              options={managerOptions}
+              placeholder="—"
+              searchPlaceholder="Search fleet managers..."
+              emptyText="No fleet managers found."
+              onChange={setManagerId}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Home Dealer</Label>
+            <SearchableSelect
+              value={homeDealer}
+              options={homeDealerOpts}
+              placeholder="—"
+              searchPlaceholder="Search dealers..."
+              emptyText="No dealers found."
+              onChange={setHomeDealer}
+            />
+          </div>
         </div>
       )}
     </CollapsibleCard>
   );
 }
+
 
 
 function CollapsibleCard({
