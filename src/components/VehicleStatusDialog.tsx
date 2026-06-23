@@ -105,7 +105,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[95vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-3xl max-h-[95vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle>Vehicle on/off road status</DialogTitle>
           <DialogDescription>
