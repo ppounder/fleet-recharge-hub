@@ -169,10 +169,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               ) : history.length === 0 ? (
                 <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No previous messages</TableCell></TableRow>
               ) : history.map((h: any) => {
-                const isEditing = editingId === h.id;
                 const isBusy = busyId === h.id;
+                const isRowEditing = editingId === h.id;
                 return (
-                  <TableRow key={h.id}>
+                  <TableRow key={h.id} className={cn(isRowEditing && "bg-muted/40")}>
                     <TableCell className="text-xs text-muted-foreground align-middle whitespace-nowrap">
                       {format(new Date(h.changed_at), "dd MMM yyyy - HH:mm")}
                     </TableCell>
@@ -180,38 +180,21 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                       {h.changed_by || <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="align-middle">
-                      {isEditing ? (
-                        <Textarea
-                          rows={2}
-                          value={editingText}
-                          onChange={(e) => setEditingText(e.target.value)}
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">{h.maintenance_message}</p>
-                      )}
+                      <p className="text-sm whitespace-pre-wrap">{h.maintenance_message}</p>
                     </TableCell>
                     <TableCell className="align-middle">
                       <div className="flex justify-end gap-1">
-                        {isEditing ? (
-                          <>
-                            <Button size="icon" variant="ghost" onClick={() => saveEdit(h.id)} disabled={isBusy}>
-                              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} disabled={isBusy}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button size="icon" variant="ghost" onClick={() => startEdit(h.id, h.maintenance_message)} disabled={isBusy}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:bg-destructive hover:text-white")}>
-                              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            </Button>
-                          </>
-                        )}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => { setEditingId(h.id); setDraft(h.maintenance_message ?? ""); }}
+                          disabled={isBusy}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:bg-destructive hover:text-white")}>
+                          {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
