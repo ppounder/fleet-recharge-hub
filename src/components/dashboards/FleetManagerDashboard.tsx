@@ -1,5 +1,6 @@
 import { Shield, Wrench, CreditCard, AlertTriangle, TrendingUp, Clock, Car } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { formatDate } from "@/lib/utils";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { JobProgress } from "@/components/JobProgress";
