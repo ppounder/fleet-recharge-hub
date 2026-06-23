@@ -153,11 +153,11 @@ export default function CustomerVehicles() {
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">MOT Due</dt>
-                      <dd className="font-medium">{selected.mot_due ?? "—"}</dd>
+                      <dd className="font-medium">{formatDate(selected.mot_due)}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">Next Service</dt>
-                      <dd className="font-medium">{selected.next_service ?? "—"}</dd>
+                      <dd className="font-medium">{formatDate(selected.next_service)}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">Mileage</dt>
