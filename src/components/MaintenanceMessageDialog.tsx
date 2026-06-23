@@ -174,7 +174,9 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
         <div className="rounded-lg border overflow-hidden">
           <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Notes history</div>
+          <div className="max-h-72 overflow-y-auto">
           <Table>
+
             <TableHeader>
               <TableRow>
                 <TableHead className="w-36">Date / Time</TableHead>
