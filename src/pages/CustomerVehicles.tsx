@@ -183,11 +183,11 @@ export default function CustomerVehicles() {
                     <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="mot_due">MOT Due</Label>
+                    <Label htmlFor="mot_due">MOT due</Label>
                     <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="next_service">Next Service</Label>
+                    <Label htmlFor="next_service">Next service</Label>
                     <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
