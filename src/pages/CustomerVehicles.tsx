@@ -392,28 +392,54 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
   ];
 
   return (
+    <CollapsibleCard title="Company Details">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+          {rows.map((r) => (
+            <div key={r.label} className="space-y-1.5">
+              <Label>{r.label}</Label>
+              <Input value={r.value} readOnly />
+            </div>
+          ))}
+        </div>
+      )}
+    </CollapsibleCard>
+  );
+}
+
+function CollapsibleCard({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Company Details</CardTitle>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center justify-between text-left"
+          aria-expanded={open}
+        >
+          <CardTitle className="text-base">{title}</CardTitle>
+          <ChevronUp
+            className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "" : "rotate-180"}`}
+          />
+        </button>
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-            {rows.map((r) => (
-              <div key={r.label} className="space-y-1.5">
-                <Label>{r.label}</Label>
-                <Input value={r.value} readOnly />
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
+      {open && <CardContent>{children}</CardContent>}
     </Card>
   );
 }
+
 
 
