@@ -514,9 +514,9 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
     },
   });
 
+  const customerName = data?.customer?.name || "—";
+  const depot = (data?.customer as any)?.depot || "—";
   const rows: { label: string; value: string }[] = [
-    { label: "Customer", value: data?.customer?.name || "—" },
-    { label: "Depot", value: (data?.customer as any)?.depot || "—" },
     { label: "Fleet Manager", value: data?.manager?.full_name || data?.manager?.email || "—" },
     { label: "Home Dealer", value: (data?.customer as any)?.home_dealer || "—" },
   ];
@@ -529,6 +529,14 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+          <div className="space-y-1.5">
+            <Label>Customer</Label>
+            <Input value={customerName} readOnly className="bg-card" />
+            <div className="pl-4 border-l-2 border-border ml-2 mt-2 space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Depot</Label>
+              <Input value={depot} readOnly className="bg-card" />
+            </div>
+          </div>
           {rows.map((r) => (
             <div key={r.label} className="space-y-1.5">
               <Label>{r.label}</Label>
@@ -540,6 +548,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
     </CollapsibleCard>
   );
 }
+
 
 function CollapsibleCard({
   title,
