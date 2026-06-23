@@ -1,7 +1,8 @@
 import { useAppContext } from "@/contexts/AppContext";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/lib/navigation";
-import { Bell, User, Moon, Sun, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, User, Moon, Sun, LogOut, UserCog, KeyRound } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,8 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+
 
 const roleLabels: Record<UserRole, string> = {
   "fleet-manager": "Fleet Manager",
