@@ -465,7 +465,7 @@ function CollapsibleCard({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="flex w-full items-center justify-center gap-2 text-center"
+          className="flex w-full items-center justify-between text-left"
           aria-expanded={open}
         >
           <CardTitle className="text-base">{title}</CardTitle>
