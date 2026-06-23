@@ -182,7 +182,7 @@ export function MaintenanceMessageDialog({ vehicleId, open, onOpenChange, curren
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={applyDraft}>Apply message</Button>
+          <Button onClick={applyDraft}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
