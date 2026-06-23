@@ -178,7 +178,14 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="time">Time</Label>
-                <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+                <Input
+                  id="time"
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  onClick={(e) => { const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void }; el.showPicker?.(); }}
+                  onFocus={(e) => { const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void }; el.showPicker?.(); }}
+                />
               </div>
             </div>
 
