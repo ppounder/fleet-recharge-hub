@@ -675,6 +675,17 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
               onChange={setHomeDealer}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label>Allocated Driver</Label>
+            <SearchableSelect
+              value={allocatedDriver}
+              options={allocatedDriverOpts}
+              placeholder="—"
+              searchPlaceholder="Search drivers..."
+              emptyText="No drivers found."
+              onChange={setAllocatedDriver}
+            />
+          </div>
         </div>
       )}
     </CollapsibleCard>
