@@ -132,7 +132,14 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="new-msg">New message</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="new-msg">{editingId ? "Edit message" : "New message"}</Label>
+            {editingId && (
+              <Button size="sm" variant="ghost" onClick={() => { setEditingId(null); setDraft(currentMessage); }}>
+                Cancel edit
+              </Button>
+            )}
+          </div>
           <Textarea
             id="new-msg"
             rows={4}
@@ -141,7 +148,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             placeholder="Describe the maintenance required..."
           />
           <p className="text-xs text-muted-foreground">
-            This will be attached to the status update when you save.
+            {editingId ? "Editing an existing message. Save to update it." : "This will be attached to the status update when you save."}
           </p>
         </div>
 
