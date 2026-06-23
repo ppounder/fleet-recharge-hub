@@ -276,11 +276,8 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Defect History</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <CollapsibleCard title="Defect History">
+      <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
           <div className="space-y-1.5">
             <Label htmlFor="defect-status">Status</Label>
@@ -363,8 +360,8 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
             </TableBody>
           </Table>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CollapsibleCard>
   );
 }
 
