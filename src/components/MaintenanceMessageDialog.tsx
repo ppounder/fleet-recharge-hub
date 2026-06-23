@@ -168,7 +168,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             placeholder="Add a note about this vehicle..."
           />
           <p className="text-xs text-muted-foreground">
-            {editingId ? "Editing an existing note. Save to update it." : "Your note will be timestamped and added to the notes history."}
+            {editingId ? "Editing an existing note. Save to update it." : "Your note will be added to the notes history."}
           </p>
         </div>
 
