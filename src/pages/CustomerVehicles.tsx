@@ -13,13 +13,16 @@ import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
 import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2, Pencil } from "lucide-react";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
+import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type EditableFields = {
   status: string;
