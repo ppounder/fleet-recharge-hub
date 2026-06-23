@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
-import { ArrowLeft, Car, Loader2 } from "lucide-react";
+import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
+import { ArrowLeft, ArrowUpDown, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 type EditableFields = {
   registration: string;
@@ -162,14 +168,7 @@ export default function CustomerVehicles() {
             </TabsContent>
 
             <TabsContent value="defects">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Defect History</CardTitle>
-                </CardHeader>
-                <CardContent className="py-12 text-center text-sm text-muted-foreground">
-                  No defects recorded for this vehicle.
-                </CardContent>
-              </Card>
+              <DefectHistory vehicleId={selected.id} />
             </TabsContent>
           </Tabs>
 
@@ -235,3 +234,137 @@ export default function CustomerVehicles() {
     </AppLayout>
   );
 }
+
+type SortKey = "reported_at" | "severity" | "status" | "title";
+type SortDir = "asc" | "desc";
+
+const severityRank: Record<string, number> = { critical: 3, major: 2, minor: 1 };
+const statusRank: Record<string, number> = { open: 1, "in-progress": 2, resolved: 3, cancelled: 4 };
+
+const severityVariant = (s: string) =>
+  s === "critical" ? "destructive" : s === "major" ? "default" : "secondary";
+
+const statusVariant = (s: string) =>
+  s === "open" ? "destructive" : s === "in-progress" ? "default" : "secondary";
+
+function DefectHistory({ vehicleId }: { vehicleId: string }) {
+  const { data: defects = [], isLoading } = useVehicleDefects(vehicleId);
+  const navigate = useNavigate();
+  const [statusFilter, setStatusFilter] = useState<DefectStatus | "all">("all");
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("reported_at");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const rows = useMemo(() => {
+    let list = [...defects];
+    if (statusFilter !== "all") list = list.filter((d) => d.status === statusFilter);
+    if (severityFilter !== "all") list = list.filter((d) => d.severity === severityFilter);
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "reported_at") cmp = new Date(a.reported_at).getTime() - new Date(b.reported_at).getTime();
+      else if (sortKey === "severity") cmp = (severityRank[a.severity] ?? 0) - (severityRank[b.severity] ?? 0);
+      else if (sortKey === "status") cmp = (statusRank[a.status] ?? 0) - (statusRank[b.status] ?? 0);
+      else cmp = a.title.localeCompare(b.title);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return list;
+  }, [defects, statusFilter, severityFilter, sortKey, sortDir]);
+
+  const toggleSort = (k: SortKey) => {
+    if (k === sortKey) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir(k === "reported_at" ? "desc" : "asc"); }
+  };
+
+  const SortBtn = ({ k, children }: { k: SortKey; children: React.ReactNode }) => (
+    <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1 hover:text-foreground">
+      {children}
+      <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
+    </button>
+  );
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
+        <CardTitle className="text-base">Defect History</CardTitle>
+        <div className="flex items-center gap-2">
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={severityFilter} onValueChange={setSeverityFilter}>
+            <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Severity" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All severities</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+              <SelectItem value="major">Major</SelectItem>
+              <SelectItem value="minor">Minor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="py-10 text-center text-sm text-muted-foreground">
+            No defects match the current filters.
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead><SortBtn k="reported_at">Reported</SortBtn></TableHead>
+                <TableHead><SortBtn k="title">Defect</SortBtn></TableHead>
+                <TableHead><SortBtn k="severity">Severity</SortBtn></TableHead>
+                <TableHead><SortBtn k="status">Status</SortBtn></TableHead>
+                <TableHead>Work Order</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((d) => (
+                <TableRow key={d.id}>
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    {new Date(d.reported_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium">{d.title}</div>
+                    {d.description && (
+                      <div className="text-xs text-muted-foreground line-clamp-1">{d.description}</div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={severityVariant(d.severity) as any} className="capitalize">{d.severity}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariant(d.status) as any} className="capitalize">{d.status.replace("-", " ")}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {d.job ? (
+                      <button
+                        onClick={() => navigate(`/jobs/${d.job!.id}`)}
+                        className="text-primary hover:underline text-sm font-medium"
+                      >
+                        {d.job.job_number}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
