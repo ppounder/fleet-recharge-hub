@@ -239,11 +239,11 @@ export default function CustomerVehicles() {
 type SortKey = "reported_at" | "severity" | "status" | "title";
 type SortDir = "asc" | "desc";
 
-const severityRank: Record<string, number> = { critical: 3, major: 2, minor: 1 };
+const severityRank: Record<string, number> = { safety: 3, "non-safety": 2, advisory: 1 };
 const statusRank: Record<string, number> = { open: 1, "in-progress": 2, resolved: 3, cancelled: 4 };
 
 const severityVariant = (s: string) =>
-  s === "critical" ? "destructive" : s === "major" ? "default" : "secondary";
+  s === "safety" ? "destructive" : s === "non-safety" ? "default" : "secondary";
 
 const statusVariant = (s: string) =>
   s === "open" ? "destructive" : s === "in-progress" ? "default" : "secondary";
@@ -302,9 +302,9 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
             <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Severity" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All severities</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-              <SelectItem value="major">Major</SelectItem>
-              <SelectItem value="minor">Minor</SelectItem>
+              <SelectItem value="safety">Safety</SelectItem>
+              <SelectItem value="non-safety">Non-safety</SelectItem>
+              <SelectItem value="advisory">Advisory</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -342,7 +342,7 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={severityVariant(d.severity) as any} className="capitalize">{d.severity}</Badge>
+                    <Badge variant={severityVariant(d.severity) as any} className="capitalize">{d.severity.replace("-", " ")}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(d.status) as any} className="capitalize">{d.status.replace("-", " ")}</Badge>
