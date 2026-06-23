@@ -12,18 +12,22 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   vehicleId: string;
+  vehicleStatus?: string | null;
+  fleetId?: string | null;
+  changedBy?: string | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   currentMessage: string;
   onCurrentMessageChange: (v: string) => void;
 }
 
-export function MaintenanceMessageDialog({ vehicleId, open, onOpenChange, currentMessage, onCurrentMessageChange }: Props) {
+export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, changedBy, open, onOpenChange, currentMessage, onCurrentMessageChange }: Props) {
   const qc = useQueryClient();
   const [draft, setDraft] = useState(currentMessage);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
 
   useEffect(() => {
     if (open) setDraft(currentMessage);
@@ -86,8 +90,31 @@ export function MaintenanceMessageDialog({ vehicleId, open, onOpenChange, curren
     toast({ title: "Message deleted" });
   };
 
-  const applyDraft = () => {
-    onCurrentMessageChange(draft);
+  const applyDraft = async () => {
+    const text = draft.trim();
+    if (!text) {
+      onCurrentMessageChange("");
+      onOpenChange(false);
+      return;
+    }
+    setSavingDraft(true);
+    const { error } = await supabase.from("vehicle_status_history").insert({
+      vehicle_id: vehicleId,
+      fleet_id: fleetId ?? null,
+      status: vehicleStatus ?? "on-road",
+      changed_at: new Date().toISOString(),
+      changed_by: changedBy ?? null,
+      maintenance_message: text,
+      sorn_returned: false,
+    });
+    setSavingDraft(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    onCurrentMessageChange(text);
+    invalidate();
+    toast({ title: "Message saved" });
     onOpenChange(false);
   };
 
@@ -182,7 +209,10 @@ export function MaintenanceMessageDialog({ vehicleId, open, onOpenChange, curren
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={applyDraft}>Save</Button>
+          <Button onClick={applyDraft} disabled={savingDraft}>
+            {savingDraft && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {savingDraft ? "Saving..." : "Save"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
