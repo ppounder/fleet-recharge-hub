@@ -29,10 +29,10 @@ function DateField({ id, value, onChange, disabled }: { id: string; value: strin
           type="button"
           variant="outline"
           disabled={disabled}
-          className={cn("w-full justify-start font-normal", !date && "text-muted-foreground", disabled && "bg-muted")}
+        className={cn("w-full justify-between font-normal", !date && "text-muted-foreground", disabled && "bg-muted")}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "dd MMM yyyy") : "Pick a date"}
+          <span>{date ? format(date, "dd MMM yyyy") : "Pick a date"}</span>
+          <CalendarIcon className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
