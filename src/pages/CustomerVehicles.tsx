@@ -332,7 +332,7 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
               {rows.map((d) => (
                 <TableRow key={d.id}>
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                    {new Date(d.reported_at).toLocaleDateString()}
+                    {formatDate(d.reported_at)}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{d.title}</div>
