@@ -122,7 +122,7 @@ export default function CustomerVehicles() {
               <TabsTrigger value="defects">Defect History</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="info">
+            <TabsContent value="info" className="space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Vehicle Information</CardTitle>
@@ -140,6 +140,8 @@ export default function CustomerVehicles() {
                   </div>
                 </CardContent>
               </Card>
+
+              <CompanyDetails vehicle={selected} />
             </TabsContent>
 
             <TabsContent value="dates">
