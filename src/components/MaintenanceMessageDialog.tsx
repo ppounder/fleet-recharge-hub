@@ -165,10 +165,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             rows={4}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Describe the maintenance required..."
+            placeholder="Add a note about this vehicle..."
           />
           <p className="text-xs text-muted-foreground">
-            {editingId ? "Editing an existing note. Save to update it." : "This will be attached to the status update when you save."}
+            {editingId ? "Editing an existing note. Save to update it." : "Your note will be timestamped and added to the notes history."}
           </p>
         </div>
 
