@@ -211,7 +211,7 @@ export default function CustomerVehicles() {
 
               <CompanyDetails vehicle={selected} />
 
-              <CollapsibleCard title="Maintenance messages">
+              <CollapsibleCard title="Notes">
                 <div className="space-y-1.5">
                   
                   <div className="relative">
@@ -220,7 +220,7 @@ export default function CustomerVehicles() {
                       value={latestMessage}
                       readOnly
                       rows={3}
-                      placeholder="No maintenance message recorded"
+                      placeholder="No note recorded"
                       onFocus={(e) => { e.target.blur(); setMsgDialogOpen(true); }}
                       onClick={() => setMsgDialogOpen(true)}
                       className="bg-card pr-9 cursor-pointer"
@@ -229,7 +229,7 @@ export default function CustomerVehicles() {
                       type="button"
                       onClick={() => setMsgDialogOpen(true)}
                       className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
-                      aria-label="Edit maintenance messages"
+                      aria-label="Edit notes"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>

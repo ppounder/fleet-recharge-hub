@@ -145,9 +145,9 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Maintenance message</DialogTitle>
+          <DialogTitle>Notes</DialogTitle>
           <DialogDescription>
-            Add a new maintenance message, or edit and delete previous ones.
+            Add a new note, or edit and delete previous ones.
           </DialogDescription>
         </DialogHeader>
 

@@ -280,7 +280,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="msg">Maintenance message</Label>
+              <Label htmlFor="msg">Notes</Label>
               <button
                 id="msg"
                 type="button"
@@ -290,7 +290,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                 {message ? (
                   <span className="whitespace-pre-wrap">{message}</span>
                 ) : (
-                  <span className="text-muted-foreground">Click to add or manage maintenance messages...</span>
+                  <span className="text-muted-foreground">Click to add or manage notes...</span>
                 )}
               </button>
             </div>
