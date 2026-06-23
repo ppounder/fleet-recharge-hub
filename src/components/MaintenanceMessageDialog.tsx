@@ -143,7 +143,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col gap-4">
         <DialogHeader>
           <DialogTitle>Notes</DialogTitle>
           <DialogDescription>
@@ -172,9 +172,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
           </p>
         </div>
 
-        <div className="rounded-lg border overflow-hidden">
+        <div className="rounded-lg border overflow-hidden flex-1 min-h-0 flex flex-col">
           <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Notes history</div>
-          <div className="max-h-72 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto">
+
           <Table>
 
             <TableHeader className="sticky top-0 bg-background z-10">
