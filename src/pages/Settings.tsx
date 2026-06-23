@@ -105,6 +105,14 @@ export default function Settings() {
     email,
     alerts: false,
   });
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const updateField = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
+  };
 
   const openEdit = () => {
     setForm({
@@ -115,23 +123,41 @@ export default function Settings() {
       email,
       alerts,
     });
+    setErrors({});
     setOpen(true);
   };
 
   const handleSave = async () => {
     if (!user) return;
+
+    const result = profileSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: FormErrors = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as keyof FormErrors;
+        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+      }
+      setErrors(fieldErrors);
+      toast({
+        title: "Please fix the errors below",
+        description: "Some fields are invalid.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
-    const newFullName = `${form.firstName} ${form.lastName}`.trim();
+    const newFullName = `${result.data.firstName} ${result.data.lastName}`.trim();
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: newFullName, email: form.email })
+      .update({ full_name: newFullName, email: result.data.email })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
       toast({ title: "Failed to save", description: error.message, variant: "destructive" });
       return;
     }
-    setAlerts(form.alerts);
+    setAlerts(result.data.alerts);
     toast({ title: "Profile updated" });
     setOpen(false);
   };
