@@ -131,7 +131,7 @@ export default function CustomerVehicles() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                     {fields.map((f) => (
                       <div key={f.key} className="space-y-1.5">
-                        <Label htmlFor={f.key} className="text-xs uppercase tracking-wide text-muted-foreground">
+                        <Label htmlFor={f.key}>
                           {f.label}
                         </Label>
                         <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
@@ -152,19 +152,19 @@ export default function CustomerVehicles() {
                 <CardContent>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
                     <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Year</dt>
+                      <dt>Year</dt>
                       <dd className="font-medium">{selected.year ?? "—"}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">MOT Due</dt>
+                      <dt>MOT Due</dt>
                       <dd className="font-medium">{formatDate(selected.mot_due)}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Next Service</dt>
+                      <dt>Next Service</dt>
                       <dd className="font-medium">{formatDate(selected.next_service)}</dd>
                     </div>
                     <div className="flex flex-col gap-1 border-b pb-3">
-                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Mileage</dt>
+                      <dt>Mileage</dt>
                       <dd className="font-medium">{selected.mileage ? `${selected.mileage.toLocaleString()} mi` : "—"}</dd>
                     </div>
                   </dl>
@@ -413,7 +413,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
             {rows.map((r) => (
               <div key={r.label} className="space-y-1.5">
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">{r.label}</Label>
+                <Label>{r.label}</Label>
                 <Input value={r.value} readOnly />
               </div>
             ))}
