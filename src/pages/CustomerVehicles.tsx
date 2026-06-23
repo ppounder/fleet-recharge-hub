@@ -128,7 +128,7 @@ export default function CustomerVehicles() {
                   <CardTitle className="text-base">Vehicle Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                     {fields.map((f) => (
                       <div key={f.key} className="space-y-1.5">
                         <Label htmlFor={f.key} className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -150,7 +150,7 @@ export default function CustomerVehicles() {
                   <CardTitle className="text-base">Key Dates</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
                     <div className="flex flex-col gap-1 border-b pb-3">
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">Year</dt>
                       <dd className="font-medium">{selected.year ?? "—"}</dd>
@@ -410,7 +410,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 text-sm">
             {rows.map((r) => (
               <div key={r.label} className="flex flex-col gap-1 border-b pb-3">
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">{r.label}</dt>
