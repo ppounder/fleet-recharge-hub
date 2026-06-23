@@ -347,6 +347,13 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           </Button>
         </DialogFooter>
       </DialogContent>
+      <MaintenanceMessageDialog
+        vehicleId={vehicle.id}
+        open={msgDialogOpen}
+        onOpenChange={setMsgDialogOpen}
+        currentMessage={message}
+        onCurrentMessageChange={setMessage}
+      />
     </Dialog>
   );
 }
