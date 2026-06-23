@@ -58,8 +58,9 @@ export function TopBar() {
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
         </button>
 
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-          <User className="w-4 h-4 text-primary-foreground" />
+        <div className="flex items-center gap-2 px-2 h-8 rounded-full bg-primary text-primary-foreground">
+          <span className="text-xs font-medium">{profile?.full_name || "User"}</span>
+          <User className="w-4 h-4" />
         </div>
 
         <Button variant="ghost" size="sm" onClick={signOut} className="h-8 text-xs text-muted-foreground">
