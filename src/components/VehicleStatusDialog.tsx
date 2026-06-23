@@ -307,10 +307,11 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           {/* Right column */}
           <div className="space-y-3 flex flex-col min-h-0">
             <div className="flex-1 flex flex-col min-h-0 rounded-lg border overflow-hidden">
-              <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Status history</div>
+              <div className="px-3 py-2 border-b bg-background text-sm font-medium">Status history</div>
               <div className="max-h-64 overflow-y-auto">
                 <Table>
-                  <TableHeader className="sticky top-0 bg-muted/40 z-10">
+                  <TableHeader className="sticky top-0 bg-background z-10">
+
                     <TableRow>
                       <TableHead>Status amended to</TableHead>
                       <TableHead>Date</TableHead>
