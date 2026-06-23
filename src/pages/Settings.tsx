@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { z } from "zod";
 import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +17,44 @@ import {
 import { User, AtSign, Phone, Mail, Bell, LogOut, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
+const profileSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(30, { message: "Username must be less than 30 characters" })
+    .regex(/^[a-zA-Z0-9._-]+$/, {
+      message: "Use letters, numbers, dots, underscores or hyphens only",
+    }),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, { message: "First name is required" })
+    .max(50, { message: "First name must be less than 50 characters" }),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, { message: "Last name is required" })
+    .max(50, { message: "Last name must be less than 50 characters" }),
+  mobile: z
+    .string()
+    .trim()
+    .max(20, { message: "Mobile number must be less than 20 characters" })
+    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), {
+      message: "Enter a valid mobile number",
+    }),
+  email: z
+    .string()
+    .trim()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Enter a valid email address" })
+    .max(255, { message: "Email must be less than 255 characters" }),
+  alerts: z.boolean(),
+});
+
+type FormErrors = Partial<Record<keyof z.infer<typeof profileSchema>, string>>;
 
 interface RowProps {
   icon: React.ReactNode;
