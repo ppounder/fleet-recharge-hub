@@ -21,20 +21,26 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 type EditableFields = {
+  status: string;
+  vin: string;
   registration: string;
   fleet_number: string;
-  vin: string;
+  asset_number: string;
   asset_type: string;
+  body_type: string;
   make: string;
   model: string;
   derivative: string;
 };
 
 const blank: EditableFields = {
+  status: "",
+  vin: "",
   registration: "",
   fleet_number: "",
-  vin: "",
+  asset_number: "",
   asset_type: "",
+  body_type: "",
   make: "",
   model: "",
   derivative: "",
@@ -42,15 +48,19 @@ const blank: EditableFields = {
 
 function toForm(v: Vehicle): EditableFields {
   return {
+    status: v.status || "",
+    vin: v.vin || "",
     registration: v.registration || "",
     fleet_number: (v as any).fleet_number || "",
-    vin: v.vin || "",
+    asset_number: (v as any).asset_number || "",
     asset_type: (v as any).asset_type || "",
+    body_type: (v as any).body_type || "",
     make: v.make || "",
     model: v.model || "",
     derivative: (v as any).derivative || "",
   };
 }
+
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
