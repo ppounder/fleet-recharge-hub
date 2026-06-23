@@ -71,7 +71,7 @@ export function TopBar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 pl-3 pr-2 h-8 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+            <button className="flex items-center justify-center gap-2 px-3 h-8 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
               <span className="text-xs font-medium">{profile?.full_name || "User"}</span>
               <User className="w-4 h-4" />
             </button>
