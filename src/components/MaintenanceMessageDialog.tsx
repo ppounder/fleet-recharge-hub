@@ -179,7 +179,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               <TableRow>
                 <TableHead className="w-44">Date / Time</TableHead>
                 <TableHead className="w-40">Name</TableHead>
-                <TableHead>Note</TableHead>
+                <TableHead>Notes</TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
