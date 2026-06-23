@@ -322,7 +322,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                     ) : history.map((h: any) => (
                       <TableRow key={h.id}>
                         <TableCell>{statusLabel(h.status)}</TableCell>
-                        <TableCell>{new Date(h.changed_at).toLocaleDateString()}</TableCell>
+                        <TableCell>{formatDate(h.changed_at)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
