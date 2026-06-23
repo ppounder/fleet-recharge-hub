@@ -147,11 +147,15 @@ export default function CustomerVehicles() {
 
             <TabsContent value="info" className="space-y-4">
               <CollapsibleCard title="Vehicle Information">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                  {fields.map((f) => (
-                    <div key={f.key} className="space-y-1.5">
-                      <Label htmlFor={f.key}>{f.label}</Label>
-                      <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
+                <div className="space-y-5">
+                  {rows.map((row, i) => (
+                    <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                      {row.map((k) => (
+                        <div key={k} className="space-y-1.5">
+                          <Label htmlFor={k}>{labels[k]}</Label>
+                          <Input id={k} value={form[k]} onChange={set(k)} />
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
