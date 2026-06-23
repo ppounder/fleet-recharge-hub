@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Vehicle } from "@/hooks/useVehicles";
+import { cn } from "@/lib/utils";
 
 interface Props {
   vehicle: Vehicle;
@@ -100,33 +101,44 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
     }
   };
 
+  const lockedClass = "bg-muted";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Vehicle on/off road status</DialogTitle>
+          <DialogDescription>
+            Update the current on or off road status for this vehicle.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-3 pb-2">
+        <div className="flex items-center gap-3">
           <UKNumberPlate registration={vehicle.registration} />
-          <span className="text-base font-semibold">{statusLabel(vehicle.status)}</span>
+          <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
         </div>
 
-        <section className="space-y-3 border-t pt-3">
-          <h3 className="text-sm font-semibold">Status update</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <Checkbox id="off-road" checked={offRoad} onCheckedChange={(v) => setOffRoad(!!v)} />
-              <Label htmlFor="off-road">Asset off-road</Label>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <p className="text-sm font-medium">Asset off-road</p>
+              <p className="text-xs text-muted-foreground">Mark this vehicle as off the road</p>
             </div>
+            <Switch checked={offRoad} onCheckedChange={setOffRoad} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="reason">Reason</Label>
-              <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!offRoad} className={!offRoad ? "bg-muted" : undefined} />
+              <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
             </div>
-            <div className="space-y-1.5 col-span-2">
+            <div className="space-y-1.5">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} readOnly={!offRoad} className={!offRoad ? "bg-muted" : undefined} />
+              <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="date">Date</Label>
               <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -135,67 +147,67 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
               <Label htmlFor="time">Time</Label>
               <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="odo">Vehicle ODO reading</Label>
-              <div className="flex gap-2">
-                <Input id="odo" value={odo} onChange={(e) => setOdo(e.target.value.replace(/[^\d.]/g, ""))} />
-                <span className="self-center text-sm text-muted-foreground">Miles</span>
-              </div>
+              <Label htmlFor="odo">Vehicle ODO reading (Miles)</Label>
+              <Input id="odo" value={odo} onChange={(e) => setOdo(e.target.value.replace(/[^\d.]/g, ""))} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="changed-by">Changed by</Label>
               <Input id="changed-by" value={changedBy} onChange={(e) => setChangedBy(e.target.value)} />
             </div>
-            <div className="space-y-1.5 col-span-2">
-              <Label htmlFor="msg">Maintenance message</Label>
-              <Textarea id="msg" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} className="bg-yellow-50" />
-            </div>
           </div>
-        </section>
 
-        <section className="space-y-2 border-t pt-3">
-          <h3 className="text-sm font-semibold">Status history</h3>
-          <div className="max-h-48 overflow-y-auto border rounded">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Status amended to</TableHead>
-                  <TableHead>Status amended date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.length === 0 ? (
-                  <TableRow><TableCell colSpan={2} className="text-center text-sm text-muted-foreground">No history yet</TableCell></TableRow>
-                ) : history.map((h: any) => (
-                  <TableRow key={h.id}>
-                    <TableCell>{statusLabel(h.status)}</TableCell>
-                    <TableCell>{new Date(h.changed_at).toLocaleDateString()}</TableCell>
+          <div className="space-y-1.5">
+            <Label htmlFor="msg">Maintenance message</Label>
+            <Textarea id="msg" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Status history</Label>
+            <div className="max-h-48 overflow-y-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Status amended to</TableHead>
+                    <TableHead>Status amended date</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {history.length === 0 ? (
+                    <TableRow><TableCell colSpan={2} className="text-center text-sm text-muted-foreground">No history yet</TableCell></TableRow>
+                  ) : history.map((h: any) => (
+                    <TableRow key={h.id}>
+                      <TableCell>{statusLabel(h.status)}</TableCell>
+                      <TableCell>{new Date(h.changed_at).toLocaleDateString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </section>
 
-        <section className="space-y-3 border-t pt-3">
-          <h3 className="text-sm font-semibold">DVLA SORN</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <Checkbox id="sorn" checked={sornReturned} onCheckedChange={(v) => setSornReturned(!!v)} />
-              <Label htmlFor="sorn">SORN returned</Label>
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <p className="text-sm font-medium">DVLA SORN returned</p>
+              <p className="text-xs text-muted-foreground">Mark when SORN has been returned to DVLA</p>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="sorn-date">Date SORN to DVLA</Label>
-              <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} />
-            </div>
+            <Switch checked={sornReturned} onCheckedChange={setSornReturned} />
           </div>
-        </section>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="sorn-date">Date SORN to DVLA</Label>
+            <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} readOnly={!sornReturned} className={cn(!sornReturned && lockedClass)} />
+          </div>
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            OK
+            {saving ? "Saving..." : "Save changes"}
           </Button>
         </DialogFooter>
       </DialogContent>
