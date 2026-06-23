@@ -118,7 +118,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3 flex-1 min-h-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 flex-1 min-h-0">
           {/* Left column */}
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-lg border p-2.5">
