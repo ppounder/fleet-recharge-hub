@@ -56,7 +56,7 @@ export function CustomerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="My Vehicles" value={vehicles.length} icon={Car} />
+        <StatCard label="Vehicles" value={vehicles.length} icon={Car} />
         <StatCard label="Active Work" value={activeJobs.length} icon={Wrench} changeType="neutral" />
         <StatCard label="Recharges" value={`£${rechargeTotal.toFixed(2)}`} icon={CreditCard} change={`${rechargeItems.length} items`} changeType="negative" />
         <StatCard label="Total Jobs" value={jobs.length} icon={FileText} changeType="neutral" />
@@ -65,7 +65,7 @@ export function CustomerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">My Vehicles</CardTitle>
+            <CardTitle className="text-base">Vehicles</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {vehicles.length === 0 ? (
