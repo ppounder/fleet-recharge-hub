@@ -379,7 +379,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
     queryFn: async () => {
       const [customerRes, managerRes] = await Promise.all([
         vehicle.customer_id
-          ? supabase.from("customers").select("name,depot,home_dealer").eq("id", vehicle.customer_id).maybeSingle()
+          ? supabase.from("customers").select("name").eq("id", vehicle.customer_id).maybeSingle()
           : Promise.resolve({ data: null, error: null } as any),
         vehicle.fleet_manager_id
           ? supabase.from("profiles").select("full_name,email").eq("id", vehicle.fleet_manager_id).maybeSingle()
