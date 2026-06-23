@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface Props {
   vehicleId: string;
@@ -38,7 +39,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicle_status_history")
-        .select("id, changed_at, maintenance_message, status")
+        .select("id, changed_at, maintenance_message, status, changed_by")
         .eq("vehicle_id", vehicleId)
         .not("maintenance_message", "is", null)
         .neq("maintenance_message", "")
@@ -147,23 +148,27 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-32">Date</TableHead>
+                <TableHead className="w-44">Date / Time</TableHead>
+                <TableHead className="w-40">Name</TableHead>
                 <TableHead>Message</TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-sm text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">Loading...</TableCell></TableRow>
               ) : history.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-sm text-muted-foreground">No previous messages</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No previous messages</TableCell></TableRow>
               ) : history.map((h: any) => {
                 const isEditing = editingId === h.id;
                 const isBusy = busyId === h.id;
                 return (
                   <TableRow key={h.id}>
                     <TableCell className="text-xs text-muted-foreground align-top whitespace-nowrap">
-                      {new Date(h.changed_at).toLocaleDateString()}
+                      {format(new Date(h.changed_at), "dd MMM yyyy - HH:mm")}
+                    </TableCell>
+                    <TableCell className="text-sm align-top whitespace-nowrap">
+                      {h.changed_by || <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="align-top">
                       {isEditing ? (
