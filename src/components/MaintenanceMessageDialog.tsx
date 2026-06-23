@@ -38,7 +38,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicle_status_history")
-        .select("id, changed_at, maintenance_message, status")
+        .select("id, changed_at, maintenance_message, status, changed_by")
         .eq("vehicle_id", vehicleId)
         .not("maintenance_message", "is", null)
         .neq("maintenance_message", "")
