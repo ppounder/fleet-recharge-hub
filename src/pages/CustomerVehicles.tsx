@@ -1,25 +1,89 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useVehicles, Vehicle } from "@/hooks/useVehicles";
+import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { ArrowLeft, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { toast } from "@/hooks/use-toast";
+
+type EditableFields = {
+  registration: string;
+  fleet_number: string;
+  vin: string;
+  asset_type: string;
+  make: string;
+  model: string;
+  derivative: string;
+};
+
+const blank: EditableFields = {
+  registration: "",
+  fleet_number: "",
+  vin: "",
+  asset_type: "",
+  make: "",
+  model: "",
+  derivative: "",
+};
+
+function toForm(v: Vehicle): EditableFields {
+  return {
+    registration: v.registration || "",
+    fleet_number: (v as any).fleet_number || "",
+    vin: v.vin || "",
+    asset_type: (v as any).asset_type || "",
+    make: v.make || "",
+    model: v.model || "",
+    derivative: (v as any).derivative || "",
+  };
+}
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
+  const update = useUpdateVehicle();
   const [selected, setSelected] = useState<Vehicle | null>(null);
+  const [form, setForm] = useState<EditableFields>(blank);
+
+  useEffect(() => {
+    if (selected) setForm(toForm(selected));
+  }, [selected]);
+
+  const set = (k: keyof EditableFields) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const handleSave = async () => {
+    if (!selected) return;
+    try {
+      await update.mutateAsync({
+        id: selected.id,
+        registration: form.registration,
+        fleet_number: form.fleet_number || null,
+        vin: form.vin || null,
+        asset_type: form.asset_type || null,
+        make: form.make,
+        model: form.model,
+        derivative: form.derivative || null,
+      } as any);
+      toast({ title: "Vehicle updated" });
+      setSelected(null);
+    } catch (e: any) {
+      toast({ title: "Update failed", description: e.message, variant: "destructive" });
+    }
+  };
 
   if (selected) {
-    const fields: { label: string; value: React.ReactNode }[] = [
-      { label: "Registration", value: <UKNumberPlate registration={selected.registration} /> },
-      { label: "Fleet Number", value: (selected as any).fleet_number || "—" },
-      { label: "VIN", value: selected.vin || "—" },
-      { label: "Asset Type", value: (selected as any).asset_type || "—" },
-      { label: "Make", value: selected.make || "—" },
-      { label: "Model", value: selected.model || "—" },
-      { label: "Derivative", value: (selected as any).derivative || "—" },
+    const fields: { key: keyof EditableFields; label: string }[] = [
+      { key: "registration", label: "Registration" },
+      { key: "fleet_number", label: "Fleet Number" },
+      { key: "vin", label: "VIN" },
+      { key: "asset_type", label: "Asset Type" },
+      { key: "make", label: "Make" },
+      { key: "model", label: "Model" },
+      { key: "derivative", label: "Derivative" },
     ];
 
     return (
@@ -32,7 +96,10 @@ export default function CustomerVehicles() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Vehicle Details</h1>
-                <p className="text-sm text-muted-foreground">{selected.make} {selected.model}</p>
+                <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
+                  <UKNumberPlate registration={selected.registration} />
+                  · {selected.make} {selected.model}
+                </p>
               </div>
             </div>
             <StatusBadge status={selected.status} />
@@ -43,16 +110,28 @@ export default function CustomerVehicles() {
               <CardTitle className="text-base">Vehicle Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                 {fields.map((f) => (
-                  <div key={f.label} className="flex flex-col gap-1 border-b pb-3">
-                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">{f.label}</dt>
-                    <dd className="font-medium">{f.value}</dd>
+                  <div key={f.key} className="space-y-1.5">
+                    <Label htmlFor={f.key} className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {f.label}
+                    </Label>
+                    <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
                   </div>
                 ))}
-              </dl>
+              </div>
             </CardContent>
           </Card>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setSelected(null)} disabled={update.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={update.isPending}>
+              {update.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Save
+            </Button>
+          </div>
         </div>
       </AppLayout>
     );
