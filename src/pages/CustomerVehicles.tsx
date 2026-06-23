@@ -72,6 +72,26 @@ export default function CustomerVehicles() {
   const [selected, setSelected] = useState<Vehicle | null>(null);
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [msgDialogOpen, setMsgDialogOpen] = useState(false);
+  const { profile } = useAuth();
+
+  const { data: latestMessage = "" } = useQuery({
+    queryKey: ["vehicle-latest-maintenance-message", selected?.id],
+    enabled: !!selected?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vehicle_status_history")
+        .select("maintenance_message")
+        .eq("vehicle_id", selected!.id)
+        .not("maintenance_message", "is", null)
+        .neq("maintenance_message", "")
+        .order("changed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.maintenance_message ?? "";
+    },
+  });
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
