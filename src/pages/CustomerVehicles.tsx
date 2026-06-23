@@ -121,7 +121,6 @@ export default function CustomerVehicles() {
         derivative: form.derivative || null,
       } as any);
       toast({ title: "Vehicle updated" });
-      setSelected(null);
     } catch (e: any) {
       toast({ title: "Update failed", description: e.message, variant: "destructive" });
     }
