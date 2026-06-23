@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { CalendarIcon, Clock, Loader2, Pencil } from "lucide-react";
 import { Vehicle } from "@/hooks/useVehicles";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
