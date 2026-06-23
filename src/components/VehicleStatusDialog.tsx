@@ -46,6 +46,44 @@ function DateField({ id, value, onChange, disabled }: { id: string; value: strin
   );
 }
 
+function TimeField({ id, value, onChange, disabled }: { id: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
+  const [h, m] = value ? value.split(":") : ["", ""];
+  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
+  const setH = (nh: string) => onChange(`${nh}:${m || "00"}`);
+  const setM = (nm: string) => onChange(`${h || "00"}:${nm}`);
+  return (
+    <Popover>
+      <PopoverTrigger asChild disabled={disabled}>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          disabled={disabled}
+          className={cn("w-full justify-start font-normal", !value && "text-muted-foreground", disabled && "bg-muted")}
+        >
+          <Clock className="mr-2 h-4 w-4" />
+          {value || "Pick a time"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-2" align="start">
+        <div className="flex gap-2">
+          <div className="h-48 w-16 overflow-y-auto rounded border">
+            {hours.map((hh) => (
+              <button key={hh} type="button" onClick={() => setH(hh)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", h === hh && "bg-primary text-primary-foreground hover:bg-primary")}>{hh}</button>
+            ))}
+          </div>
+          <div className="h-48 w-16 overflow-y-auto rounded border">
+            {minutes.map((mm) => (
+              <button key={mm} type="button" onClick={() => setM(mm)} className={cn("w-full px-2 py-1 text-sm text-center hover:bg-accent", m === mm && "bg-primary text-primary-foreground hover:bg-primary")}>{mm}</button>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 interface Props {
   vehicle: Vehicle;
   open: boolean;
