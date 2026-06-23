@@ -207,9 +207,15 @@ export default function Settings() {
               <Input
                 id="username"
                 value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                onChange={(e) => updateField("username", e.target.value)}
+                aria-invalid={!!errors.username}
+                aria-describedby={errors.username ? "username-error" : undefined}
+                className={cn(errors.username && "border-destructive focus-visible:ring-destructive")}
                 autoFocus
               />
+              {errors.username && (
+                <p id="username-error" className="text-xs text-destructive">{errors.username}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -218,16 +224,28 @@ export default function Settings() {
                 <Input
                   id="firstName"
                   value={form.firstName}
-                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  onChange={(e) => updateField("firstName", e.target.value)}
+                  aria-invalid={!!errors.firstName}
+                  aria-describedby={errors.firstName ? "firstName-error" : undefined}
+                  className={cn(errors.firstName && "border-destructive focus-visible:ring-destructive")}
                 />
+                {errors.firstName && (
+                  <p id="firstName-error" className="text-xs text-destructive">{errors.firstName}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="lastName">Last name</Label>
                 <Input
                   id="lastName"
                   value={form.lastName}
-                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  onChange={(e) => updateField("lastName", e.target.value)}
+                  aria-invalid={!!errors.lastName}
+                  aria-describedby={errors.lastName ? "lastName-error" : undefined}
+                  className={cn(errors.lastName && "border-destructive focus-visible:ring-destructive")}
                 />
+                {errors.lastName && (
+                  <p id="lastName-error" className="text-xs text-destructive">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -236,8 +254,14 @@ export default function Settings() {
               <Input
                 id="mobile"
                 value={form.mobile}
-                onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                onChange={(e) => updateField("mobile", e.target.value)}
+                aria-invalid={!!errors.mobile}
+                aria-describedby={errors.mobile ? "mobile-error" : undefined}
+                className={cn(errors.mobile && "border-destructive focus-visible:ring-destructive")}
               />
+              {errors.mobile && (
+                <p id="mobile-error" className="text-xs text-destructive">{errors.mobile}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -246,8 +270,14 @@ export default function Settings() {
                 id="email"
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={(e) => updateField("email", e.target.value)}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                className={cn(errors.email && "border-destructive focus-visible:ring-destructive")}
               />
+              {errors.email && (
+                <p id="email-error" className="text-xs text-destructive">{errors.email}</p>
+              )}
             </div>
 
             <div className="flex items-center justify-between rounded-lg border p-3">
