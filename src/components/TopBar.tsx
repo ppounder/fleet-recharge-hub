@@ -1,7 +1,8 @@
 import { useAppContext } from "@/contexts/AppContext";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/lib/navigation";
-import { Bell, User, Moon, Sun, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, User, Moon, Sun, LogOut, UserCog, KeyRound } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,8 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+
 
 const roleLabels: Record<UserRole, string> = {
   "fleet-manager": "Fleet Manager",
@@ -21,6 +30,8 @@ const roleLabels: Record<UserRole, string> = {
 export function TopBar() {
   const { currentRole, setCurrentRole, darkMode, setDarkMode } = useAppContext();
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
 
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-6 shrink-0">
@@ -58,14 +69,29 @@ export function TopBar() {
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
         </button>
 
-        <div className="flex items-center gap-2 px-2 h-8 rounded-full bg-primary text-primary-foreground">
-          <span className="text-xs font-medium">{profile?.full_name || "User"}</span>
-          <User className="w-4 h-4" />
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 pl-3 pr-2 h-8 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+              <span className="text-xs font-medium">{profile?.full_name || "User"}</span>
+              <User className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>{profile?.full_name || "User"}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <UserCog className="w-4 h-4 mr-2" /> Change user details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <KeyRound className="w-4 h-4 mr-2" /> Change password
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+              <LogOut className="w-4 h-4 mr-2" /> Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <Button variant="ghost" size="sm" onClick={signOut} className="h-8 text-xs text-muted-foreground">
-          <LogOut className="w-3.5 h-3.5 mr-1" /> Sign Out
-        </Button>
       </div>
     </header>
   );
