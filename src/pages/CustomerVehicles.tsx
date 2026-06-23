@@ -164,6 +164,18 @@ export default function CustomerVehicles() {
                                 ))}
                               </SelectContent>
                             </Select>
+                          ) : k === "status" ? (
+                            <div className="relative">
+                              <Input id={k} value={form[k]} readOnly className="bg-card pr-9" />
+                              <button
+                                type="button"
+                                onClick={() => setStatusDialogOpen(true)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground"
+                                aria-label="Edit status"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                            </div>
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
