@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
   const [editingText, setEditingText] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) setDraft(currentMessage);
@@ -198,7 +200,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                             <Button size="icon" variant="ghost" onClick={() => startEdit(h.id, h.maintenance_message)} disabled={isBusy}>
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" onClick={() => deleteMessage(h.id)} disabled={isBusy} className={cn("text-destructive hover:text-destructive")}>
+                            <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:text-destructive")}>
                               {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
                           </>
@@ -219,6 +221,27 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             {savingDraft ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
+
+        <AlertDialog open={confirmDeleteId !== null} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete message?</AlertDialogTitle>
+              <AlertDialogDescription>Are you sure you want to delete this message?</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>No</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  const id = confirmDeleteId;
+                  setConfirmDeleteId(null);
+                  if (id) await deleteMessage(id);
+                }}
+              >
+                Yes
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
