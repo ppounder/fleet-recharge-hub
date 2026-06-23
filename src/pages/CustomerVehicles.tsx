@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Car, ChevronUp, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
@@ -123,53 +123,41 @@ export default function CustomerVehicles() {
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Vehicle Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                    {fields.map((f) => (
-                      <div key={f.key} className="space-y-1.5">
-                        <Label htmlFor={f.key}>
-                          {f.label}
-                        </Label>
-                        <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <CollapsibleCard title="Vehicle Information">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  {fields.map((f) => (
+                    <div key={f.key} className="space-y-1.5">
+                      <Label htmlFor={f.key}>{f.label}</Label>
+                      <Input id={f.key} value={form[f.key]} onChange={set(f.key)} />
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleCard>
 
               <CompanyDetails vehicle={selected} />
             </TabsContent>
 
             <TabsContent value="dates">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Key Dates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="year">Year</Label>
-                      <Input id="year" value={selected.year ?? ""} readOnly />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="mot_due">MOT Due</Label>
-                      <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="next_service">Next Service</Label>
-                      <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="mileage">Mileage</Label>
-                      <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly />
-                    </div>
+              <CollapsibleCard title="Key Dates">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="year">Year</Label>
+                    <Input id="year" value={selected.year ?? ""} readOnly />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_due">MOT Due</Label>
+                    <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_service">Next Service</Label>
+                    <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mileage">Mileage</Label>
+                    <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly />
+                  </div>
+                </div>
+              </CollapsibleCard>
             </TabsContent>
 
             <TabsContent value="defects">
@@ -288,11 +276,8 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Defect History</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <CollapsibleCard title="Defect History">
+      <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
           <div className="space-y-1.5">
             <Label htmlFor="defect-status">Status</Label>
@@ -375,8 +360,8 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
             </TableBody>
           </Table>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CollapsibleCard>
   );
 }
 
@@ -407,28 +392,54 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
   ];
 
   return (
+    <CollapsibleCard title="Company Details">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+          {rows.map((r) => (
+            <div key={r.label} className="space-y-1.5">
+              <Label>{r.label}</Label>
+              <Input value={r.value} readOnly />
+            </div>
+          ))}
+        </div>
+      )}
+    </CollapsibleCard>
+  );
+}
+
+function CollapsibleCard({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Company Details</CardTitle>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center justify-between text-left"
+          aria-expanded={open}
+        >
+          <CardTitle className="text-base">{title}</CardTitle>
+          <ChevronUp
+            className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "" : "rotate-180"}`}
+          />
+        </button>
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-            {rows.map((r) => (
-              <div key={r.label} className="space-y-1.5">
-                <Label>{r.label}</Label>
-                <Input value={r.value} readOnly />
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
+      {open && <CardContent>{children}</CardContent>}
     </Card>
   );
 }
+
 
 
