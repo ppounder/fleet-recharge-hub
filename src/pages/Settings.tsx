@@ -200,7 +200,7 @@ export default function Settings() {
         <div className="rounded-2xl bg-card border shadow-sm overflow-hidden">
           <Row icon={<AtSign className="w-4 h-4" />} label="Username" value={username} onEdit={openEdit} />
           <Row icon={<User className="w-4 h-4" />} label="Name" value={fullName || "—"} onEdit={openEdit} />
-          <Row icon={<Phone className="w-4 h-4" />} label="Mobile" value="—" onEdit={openEdit} />
+          <Row icon={<Phone className="w-4 h-4" />} label="Mobile" value={mobile || "—"} onEdit={openEdit} />
           <Row icon={<Mail className="w-4 h-4" />} label="Email" value={email} onEdit={openEdit} />
           <Row
             icon={<Bell className="w-4 h-4" />}
