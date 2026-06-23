@@ -319,6 +319,12 @@ export default function Settings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ChangePasswordDialog
+        open={passwordOpen}
+        onOpenChange={handlePasswordOpenChange}
+        email={profile?.email ?? user?.email ?? null}
+      />
     </AppLayout>
   );
 }
