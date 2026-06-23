@@ -14,6 +14,7 @@ import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehic
 import { ArrowLeft, ArrowUpDown, Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { toast } from "@/hooks/use-toast";
+import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
