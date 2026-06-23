@@ -33,8 +33,11 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) setDraft(currentMessage);
-  }, [open, currentMessage]);
+    if (open) {
+      setDraft("");
+      setEditingId(null);
+    }
+  }, [open]);
 
   const { data: history = [], isLoading } = useQuery({
     queryKey: ["vehicle-maintenance-messages", vehicleId],
