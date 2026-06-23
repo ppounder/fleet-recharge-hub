@@ -309,7 +309,7 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
           <div className="space-y-1.5">
             <Label htmlFor="defect-status">Status</Label>
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-              <SelectTrigger id="defect-status"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger id="defect-status" className="bg-card"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
@@ -322,7 +322,7 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
           <div className="space-y-1.5">
             <Label htmlFor="defect-severity">Severity</Label>
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
-              <SelectTrigger id="defect-severity"><SelectValue placeholder="Severity" /></SelectTrigger>
+              <SelectTrigger id="defect-severity" className="bg-card"><SelectValue placeholder="Severity" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All severities</SelectItem>
                 <SelectItem value="safety">Safety</SelectItem>
