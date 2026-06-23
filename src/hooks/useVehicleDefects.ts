@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type DefectStatus = "open" | "in-progress" | "resolved" | "cancelled";
-export type DefectSeverity = "minor" | "major" | "critical";
+export type DefectSeverity = "safety" | "non-safety" | "advisory";
 
 export type VehicleDefect = {
   id: string;
