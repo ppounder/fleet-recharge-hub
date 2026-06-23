@@ -662,7 +662,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
             <Label>Fleet Manager</Label>
             <SearchableSelect
               value={managerId}
-              options={managerOptions}
+              options={managerOpts}
               placeholder="—"
               searchPlaceholder="Search fleet managers..."
               emptyText="No fleet managers found."
