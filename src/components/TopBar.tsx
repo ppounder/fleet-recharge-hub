@@ -30,6 +30,8 @@ const roleLabels: Record<UserRole, string> = {
 export function TopBar() {
   const { currentRole, setCurrentRole, darkMode, setDarkMode } = useAppContext();
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
 
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-6 shrink-0">
