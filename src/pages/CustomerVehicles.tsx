@@ -153,7 +153,7 @@ export default function CustomerVehicles() {
                       {row.map((k) => (
                         <div key={k} className="space-y-1.5">
                           <Label htmlFor={k}>{labels[k]}</Label>
-                          <Input id={k} value={form[k]} onChange={set(k)} />
+                          <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                         </div>
                       ))}
                     </div>
@@ -169,19 +169,19 @@ export default function CustomerVehicles() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                   <div className="space-y-1.5">
                     <Label htmlFor="year">Year</Label>
-                    <Input id="year" value={selected.year ?? ""} readOnly />
+                    <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="mot_due">MOT Due</Label>
-                    <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly />
+                    <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="next_service">Next Service</Label>
-                    <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly />
+                    <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="mileage">Mileage</Label>
-                    <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly />
+                    <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly className="bg-card" />
                   </div>
                 </div>
               </CollapsibleCard>
@@ -429,7 +429,7 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
           {rows.map((r) => (
             <div key={r.label} className="space-y-1.5">
               <Label>{r.label}</Label>
-              <Input value={r.value} readOnly />
+              <Input value={r.value} readOnly className="bg-card" />
             </div>
           ))}
         </div>
