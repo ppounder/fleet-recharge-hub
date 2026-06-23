@@ -237,7 +237,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
             <div className="space-y-1.5">
               <Label htmlFor="sorn-date">Date SORN to DVLA</Label>
-              <Input id="sorn-date" type="date" value={sornDate} onChange={(e) => setSornDate(e.target.value)} readOnly={!offRoad || !sornReturned} className={cn((!offRoad || !sornReturned) && lockedClass)} />
+              <DateField id="sorn-date" value={sornDate} onChange={setSornDate} disabled={!offRoad || !sornReturned} />
             </div>
           </div>
         </div>
