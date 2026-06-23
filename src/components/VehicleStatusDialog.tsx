@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -201,11 +202,29 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="reason">Reason</Label>
-                <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
+                <Select value={reason} onValueChange={setReason} disabled={!offRoad}>
+                  <SelectTrigger id="reason" className={cn(!offRoad && lockedClass)}>
+                    <SelectValue placeholder="Select reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["Accident", "Breakdown", "Service", "MOT", "Repair", "Awaiting parts", "Other"].map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="location">Location</Label>
-                <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} readOnly={!offRoad} className={cn(!offRoad && lockedClass)} />
+                <Select value={location} onValueChange={setLocation} disabled={!offRoad}>
+                  <SelectTrigger id="location" className={cn(!offRoad && lockedClass)}>
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["Depot", "Workshop", "Customer site", "Roadside", "Third party garage", "Other"].map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
