@@ -99,15 +99,25 @@ export default function CustomerVehicles() {
   };
 
   if (selected) {
-    const fields: { key: keyof EditableFields; label: string }[] = [
-      { key: "registration", label: "Registration" },
-      { key: "fleet_number", label: "Fleet Number" },
-      { key: "vin", label: "VIN" },
-      { key: "asset_type", label: "Asset Type" },
-      { key: "make", label: "Make" },
-      { key: "model", label: "Model" },
-      { key: "derivative", label: "Derivative" },
+    const labels: Record<keyof EditableFields, string> = {
+      status: "Status",
+      vin: "VIN",
+      registration: "Registration Number",
+      fleet_number: "Fleet Number",
+      asset_number: "Asset Number",
+      asset_type: "Asset Type",
+      body_type: "Body Type",
+      make: "Make",
+      model: "Model",
+      derivative: "Derivative",
+    };
+    const rows: (keyof EditableFields)[][] = [
+      ["status", "vin"],
+      ["registration", "fleet_number", "asset_number"],
+      ["asset_type", "body_type"],
+      ["make", "model", "derivative"],
     ];
+
 
     return (
       <AppLayout>
