@@ -168,14 +168,7 @@ export default function CustomerVehicles() {
             </TabsContent>
 
             <TabsContent value="defects">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Defect History</CardTitle>
-                </CardHeader>
-                <CardContent className="py-12 text-center text-sm text-muted-foreground">
-                  No defects recorded for this vehicle.
-                </CardContent>
-              </Card>
+              <DefectHistory vehicleId={selected.id} />
             </TabsContent>
           </Tabs>
 
