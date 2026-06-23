@@ -1,12 +1,27 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useVehicles } from "@/hooks/useVehicles";
+import { useVehicles, Vehicle } from "@/hooks/useVehicles";
 import { Car, Loader2 } from "lucide-react";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
+  const [selected, setSelected] = useState<Vehicle | null>(null);
+
+  const detailFields: { label: string; value: React.ReactNode }[] = selected
+    ? [
+        { label: "Registration", value: <UKNumberPlate registration={selected.registration} /> },
+        { label: "Fleet Number", value: (selected as any).fleet_number || "—" },
+        { label: "VIN", value: selected.vin || "—" },
+        { label: "Asset Type", value: (selected as any).asset_type || "—" },
+        { label: "Make", value: selected.make || "—" },
+        { label: "Model", value: selected.model || "—" },
+        { label: "Derivative", value: (selected as any).derivative || "—" },
+      ]
+    : [];
 
   return (
     <AppLayout>
@@ -30,7 +45,11 @@ export default function CustomerVehicles() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {vehicles.map((v) => (
-              <Card key={v.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={v.id}
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelected(v)}
+              >
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base"><UKNumberPlate registration={v.registration} /></CardTitle>
@@ -48,6 +67,24 @@ export default function CustomerVehicles() {
           </div>
         )}
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Vehicle Details</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm pt-2">
+              {detailFields.map((f) => (
+                <div key={f.label} className="contents">
+                  <div className="text-muted-foreground">{f.label}</div>
+                  <div className="font-medium">{f.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
