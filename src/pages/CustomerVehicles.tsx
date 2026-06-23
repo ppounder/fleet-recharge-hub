@@ -139,10 +139,10 @@ export default function CustomerVehicles() {
           </div>
 
           <Tabs defaultValue="info">
-            <TabsList>
-              <TabsTrigger value="info">Vehicle Information</TabsTrigger>
-              <TabsTrigger value="dates">Key Dates</TabsTrigger>
-              <TabsTrigger value="defects">Defect History</TabsTrigger>
+            <TabsList className="bg-sidebar text-sidebar-foreground">
+              <TabsTrigger value="info" className="data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle Information</TabsTrigger>
+              <TabsTrigger value="dates" className="data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>
+              <TabsTrigger value="defects" className="data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Defect History</TabsTrigger>
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
