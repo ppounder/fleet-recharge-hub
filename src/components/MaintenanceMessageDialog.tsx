@@ -30,6 +30,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
   const [editingText, setEditingText] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) setDraft(currentMessage);
