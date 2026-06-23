@@ -320,7 +320,7 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
             </Select>
           </div>
         </div>
-      <CardContent>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
