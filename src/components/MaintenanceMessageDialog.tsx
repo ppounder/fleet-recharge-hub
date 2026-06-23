@@ -95,6 +95,23 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
 
   const applyDraft = async () => {
     const text = draft.trim();
+    if (editingId) {
+      setSavingDraft(true);
+      const { error } = await supabase
+        .from("vehicle_status_history")
+        .update({ maintenance_message: text || null })
+        .eq("id", editingId);
+      setSavingDraft(false);
+      if (error) {
+        toast({ title: "Update failed", description: error.message, variant: "destructive" });
+        return;
+      }
+      setEditingId(null);
+      invalidate();
+      toast({ title: "Message updated" });
+      onOpenChange(false);
+      return;
+    }
     if (!text) {
       onCurrentMessageChange("");
       onOpenChange(false);
@@ -132,7 +149,14 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="new-msg">New message</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="new-msg">{editingId ? "Edit message" : "New message"}</Label>
+            {editingId && (
+              <Button size="sm" variant="ghost" onClick={() => { setEditingId(null); setDraft(currentMessage); }}>
+                Cancel edit
+              </Button>
+            )}
+          </div>
           <Textarea
             id="new-msg"
             rows={4}
@@ -141,7 +165,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             placeholder="Describe the maintenance required..."
           />
           <p className="text-xs text-muted-foreground">
-            This will be attached to the status update when you save.
+            {editingId ? "Editing an existing message. Save to update it." : "This will be attached to the status update when you save."}
           </p>
         </div>
 
@@ -162,10 +186,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               ) : history.length === 0 ? (
                 <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No previous messages</TableCell></TableRow>
               ) : history.map((h: any) => {
-                const isEditing = editingId === h.id;
                 const isBusy = busyId === h.id;
+                const isRowEditing = editingId === h.id;
                 return (
-                  <TableRow key={h.id}>
+                  <TableRow key={h.id} className={cn(isRowEditing && "bg-muted/40")}>
                     <TableCell className="text-xs text-muted-foreground align-middle whitespace-nowrap">
                       {format(new Date(h.changed_at), "dd MMM yyyy - HH:mm")}
                     </TableCell>
@@ -173,38 +197,21 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                       {h.changed_by || <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="align-middle">
-                      {isEditing ? (
-                        <Textarea
-                          rows={2}
-                          value={editingText}
-                          onChange={(e) => setEditingText(e.target.value)}
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">{h.maintenance_message}</p>
-                      )}
+                      <p className="text-sm whitespace-pre-wrap">{h.maintenance_message}</p>
                     </TableCell>
                     <TableCell className="align-middle">
                       <div className="flex justify-end gap-1">
-                        {isEditing ? (
-                          <>
-                            <Button size="icon" variant="ghost" onClick={() => saveEdit(h.id)} disabled={isBusy}>
-                              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} disabled={isBusy}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button size="icon" variant="ghost" onClick={() => startEdit(h.id, h.maintenance_message)} disabled={isBusy}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:bg-destructive hover:text-white")}>
-                              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            </Button>
-                          </>
-                        )}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => { setEditingId(h.id); setDraft(h.maintenance_message ?? ""); }}
+                          disabled={isBusy}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:bg-destructive hover:text-white")}>
+                          {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
