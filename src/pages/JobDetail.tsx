@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { formatDateTime } from "@/lib/utils";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
