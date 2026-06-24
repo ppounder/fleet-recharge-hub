@@ -216,6 +216,12 @@ function DefectCard({
             </label>
           </RadioGroup>
         </div>
+        {defect.type === "Damage" && (
+          <DamageDiagram
+            marks={defect.damageMarks ?? []}
+            onChange={(marks) => onChange({ ...defect, damageMarks: marks })}
+          />
+        )}
         <label className="flex items-center gap-2 rounded-md border bg-card p-3 text-sm cursor-pointer">
           <Checkbox checked={defect.rectified} onCheckedChange={(v) => onChange({ ...defect, rectified: !!v })} />
           Self-rectified
