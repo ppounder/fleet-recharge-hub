@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
 import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Search } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
