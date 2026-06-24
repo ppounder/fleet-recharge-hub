@@ -296,6 +296,9 @@ export default function CustomerVehicles() {
             <TabsList className="bg-transparent text-sidebar-foreground gap-2 h-auto">
               <TabsTrigger value="info" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle / Asset Details</TabsTrigger>
               <TabsTrigger value="dates" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>
+              {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
+                <TabsTrigger value="tyres" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Tyres</TabsTrigger>
+              )}
               <TabsTrigger value="defects" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Defect History</TabsTrigger>
             </TabsList>
 
