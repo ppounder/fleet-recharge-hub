@@ -454,6 +454,16 @@ export default function CustomerVehicles() {
                     )}
                   </div>
                 </CollapsibleCard>
+
+                {selected && form.wheel_plan && (
+                  <CollapsibleCard title="Tyre Reading History">
+                    <TyreReadingsHistory
+                      vehicleId={selected.id}
+                      wheelPlan={form.wheel_plan}
+                      assetType={form.asset_type}
+                    />
+                  </CollapsibleCard>
+                )}
               </TabsContent>
             )}
 
