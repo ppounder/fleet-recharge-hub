@@ -432,7 +432,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     value={form.pressure}
                     onChange={(e) => {
                       const v = e.target.value;
-                      if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("pressure", v);
+                      const re = form.pressure_unit === "bar" ? /^\d*\.?\d?$/ : /^\d*$/;
+                      if (v === "" || re.test(v)) updateField("pressure", v);
                     }}
                     aria-invalid={!!errors.pressure}
                     aria-describedby={errors.pressure ? "pressure-error" : undefined}
