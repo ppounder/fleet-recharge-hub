@@ -21,6 +21,7 @@ import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
 
 import { UKNumberPlate } from "@/components/UKNumberPlate";
+import { WheelPlanDiagram } from "@/components/WheelPlanDiagram";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
@@ -267,9 +268,10 @@ export default function CustomerVehicles() {
       ["status", "vin"],
       ["registration", "fleet_number", "asset_number"],
       ["asset_type", "body_type"],
-      ...(WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) ? [["wheel_plan"] as (keyof EditableFields)[]] : []),
       ["make", "model", "derivative"],
+      ...(WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) ? [["wheel_plan"] as (keyof EditableFields)[]] : []),
     ];
+
 
 
     return (
@@ -336,14 +338,19 @@ export default function CustomerVehicles() {
                               </SelectContent>
                             </Select>
                           ) : k === "wheel_plan" ? (
-                            <Select value={form.wheel_plan || ""} onValueChange={(v) => setForm((f) => ({ ...f, wheel_plan: v }))}>
-                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select wheel plan" /></SelectTrigger>
-                              <SelectContent>
-                                {(WHEEL_PLANS_BY_ASSET[form.asset_type] || []).map((opt) => (
-                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="sm:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-start">
+                              <Select value={form.wheel_plan || ""} onValueChange={(v) => setForm((f) => ({ ...f, wheel_plan: v }))}>
+                                <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select wheel plan" /></SelectTrigger>
+                                <SelectContent>
+                                  {(WHEEL_PLANS_BY_ASSET[form.asset_type] || []).map((opt) => (
+                                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {form.wheel_plan && (
+                                <WheelPlanDiagram plan={form.wheel_plan} assetType={form.asset_type} />
+                              )}
+                            </div>
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
