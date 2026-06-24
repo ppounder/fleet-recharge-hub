@@ -434,6 +434,30 @@ export default function CustomerVehicles() {
               </CollapsibleCard>
             </TabsContent>
 
+            {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
+              <TabsContent value="tyres">
+                <CollapsibleCard title="Wheel Plan">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-start">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="wheel_plan">Wheel plan</Label>
+                      <Select value={form.wheel_plan || ""} onValueChange={(v) => setForm((f) => ({ ...f, wheel_plan: v }))}>
+                        <SelectTrigger id="wheel_plan" className="bg-card"><SelectValue placeholder="Select wheel plan" /></SelectTrigger>
+                        <SelectContent>
+                          {(WHEEL_PLANS_BY_ASSET[form.asset_type] || []).map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {form.wheel_plan && (
+                      <WheelPlanDiagram plan={form.wheel_plan} assetType={form.asset_type} />
+                    )}
+                  </div>
+                </CollapsibleCard>
+              </TabsContent>
+            )}
+
+
             <TabsContent value="defects">
               {selected ? (
                 <DefectHistory vehicleId={selected.id} />
