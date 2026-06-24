@@ -1877,3 +1877,69 @@ function CollapsibleCard({
 
 
 
+
+function DefectMediaDialog({
+  defect,
+  onOpenChange,
+}: {
+  defect: VehicleDefect | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const photos = defect?.photos ?? [];
+  const marks = defect?.damage_marks ?? [];
+  return (
+    <Dialog open={!!defect} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Attachments</DialogTitle>
+          <DialogDescription>
+            {defect ? `Photos and damage area for "${defect.title}".` : ""}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6">
+          {photos.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Photos</div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {photos.map((p, i) => (
+                  <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-md border bg-muted">
+                    <img src={p} alt={`Photo ${i + 1}`} className="h-32 w-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+          {marks.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Damage location</div>
+              <div className="rounded-md bg-muted/40 p-3">
+                <svg viewBox="0 0 100 180" className="mx-auto block h-72 w-auto" aria-label="Vehicle damage diagram">
+                  <rect x="14" y="22" width="6" height="10" rx="1" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="80" y="22" width="6" height="10" rx="1" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="28" y="10" width="44" height="34" rx="6" fill="hsl(var(--foreground))" />
+                  <rect x="22" y="48" width="56" height="118" rx="8" fill="hsl(var(--foreground))" />
+                  <rect x="14" y="58" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="78" y="58" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="14" y="142" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="78" y="142" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  {marks.map((m, i) => (
+                    <g key={i}>
+                      <circle cx={m.x} cy={m.y} r="3.5" fill="hsl(var(--destructive))" stroke="white" strokeWidth="1" />
+                      <text x={m.x} y={m.y + 1.4} fontSize="4" textAnchor="middle" fill="white" fontWeight="bold">{i + 1}</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+            </div>
+          )}
+          {photos.length === 0 && marks.length === 0 && (
+            <p className="text-sm text-muted-foreground">No attachments for this defect.</p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
