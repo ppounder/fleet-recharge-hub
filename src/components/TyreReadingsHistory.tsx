@@ -263,7 +263,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         <p className="text-sm text-muted-foreground">
           Latest tread depth (mm) for each wheel position.
         </p>
-        <Button size="sm" onClick={() => setOpen(true)} disabled={!positions.length}>
+        <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
           <Plus className="w-4 h-4 mr-1.5" />
           Add reading
         </Button>
