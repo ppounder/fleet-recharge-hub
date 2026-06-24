@@ -1124,14 +1124,23 @@ export type Database = {
           fleet_manager_id: string | null
           fleet_number: string | null
           id: string
+          last_inspection_date: string | null
+          last_service_date: string | null
+          loler_expiry_date: string | null
           make: string
           mileage: number | null
           model: string
           mot_due: string | null
+          mot_expiry_date: string | null
+          mot_issued_date: string | null
+          next_inspection_date: string | null
           next_service: string | null
+          next_service_date: string | null
           registered_date: string | null
           registration: string
           status: string
+          tacho_2yr_expiry_date: string | null
+          tacho_6yr_expiry_date: string | null
           updated_at: string
           vin: string | null
           wheel_plan: string | null
@@ -1149,14 +1158,23 @@ export type Database = {
           fleet_manager_id?: string | null
           fleet_number?: string | null
           id?: string
+          last_inspection_date?: string | null
+          last_service_date?: string | null
+          loler_expiry_date?: string | null
           make: string
           mileage?: number | null
           model: string
           mot_due?: string | null
+          mot_expiry_date?: string | null
+          mot_issued_date?: string | null
+          next_inspection_date?: string | null
           next_service?: string | null
+          next_service_date?: string | null
           registered_date?: string | null
           registration: string
           status?: string
+          tacho_2yr_expiry_date?: string | null
+          tacho_6yr_expiry_date?: string | null
           updated_at?: string
           vin?: string | null
           wheel_plan?: string | null
@@ -1174,14 +1192,23 @@ export type Database = {
           fleet_manager_id?: string | null
           fleet_number?: string | null
           id?: string
+          last_inspection_date?: string | null
+          last_service_date?: string | null
+          loler_expiry_date?: string | null
           make?: string
           mileage?: number | null
           model?: string
           mot_due?: string | null
+          mot_expiry_date?: string | null
+          mot_issued_date?: string | null
+          next_inspection_date?: string | null
           next_service?: string | null
+          next_service_date?: string | null
           registered_date?: string | null
           registration?: string
           status?: string
+          tacho_2yr_expiry_date?: string | null
+          tacho_6yr_expiry_date?: string | null
           updated_at?: string
           vin?: string | null
           wheel_plan?: string | null
