@@ -442,7 +442,12 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                   />
                   <Select
                     value={form.pressure_unit}
-                    onValueChange={(v) => updateField("pressure_unit", v)}
+                    onValueChange={(v) => {
+                      updateField("pressure_unit", v);
+                      if (v === "psi" && form.pressure) {
+                        updateField("pressure", String(Math.round(parseFloat(form.pressure))));
+                      }
+                    }}
                   >
                     <SelectTrigger className="w-24">
                       <SelectValue />
