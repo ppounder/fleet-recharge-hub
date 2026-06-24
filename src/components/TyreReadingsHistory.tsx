@@ -160,11 +160,33 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyre_readings", vehicleId] });
       setOpen(false);
+      setEditingId(null);
       setForm(initialForm);
       setErrors({});
       toast({ title: "Tyre reading added" });
     },
     onError: (e: any) => toast({ title: "Failed to add reading", description: e.message, variant: "destructive" }),
+  });
+
+  const update = useMutation({
+    mutationFn: async ({ id, parsed }: { id: string; parsed: z.infer<typeof readingSchema> }) => {
+      const { error } = await supabase.from("tyre_readings").update({
+        position: parsed.position,
+        tyre_code: form.tyre_code.trim() || null,
+        tread_depth: parseFloat(parsed.tread_depth),
+        reading_date: parsed.reading_date,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyre_readings", vehicleId] });
+      setOpen(false);
+      setEditingId(null);
+      setForm(initialForm);
+      setErrors({});
+      toast({ title: "Tyre reading updated" });
+    },
+    onError: (e: any) => toast({ title: "Failed to update reading", description: e.message, variant: "destructive" }),
   });
 
   const handleSave = () => {
@@ -184,8 +206,22 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       return;
     }
     setErrors({});
-    create.mutate(result.data);
+    if (editingId) update.mutate({ id: editingId, parsed: result.data });
+    else create.mutate(result.data);
   };
+
+  const startEdit = (r: TyreReading) => {
+    setEditingId(r.id);
+    setForm({
+      position: r.position,
+      tyre_code: r.tyre_code ?? "",
+      tread_depth: Number(r.tread_depth).toFixed(1),
+      reading_date: r.reading_date,
+    });
+    setErrors({});
+    setOpen(true);
+  };
+
 
 
   const remove = useMutation({
