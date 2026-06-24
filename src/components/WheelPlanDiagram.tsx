@@ -37,7 +37,7 @@ function parsePlan(plan: string, assetType?: string) {
 
 export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
   if (!plan) return null;
-  const { axles, driven, isTrailer, isTractor } = parsePlan(plan, assetType);
+  const { axles, driven, isTrailer, isTractor, twinRear } = parsePlan(plan, assetType);
 
   // Top-down flattened view
   const chassisWidth = 44;
