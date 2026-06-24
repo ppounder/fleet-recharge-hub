@@ -167,6 +167,10 @@ export default function CustomerVehicles() {
           asset_type: form.asset_type || null,
           body_type: form.body_type || null,
           derivative: form.derivative || null,
+          year: form.year ? Number(form.year) : null,
+          mot_due: form.mot_due || null,
+          next_service: form.next_service || null,
+          mileage: form.mileage ? Number(form.mileage) : null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
