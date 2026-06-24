@@ -251,7 +251,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                       {latest ? `${Number(latest.tread_depth).toFixed(1)}` : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {latest ? latest.reading_date : "—"}
+                      {latest ? format(parseISO(latest.reading_date), "dd MMM yyyy") : "—"}
                     </TableCell>
                     <TableCell>
                       {latest && (
