@@ -1,0 +1,1 @@
+ALTER TABLE public.vehicles ADD COLUMN IF NOT EXISTS registered_date date, ADD COLUMN IF NOT EXISTS date_in_service date;
