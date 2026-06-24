@@ -520,6 +520,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">#</TableHead>
                 <TableHead>Tyre position</TableHead>
                 <TableHead>Manufacturer</TableHead>
                 <TableHead>Tyre size</TableHead>
@@ -531,14 +532,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             </TableHeader>
             <TableBody>
               {tyresLoading ? (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-6">Loading…</TableCell></TableRow>
               ) : positions.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No tyre positions for this wheel plan.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-6">No tyre positions for this wheel plan.</TableCell></TableRow>
               ) : (
-                positions.map((pos) => {
+                positions.map((pos, idx) => {
                   const t = tyres.find((x) => x.position === pos);
                   return (
                     <TableRow key={pos}>
+                      <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
                       <TableCell>{pos}</TableCell>
                       <TableCell>{t?.manufacturer ?? "—"}</TableCell>
                       <TableCell>{t?.tyre_size ?? "—"}</TableCell>
