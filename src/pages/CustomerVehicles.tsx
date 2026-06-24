@@ -32,7 +32,7 @@ import { TyreReadingsHistory } from "@/components/TyreReadingsHistory";
 import { OdometerReadingsHistory } from "@/components/OdometerReadingsHistory";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { formatDate, isDateExpired, cn } from "@/lib/utils";
+import { formatDate, isDateExpired } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
