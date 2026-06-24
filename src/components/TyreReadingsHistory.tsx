@@ -992,8 +992,6 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
-              <div className="space-y-1.5">
-                <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
                 <Select
                   value={
                     manufacturerIsOther
