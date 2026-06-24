@@ -232,7 +232,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       tyre_code: r.tyre_code ?? "",
       tread_depth: Number(r.tread_depth).toFixed(1),
       pressure: r.pressure != null ? Number(r.pressure).toFixed(1) : "",
-      pressure_unit: r.pressure_unit ?? "PSI",
+      pressure_unit: (r.pressure_unit ?? "psi").toLowerCase(),
       reading_date: r.reading_date,
     });
     setErrors({});
