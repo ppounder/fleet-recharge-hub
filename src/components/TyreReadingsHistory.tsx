@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import { z } from "zod";
+import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -248,7 +251,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                       {latest ? `${Number(latest.tread_depth).toFixed(1)}` : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {latest ? latest.reading_date : "—"}
+                      {latest ? format(parseISO(latest.reading_date), "dd MMM yyyy") : "—"}
                     </TableCell>
                     <TableCell>
                       {latest && (
@@ -342,16 +345,38 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="reading_date">Reading date</Label>
-                <Input
-                  id="reading_date"
-                  type="date"
-                  value={form.reading_date}
-                  onChange={(e) => updateField("reading_date", e.target.value)}
-                  aria-invalid={!!errors.reading_date}
-                  aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
-                  className={cn(errors.reading_date && "border-destructive focus-visible:ring-destructive")}
-                />
+                <Label htmlFor="reading_date">Date taken</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="reading_date"
+                      type="button"
+                      variant="outline"
+                      aria-invalid={!!errors.reading_date}
+                      aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
+                      className={cn(
+                        "w-full justify-start font-normal",
+                        !form.reading_date && "text-muted-foreground",
+                        errors.reading_date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.reading_date
+                        ? format(parseISO(form.reading_date), "dd MMM yyyy")
+                        : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={form.reading_date ? parseISO(form.reading_date) : undefined}
+                      onSelect={(d) =>
+                        updateField("reading_date", d ? format(d, "yyyy-MM-dd") : "")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 {errors.reading_date && (
                   <p id="reading_date-error" className="text-xs text-destructive">{errors.reading_date}</p>
                 )}
