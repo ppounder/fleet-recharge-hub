@@ -254,6 +254,7 @@ export default function CustomerVehicles() {
       asset_number: "Asset number",
       asset_type: "Asset type",
       body_type: "Body type",
+      wheel_plan: "Wheel plan",
       make: "Make",
       model: "Model",
       derivative: "Derivative",
@@ -266,6 +267,7 @@ export default function CustomerVehicles() {
       ["status", "vin"],
       ["registration", "fleet_number", "asset_number"],
       ["asset_type", "body_type"],
+      ...(WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) ? [["wheel_plan"] as (keyof EditableFields)[]] : []),
       ["make", "model", "derivative"],
     ];
 
