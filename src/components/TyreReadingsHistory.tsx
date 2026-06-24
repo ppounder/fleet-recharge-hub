@@ -451,8 +451,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                 </div>
                 {errors.pressure && (
                   <p id="pressure-error" className="text-xs text-destructive">{errors.pressure}</p>
-                )}
-              <div className="space-y-1.5">
+              </div>
+              <div className="space-y-1.5 col-span-2">
                 <Label htmlFor="reading_date">Date taken</Label>
                 <Popover>
                   <PopoverTrigger asChild>
