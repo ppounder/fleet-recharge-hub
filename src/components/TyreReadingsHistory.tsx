@@ -941,7 +941,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="tyre_position">Position</Label>
+              <Label htmlFor="tyre_position">Tyre position</Label>
               <Select
                 value={tyreForm.position}
                 onValueChange={(v) => updateTyreField("position", v)}
