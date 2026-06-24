@@ -345,16 +345,38 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="reading_date">Reading date</Label>
-                <Input
-                  id="reading_date"
-                  type="date"
-                  value={form.reading_date}
-                  onChange={(e) => updateField("reading_date", e.target.value)}
-                  aria-invalid={!!errors.reading_date}
-                  aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
-                  className={cn(errors.reading_date && "border-destructive focus-visible:ring-destructive")}
-                />
+                <Label htmlFor="reading_date">Date taken</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="reading_date"
+                      type="button"
+                      variant="outline"
+                      aria-invalid={!!errors.reading_date}
+                      aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
+                      className={cn(
+                        "w-full justify-start font-normal",
+                        !form.reading_date && "text-muted-foreground",
+                        errors.reading_date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.reading_date
+                        ? format(parseISO(form.reading_date), "dd MMM yyyy")
+                        : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={form.reading_date ? parseISO(form.reading_date) : undefined}
+                      onSelect={(d) =>
+                        updateField("reading_date", d ? format(d, "yyyy-MM-dd") : "")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 {errors.reading_date && (
                   <p id="reading_date-error" className="text-xs text-destructive">{errors.reading_date}</p>
                 )}
