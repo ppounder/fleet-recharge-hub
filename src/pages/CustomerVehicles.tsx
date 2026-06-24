@@ -13,6 +13,7 @@ import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hook
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
 import { ArrowLeft, ArrowUpDown, Calendar as CalendarIcon, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { DatePicker } from "@/components/ui/date-picker";
 import { format, parseISO } from "date-fns";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
