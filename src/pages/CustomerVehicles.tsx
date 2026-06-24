@@ -79,6 +79,15 @@ const blank: EditableFields = {
   mileage: "",
   registered_date: "",
   date_in_service: "",
+  last_service_date: "",
+  next_service_date: "",
+  last_inspection_date: "",
+  next_inspection_date: "",
+  mot_issued_date: "",
+  mot_expiry_date: "",
+  loler_expiry_date: "",
+  tacho_2yr_expiry_date: "",
+  tacho_6yr_expiry_date: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
