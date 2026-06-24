@@ -306,13 +306,10 @@ function DefectCard({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor={`defect-${defect.id}-date`}>Date reported</Label>
-            <Input
+            <DatePicker
               id={`defect-${defect.id}-date`}
-              type="date"
               value={defect.reportedAt}
-              onChange={(e) => onChange({ ...defect, reportedAt: e.target.value })}
-              aria-invalid={!!errors.reportedAt}
-              aria-describedby={errors.reportedAt ? dateErrId : undefined}
+              onChange={(v) => onChange({ ...defect, reportedAt: v })}
               className={cn(errors.reportedAt && "border-destructive focus-visible:ring-destructive")}
             />
             {errors.reportedAt && (
