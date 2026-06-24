@@ -299,7 +299,7 @@ export default function CustomerVehicles() {
                 </div>
               </CollapsibleCard>
 
-              {selected && <CompanyDetails vehicle={selected} />}
+              <CompanyDetails vehicle={selected} />
 
               <CollapsibleCard title="Notes">
                 <div className="space-y-1.5">
@@ -899,15 +899,16 @@ function SearchableSelect({
   );
 }
 
-function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
+function CompanyDetails({ vehicle }: { vehicle?: Vehicle | null }) {
   const { data, isLoading } = useQuery({
-    queryKey: ["vehicle_company_details", vehicle.id],
+    queryKey: ["vehicle_company_details", vehicle?.id ?? "new"],
+    enabled: !!vehicle?.id,
     queryFn: async () => {
       const [customerRes, managerRes] = await Promise.all([
-        vehicle.customer_id
+        vehicle?.customer_id
           ? supabase.from("customers").select("name").eq("id", vehicle.customer_id).maybeSingle()
           : Promise.resolve({ data: null, error: null } as any),
-        vehicle.fleet_manager_id
+        vehicle?.fleet_manager_id
           ? supabase.from("profiles").select("full_name,email").eq("id", vehicle.fleet_manager_id).maybeSingle()
           : Promise.resolve({ data: null, error: null } as any),
       ]);
@@ -937,16 +938,16 @@ function CompanyDetails({ vehicle }: { vehicle: Vehicle }) {
     },
   });
 
-  const [customerId, setCustomerId] = useState<string>(vehicle.customer_id || "");
-  const [managerId, setManagerId] = useState<string>(vehicle.fleet_manager_id || "");
+  const [customerId, setCustomerId] = useState<string>(vehicle?.customer_id || "");
+  const [managerId, setManagerId] = useState<string>(vehicle?.fleet_manager_id || "");
   const [depot, setDepot] = useState<string>((data?.customer as any)?.depot || "");
   const [homeDealer, setHomeDealer] = useState<string>((data?.customer as any)?.home_dealer || "");
   const [allocatedDriver, setAllocatedDriver] = useState<string>("");
 
   useEffect(() => {
-    setCustomerId(vehicle.customer_id || "");
-    setManagerId(vehicle.fleet_manager_id || "");
-  }, [vehicle.customer_id, vehicle.fleet_manager_id]);
+    setCustomerId(vehicle?.customer_id || "");
+    setManagerId(vehicle?.fleet_manager_id || "");
+  }, [vehicle?.customer_id, vehicle?.fleet_manager_id]);
 
   const currentCustomerLabel = data?.customer?.name || "";
   const customerOpts = customerOptions.length
