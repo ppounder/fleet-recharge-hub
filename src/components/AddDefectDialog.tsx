@@ -125,6 +125,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
             reported_by: d.reportedBy || null,
             reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : editDefect.reported_at,
             rectified_details: d.rectified ? (d.rectifiedDetails || null) : null,
+            rectified_by: d.rectified ? (d.rectifiedBy || null) : null,
+            rectified_at: d.rectified && d.rectifiedAt ? new Date(d.rectifiedAt).toISOString() : null,
             photos: d.photos ?? [],
             damage_marks: d.damageMarks ?? [],
           })
@@ -142,6 +144,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
           reported_by: d.reportedBy || null,
           reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : new Date().toISOString(),
           rectified_details: d.rectified ? (d.rectifiedDetails || null) : null,
+          rectified_by: d.rectified ? (d.rectifiedBy || null) : null,
+          rectified_at: d.rectified && d.rectifiedAt ? new Date(d.rectifiedAt).toISOString() : null,
           photos: d.photos ?? [],
           damage_marks: d.damageMarks ?? [],
         }));
