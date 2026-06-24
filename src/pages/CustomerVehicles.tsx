@@ -216,6 +216,8 @@ export default function CustomerVehicles() {
           mot_due: form.mot_due || null,
           next_service: form.next_service || null,
           mileage: form.mileage ? Number(form.mileage) : null,
+          registered_date: form.registered_date || null,
+          date_in_service: form.date_in_service || null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
