@@ -925,6 +925,133 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ============ Add / Edit Tyre dialog ============ */}
+      <Dialog
+        open={tyreOpen}
+        onOpenChange={(next) => {
+          setTyreOpen(next);
+          if (!next) resetTyreForm();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tyreEditingId ? "Edit tyre" : "Add tyre"}</DialogTitle>
+            <DialogDescription>Record the fitted tyre details for a wheel position.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="tyre_position">Position</Label>
+              <Select
+                value={tyreForm.position}
+                onValueChange={(v) => updateTyreField("position", v)}
+              >
+                <SelectTrigger
+                  id="tyre_position"
+                  aria-invalid={!!tyreErrors.position}
+                  className={cn(tyreErrors.position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTyrePositions.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {tyreErrors.position && <p className="text-xs text-destructive">{tyreErrors.position}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
+                <Input
+                  id="tyre_manufacturer"
+                  value={tyreForm.manufacturer}
+                  onChange={(e) => updateTyreField("manufacturer", e.target.value)}
+                  aria-invalid={!!tyreErrors.manufacturer}
+                  className={cn(tyreErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                />
+                {tyreErrors.manufacturer && <p className="text-xs text-destructive">{tyreErrors.manufacturer}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_size">Tyre size</Label>
+                <Input
+                  id="tyre_size"
+                  value={tyreForm.tyre_size}
+                  onChange={(e) => updateTyreField("tyre_size", e.target.value)}
+                  placeholder="e.g. 315/80R22.5"
+                  aria-invalid={!!tyreErrors.tyre_size}
+                  className={cn(tyreErrors.tyre_size && "border-destructive focus-visible:ring-destructive")}
+                />
+                {tyreErrors.tyre_size && <p className="text-xs text-destructive">{tyreErrors.tyre_size}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="tyre_serial">Serial number</Label>
+              <Input
+                id="tyre_serial"
+                value={tyreForm.serial_number}
+                onChange={(e) => updateTyreField("serial_number", e.target.value)}
+                placeholder="DOT code, e.g. XXXX XXXX 1223"
+                aria-invalid={!!tyreErrors.serial_number}
+                className={cn("font-mono", tyreErrors.serial_number && "border-destructive focus-visible:ring-destructive")}
+              />
+              {tyreErrors.serial_number && <p className="text-xs text-destructive">{tyreErrors.serial_number}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Manufacture date (tyre age)</Label>
+                <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
+                  {dotToManufactureDate(tyreForm.serial_number) ?? "—"}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_fitted_date">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="tyre_fitted_date"
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !tyreForm.fitted_date && "text-muted-foreground",
+                        tyreErrors.fitted_date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    >
+                      <span>
+                        {tyreForm.fitted_date
+                          ? format(parseISO(tyreForm.fitted_date), "dd MMM yyyy")
+                          : "Pick a date"}
+                      </span>
+                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={tyreForm.fitted_date ? parseISO(tyreForm.fitted_date) : undefined}
+                      onSelect={(d) => updateTyreField("fitted_date", d ? format(d, "yyyy-MM-dd") : "")}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {tyreErrors.fitted_date && <p className="text-xs text-destructive">{tyreErrors.fitted_date}</p>}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTyreOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveTyre} disabled={saveTyre.isPending}>
+              {saveTyre.isPending ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
