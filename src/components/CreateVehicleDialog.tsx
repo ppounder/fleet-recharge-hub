@@ -107,7 +107,7 @@ export function CreateVehicleDialog() {
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={createVehicle.isPending}>
-              {createVehicle.isPending ? "Adding..." : "Add Vehicle"}
+              {createVehicle.isPending ? "Adding..." : "Add Asset"}
             </Button>
           </div>
         </form>
