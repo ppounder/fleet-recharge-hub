@@ -355,15 +355,17 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                       aria-invalid={!!errors.reading_date}
                       aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
                       className={cn(
-                        "w-full justify-start font-normal",
+                        "w-full justify-between font-normal",
                         !form.reading_date && "text-muted-foreground",
                         errors.reading_date && "border-destructive focus-visible:ring-destructive"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.reading_date
-                        ? format(parseISO(form.reading_date), "dd MMM yyyy")
-                        : "Pick a date"}
+                      <span>
+                        {form.reading_date
+                          ? format(parseISO(form.reading_date), "dd MMM yyyy")
+                          : "Pick a date"}
+                      </span>
+                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
