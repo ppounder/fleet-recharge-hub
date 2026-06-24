@@ -588,23 +588,7 @@ export default function CustomerVehicles() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="rfl_expiry_date">RFL expiry date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button id="rfl_expiry_date" variant="outline" className={cn("w-full justify-start text-left font-normal bg-card", !form.rfl_expiry_date && "text-muted-foreground")}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {form.rfl_expiry_date ? format(parseISO(form.rfl_expiry_date), "dd MMM yyyy") : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={form.rfl_expiry_date ? parseISO(form.rfl_expiry_date) : undefined}
-                          onSelect={(d) => setForm((f) => ({ ...f, rfl_expiry_date: d ? format(d, "yyyy-MM-dd") : "" }))}
-                          initialFocus
-                          className={cn("p-3 pointer-events-auto")}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <DatePicker id="rfl_expiry_date" value={form.rfl_expiry_date} onChange={(v) => setForm((f) => ({ ...f, rfl_expiry_date: v }))} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="rfl_renewal_method">Renewal method</Label>
