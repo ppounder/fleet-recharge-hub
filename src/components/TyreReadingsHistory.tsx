@@ -33,6 +33,7 @@ interface TyreReadingsHistoryProps {
   vehicleId: string;
   wheelPlan: string;
   assetType?: string;
+  section?: "details" | "readings" | "both";
 }
 
 interface TyreReading {
