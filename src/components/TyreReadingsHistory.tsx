@@ -41,6 +41,9 @@ interface TyreReading {
   position: string;
   tyre_code: string | null;
   tread_depth: number;
+  tread_outer: number | null;
+  tread_centre: number | null;
+  tread_inner: number | null;
   pressure: number | null;
   pressure_unit: string | null;
   reading_date: string;
