@@ -387,6 +387,14 @@ export default function CustomerVehicles() {
       rfl_renewal_method: "Renewal method",
       rfl_renewal_term_months: "Renewal term (months)",
       rfl_supplier: "RFL supplier",
+      odometer_start_distance: "Odometer start distance",
+      last_known_distance: "Last known distance",
+      last_known_distance_unit: "Unit",
+      last_known_distance_recorded_at: "Reading taken",
+      distance_source: "Source",
+      average_monthly_distance: "Average monthly distance",
+      life_distance: "Life distance",
+      estimated_distance: "Estimated distance",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
