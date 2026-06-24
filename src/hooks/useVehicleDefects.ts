@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 export type DefectStatus = "open" | "in-progress" | "rectified" | "cancelled";
 export type DefectSeverity = "safety" | "non-safety" | "advisory";
 
+export type DamageMark = { x: number; y: number };
+
 export type VehicleDefect = {
   id: string;
   vehicle_id: string;
@@ -15,6 +17,8 @@ export type VehicleDefect = {
   status: DefectStatus;
   reported_by: string | null;
   rectified_details: string | null;
+  photos: string[];
+  damage_marks: DamageMark[];
   job?: { id: string; job_number: string; status: string } | null;
 };
 
