@@ -150,8 +150,10 @@ function DefectCard({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const MAX_PHOTOS = 5;
   const canAddPhoto = defect.photos.length < MAX_PHOTOS;
+
 
   function handlePhoto(files: FileList | null) {
     if (!files || files.length === 0) return;
