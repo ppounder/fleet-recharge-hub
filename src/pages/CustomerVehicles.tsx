@@ -428,20 +428,12 @@ export default function CustomerVehicles() {
               <CollapsibleCard title="Key Dates">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                   <div className="space-y-1.5">
-                    <Label htmlFor="year">Year</Label>
-                    <Input id="year" inputMode="numeric" value={form.year} onChange={set("year")} className="bg-card" />
+                    <Label htmlFor="registered_date">Registered date</Label>
+                    <Input id="registered_date" type="date" value={form.registered_date} onChange={set("registered_date")} className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="mot_due">MOT due</Label>
-                    <Input id="mot_due" type="date" value={form.mot_due} onChange={set("mot_due")} className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="next_service">Next service</Label>
-                    <Input id="next_service" type="date" value={form.next_service} onChange={set("next_service")} className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="mileage">Mileage</Label>
-                    <Input id="mileage" inputMode="numeric" value={form.mileage} onChange={set("mileage")} className="bg-card" />
+                    <Label htmlFor="date_in_service">Date in service</Label>
+                    <Input id="date_in_service" type="date" value={form.date_in_service} onChange={set("date_in_service")} className="bg-card" />
                   </div>
                 </div>
               </CollapsibleCard>
