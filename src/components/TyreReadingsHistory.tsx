@@ -472,27 +472,88 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Latest tread depth (mm) for each wheel position.
-        </p>
-        <div className="flex items-center gap-2">
+    <div className="space-y-8">
+      {/* ============ Tyre details section ============ */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold">Tyre details</h3>
+            <p className="text-sm text-muted-foreground">Fitted tyres per wheel position.</p>
+          </div>
           <Button
             size="sm"
-            variant="outline"
-            onClick={() => { setDisposeForm(initialDisposeForm); setDisposeErrors({}); setDisposeOpen(true); }}
-            disabled={!positions.length}
+            onClick={() => { resetTyreForm(); setTyreOpen(true); }}
+            disabled={!positions.length || availableTyrePositions.length === 0}
           >
-            <Wrench className="w-4 h-4 mr-1.5" />
-            Dispose tyre
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add tyre
           </Button>
+        </div>
+        <div className="rounded-md border bg-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Position</TableHead>
+                <TableHead>Manufacturer</TableHead>
+                <TableHead>Tyre size</TableHead>
+                <TableHead>Serial number</TableHead>
+                <TableHead>Manufacture date</TableHead>
+                <TableHead>Date fitted</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tyresLoading ? (
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">Loading…</TableCell></TableRow>
+              ) : tyres.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No tyres added yet.</TableCell></TableRow>
+              ) : (
+                tyres.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell>{t.position}</TableCell>
+                    <TableCell>{t.manufacturer}</TableCell>
+                    <TableCell>{t.tyre_size}</TableCell>
+                    <TableCell className="font-mono text-xs">{t.serial_number}</TableCell>
+                    <TableCell className="text-muted-foreground">{t.manufacture_date ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{format(parseISO(t.fitted_date), "dd MMM yyyy")}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => startDispose(t.position)}
+                          className="text-destructive hover:bg-destructive hover:text-white"
+                          aria-label="Dispose tyre"
+                        >
+                          <Wrench className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </section>
+
+      {/* ============ Tyre readings section ============ */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-base font-semibold">Tyre readings</h3>
+          <p className="text-sm text-muted-foreground">Latest tread depth (mm) for each wheel position.</p>
+        </div>
+        <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
             <Plus className="w-4 h-4 mr-1.5" />
             Add reading
           </Button>
         </div>
       </div>
+
 
       <div className="rounded-md border bg-card overflow-hidden">
         <Table>
