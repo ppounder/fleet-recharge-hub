@@ -22,6 +22,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
+import { AddDefectDialog } from "@/components/AddDefectDialog";
 
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { WheelPlanDiagram } from "@/components/WheelPlanDiagram";
@@ -875,7 +876,8 @@ export default function CustomerVehicles() {
 
             <TabsContent value="defects">
               {selected ? (
-                <DefectHistory vehicleId={selected.id} />
+                <DefectHistory vehicleId={selected.id} vehicleLabel={selected.registration || selected.fleet_number || undefined} />
+
               ) : (
                 <CollapsibleCard title="Defect History">
                   <div className="rounded-md border bg-card px-3 py-6 text-sm text-muted-foreground">
@@ -1212,13 +1214,15 @@ const severityVariant = (s: string) =>
 const statusVariant = (s: string) =>
   s === "open" ? "destructive" : s === "in-progress" ? "default" : "secondary";
 
-function DefectHistory({ vehicleId }: { vehicleId: string }) {
+function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicleLabel?: string }) {
   const { data: defects = [], isLoading } = useVehicleDefects(vehicleId);
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<DefectStatus | "all">("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("reported_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [addOpen, setAddOpen] = useState(false);
+
 
   const rows = useMemo(() => {
     let list = [...defects];
@@ -1250,6 +1254,18 @@ function DefectHistory({ vehicleId }: { vehicleId: string }) {
   return (
     <CollapsibleCard title="Defect History">
       <div className="space-y-6">
+        <div className="flex justify-end">
+          <Button onClick={() => setAddOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" /> Add defect
+          </Button>
+        </div>
+        <AddDefectDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          vehicleId={vehicleId}
+          vehicleLabel={vehicleLabel}
+        />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
           <div className="space-y-1.5">
             <Label htmlFor="defect-status">Status</Label>
