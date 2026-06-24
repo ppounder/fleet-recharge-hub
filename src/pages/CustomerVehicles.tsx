@@ -237,9 +237,6 @@ export default function CustomerVehicles() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setCreating(false); }}>
-                <ArrowLeft className="w-4 h-4 mr-1" /> Back
-              </Button>
               <div>
                 <h1 className="text-2xl font-bold">{creating ? "New Asset" : "Vehicle Details"}</h1>
                 {!creating && selected && (
@@ -255,13 +252,13 @@ export default function CustomerVehicles() {
 
           <Tabs defaultValue="info">
             <TabsList className="bg-transparent text-sidebar-foreground gap-2 h-auto">
-              <TabsTrigger value="info" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle Information</TabsTrigger>
+              <TabsTrigger value="info" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle / Asset Details</TabsTrigger>
               <TabsTrigger value="dates" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>
               <TabsTrigger value="defects" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Defect History</TabsTrigger>
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
-              <CollapsibleCard title="Vehicle Information">
+              <CollapsibleCard title="Vehicle / Asset Details">
                 <div className="space-y-5">
                   {rows.map((row, i) => (
                     <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
