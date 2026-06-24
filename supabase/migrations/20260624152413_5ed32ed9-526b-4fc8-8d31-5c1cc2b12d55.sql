@@ -1,0 +1,1 @@
+ALTER TABLE public.vehicle_defects ADD COLUMN IF NOT EXISTS rectified_details text;
