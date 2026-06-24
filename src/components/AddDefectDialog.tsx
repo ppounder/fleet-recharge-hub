@@ -241,14 +241,31 @@ function DefectCard({
           ref={cameraInputRef}
           onChange={(e) => { handlePhoto(e.target.files); e.currentTarget.value = ""; }}
         />
+        <CameraCaptureDialog
+          open={cameraOpen}
+          onOpenChange={setCameraOpen}
+          onCapture={(dataUrl) => {
+            if (defect.photos.length >= MAX_PHOTOS) return;
+            onChange({ ...defect, photos: [...defect.photos, dataUrl] });
+          }}
+        />
         <div className="flex gap-2">
-          <Button type="button" variant="outline" className="flex-1 gap-2" disabled={!canAddPhoto} onClick={() => cameraInputRef.current?.click()}>
+          <Button type="button" variant="outline" className="flex-1 gap-2" disabled={!canAddPhoto} onClick={() => {
+            const hasMedia = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+            const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            if (hasMedia && !isMobile) {
+              setCameraOpen(true);
+            } else {
+              cameraInputRef.current?.click();
+            }
+          }}>
             <Camera className="h-4 w-4" /> Take photo
           </Button>
           <Button type="button" variant="outline" className="flex-1 gap-2" disabled={!canAddPhoto} onClick={() => fileInputRef.current?.click()}>
             <Upload className="h-4 w-4" /> Choose file
           </Button>
         </div>
+
         {!canAddPhoto && <p className="text-xs text-muted-foreground">Maximum {MAX_PHOTOS} photos reached.</p>}
         {defect.photos.length > 0 && (
           <div className="flex gap-2 overflow-x-auto p-1.5 -m-1.5">
