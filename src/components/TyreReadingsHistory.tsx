@@ -92,9 +92,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const initialForm = { position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) };
+  const initialForm = { position: "", tyre_code: "", tread_depth: "", pressure: "", pressure_unit: "PSI", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
-  type FormErrors = Partial<Record<"position" | "tread_depth" | "reading_date", string>>;
+  type FormErrors = Partial<Record<"position" | "tread_depth" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
 
   const readingSchema = z.object({
@@ -108,6 +108,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         const n = parseFloat(v);
         return n >= 0 && n <= 30;
       }, { message: "Tread depth must be between 0 and 30 mm" }),
+    pressure: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
+      .refine((v) => {
+        if (v === "") return true;
+        const n = parseFloat(v);
+        return n >= 0 && n <= 200;
+      }, { message: "Pressure must be between 0 and 200" }),
     reading_date: z
       .string()
       .min(1, { message: "Reading date is required" })
