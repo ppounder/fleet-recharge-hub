@@ -928,6 +928,7 @@ export type Database = {
           status: string
           updated_at: string
           vin: string | null
+          wheel_plan: string | null
           year: number | null
         }
         Insert: {
@@ -950,6 +951,7 @@ export type Database = {
           status?: string
           updated_at?: string
           vin?: string | null
+          wheel_plan?: string | null
           year?: number | null
         }
         Update: {
@@ -972,6 +974,7 @@ export type Database = {
           status?: string
           updated_at?: string
           vin?: string | null
+          wheel_plan?: string | null
           year?: number | null
         }
         Relationships: [
