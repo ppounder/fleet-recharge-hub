@@ -924,7 +924,7 @@ export default function CustomerVehicles() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Vehicles / Assets</h1>
+          <h1 className="text-2xl font-bold">Assets / Vehicles</h1>
           <p className="text-sm text-muted-foreground">{vehicles.length} vehicle{vehicles.length !== 1 ? "s" : ""} assigned to you</p>
         </div>
 
