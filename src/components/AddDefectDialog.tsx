@@ -100,7 +100,7 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Report a defect</DialogTitle>
+          <DialogTitle>Add defect</DialogTitle>
           <DialogDescription>
             {vehicleLabel ? `For ${vehicleLabel}` : "Record one or more defects for this asset."}
           </DialogDescription>
