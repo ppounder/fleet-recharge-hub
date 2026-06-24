@@ -420,6 +420,39 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                 )}
               </div>
               <div className="space-y-1.5">
+                <Label htmlFor="pressure">Pressure</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="pressure"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.pressure}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("pressure", v);
+                    }}
+                    aria-invalid={!!errors.pressure}
+                    aria-describedby={errors.pressure ? "pressure-error" : undefined}
+                    className={cn("flex-1", errors.pressure && "border-destructive focus-visible:ring-destructive")}
+                    placeholder="e.g. 110"
+                  />
+                  <Select
+                    value={form.pressure_unit}
+                    onValueChange={(v) => updateField("pressure_unit", v)}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PSI">PSI</SelectItem>
+                      <SelectItem value="Bar">Bar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {errors.pressure && (
+                  <p id="pressure-error" className="text-xs text-destructive">{errors.pressure}</p>
+                )}
+              <div className="space-y-1.5">
                 <Label htmlFor="reading_date">Date taken</Label>
                 <Popover>
                   <PopoverTrigger asChild>
