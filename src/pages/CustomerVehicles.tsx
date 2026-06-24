@@ -371,6 +371,8 @@ export default function CustomerVehicles() {
             }}
             visibleCols={visibleCols}
             setVisibleCols={setVisibleCols}
+            columnOrder={columnOrder}
+            setColumnOrder={setColumnOrder}
             onRowClick={setSelected}
           />
         )}
