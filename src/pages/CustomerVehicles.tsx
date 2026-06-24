@@ -128,6 +128,11 @@ function toForm(v: Vehicle): EditableFields {
     loler_expiry_date: (v as any).loler_expiry_date || "",
     tacho_2yr_expiry_date: (v as any).tacho_2yr_expiry_date || "",
     tacho_6yr_expiry_date: (v as any).tacho_6yr_expiry_date || "",
+    rfl_type: (v as any).rfl_type || "",
+    rfl_expiry_date: (v as any).rfl_expiry_date || "",
+    rfl_renewal_method: (v as any).rfl_renewal_method || "",
+    rfl_renewal_term_months: (v as any).rfl_renewal_term_months != null ? String((v as any).rfl_renewal_term_months) : "",
+    rfl_supplier: (v as any).rfl_supplier || "",
   };
 }
 
