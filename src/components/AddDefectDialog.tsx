@@ -206,7 +206,7 @@ function DefectCard({
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-lg border bg-background p-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Defect {index + 1}</div>
         {canDelete && (
@@ -223,7 +223,7 @@ function DefectCard({
               id={`defect-${defect.id}-type`}
               aria-invalid={!!errors.type}
               aria-describedby={errors.type ? typeErrId : undefined}
-              className={cn("w-full bg-card", errors.type && "border-destructive focus-visible:ring-destructive")}
+              className={cn("w-full", errors.type && "border-destructive focus-visible:ring-destructive")}
             >
               <SelectValue placeholder="Select defect type…" />
             </SelectTrigger>
