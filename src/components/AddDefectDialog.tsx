@@ -227,8 +227,20 @@ function DefectCard({
         )}
         <label className="flex items-center gap-2 rounded-md border bg-card p-3 text-sm cursor-pointer">
           <Checkbox checked={defect.rectified} onCheckedChange={(v) => onChange({ ...defect, rectified: !!v })} />
-          Self-rectified
+          Rectified
         </label>
+        {defect.rectified && (
+          <div>
+            <Label>Rectified details</Label>
+            <Textarea
+              rows={2}
+              className="mt-1.5"
+              value={defect.rectifiedDetails ?? ""}
+              onChange={(e) => onChange({ ...defect, rectifiedDetails: e.target.value })}
+              placeholder="Describe how the defect was rectified…"
+            />
+          </div>
+        )}
         <input
           type="file"
           accept="image/*"
