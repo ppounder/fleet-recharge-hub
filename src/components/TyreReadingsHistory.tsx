@@ -1156,14 +1156,21 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                   aria-invalid={!!changePosErrors.to_position}
                   className={cn(changePosErrors.to_position && "border-destructive focus-visible:ring-destructive")}
                 >
-                  <SelectValue placeholder={availableChangeTargets.length ? "Select position" : "No empty positions"} />
+                  <SelectValue placeholder={availableChangeTargets.length ? "Select position" : "No other positions"} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableChangeTargets.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                    <SelectItem key={p} value={p}>
+                      {p}{activeTyrePositions.has(p) ? " (occupied — will swap)" : ""}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {targetIsOccupied && !changePosErrors.to_position && (
+                <p className="text-xs text-muted-foreground">
+                  This position is occupied. The tyre currently there will be moved to {changePosForm.from_position}.
+                </p>
+              )}
               {changePosErrors.to_position && (
                 <p className="text-xs text-destructive">{changePosErrors.to_position}</p>
               )}
