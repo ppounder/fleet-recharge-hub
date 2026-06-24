@@ -269,8 +269,8 @@ export default function CustomerVehicles() {
       ["registration", "fleet_number", "asset_number"],
       ["asset_type", "body_type"],
       ["make", "model", "derivative"],
-      ...(WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) ? [["wheel_plan"] as (keyof EditableFields)[]] : []),
     ];
+
 
 
 
@@ -296,6 +296,9 @@ export default function CustomerVehicles() {
             <TabsList className="bg-transparent text-sidebar-foreground gap-2 h-auto">
               <TabsTrigger value="info" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle / Asset Details</TabsTrigger>
               <TabsTrigger value="dates" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>
+              {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
+                <TabsTrigger value="tyres" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Tyres</TabsTrigger>
+              )}
               <TabsTrigger value="defects" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Defect History</TabsTrigger>
             </TabsList>
 
@@ -430,6 +433,30 @@ export default function CustomerVehicles() {
                 </div>
               </CollapsibleCard>
             </TabsContent>
+
+            {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
+              <TabsContent value="tyres">
+                <CollapsibleCard title="Wheel Plan">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-start">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="wheel_plan">Wheel plan</Label>
+                      <Select value={form.wheel_plan || ""} onValueChange={(v) => setForm((f) => ({ ...f, wheel_plan: v }))}>
+                        <SelectTrigger id="wheel_plan" className="bg-card"><SelectValue placeholder="Select wheel plan" /></SelectTrigger>
+                        <SelectContent>
+                          {(WHEEL_PLANS_BY_ASSET[form.asset_type] || []).map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {form.wheel_plan && (
+                      <WheelPlanDiagram plan={form.wheel_plan} assetType={form.asset_type} />
+                    )}
+                  </div>
+                </CollapsibleCard>
+              </TabsContent>
+            )}
+
 
             <TabsContent value="defects">
               {selected ? (
