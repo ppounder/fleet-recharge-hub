@@ -501,6 +501,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
 
   return (
     <div className="space-y-8">
+      {section !== "readings" && (<>
       {/* ============ Tyre details section ============ */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
