@@ -705,31 +705,36 @@ export default function CustomerVehicles() {
                     />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label htmlFor="last_known_distance">Last known distance</Label>
                     <div className="grid grid-cols-[1fr_160px] gap-2">
-                      <Input
-                        id="last_known_distance"
-                        type="text"
-                        inputMode="numeric"
-                        value={form.last_known_distance}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, last_known_distance: v }));
-                        }}
-                        className="bg-card"
-                      />
-                      <Select
-                        value={form.last_known_distance_unit || "__none__"}
-                        onValueChange={(v) => setForm((f) => ({ ...f, last_known_distance_unit: v === "__none__" ? "" : v }))}
-                      >
-                        <SelectTrigger className="bg-card"><SelectValue placeholder="Unit" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">—</SelectItem>
-                          <SelectItem value="Miles">Miles</SelectItem>
-                          <SelectItem value="Kms">Kms</SelectItem>
-                          <SelectItem value="Hours">Hours</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="last_known_distance">Last known distance</Label>
+                        <Input
+                          id="last_known_distance"
+                          type="text"
+                          inputMode="numeric"
+                          value={form.last_known_distance}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, last_known_distance: v }));
+                          }}
+                          className="bg-card"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="last_known_distance_unit">Unit</Label>
+                        <Select
+                          value={form.last_known_distance_unit || "__none__"}
+                          onValueChange={(v) => setForm((f) => ({ ...f, last_known_distance_unit: v === "__none__" ? "" : v }))}
+                        >
+                          <SelectTrigger id="last_known_distance_unit" className="bg-card"><SelectValue placeholder="Unit" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">—</SelectItem>
+                            <SelectItem value="Miles">Miles</SelectItem>
+                            <SelectItem value="Kms">Kms</SelectItem>
+                            <SelectItem value="Hours">Hours</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Reading taken: {form.last_known_distance_recorded_at ? format(parseISO(form.last_known_distance_recorded_at), "dd MMM yyyy HH:mm") : "—"}
