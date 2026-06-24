@@ -474,7 +474,7 @@ export default function CustomerVehicles() {
                         section="readings"
                       />
                     </CollapsibleCard>
-                  </>
+                  </div>
                 )}
               </TabsContent>
             )}
