@@ -281,13 +281,13 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : positionsToShow.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                   Select a wheel plan to see tyre positions.
                 </TableCell>
               </TableRow>
