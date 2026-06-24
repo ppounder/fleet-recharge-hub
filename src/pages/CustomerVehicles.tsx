@@ -59,6 +59,11 @@ type EditableFields = {
   loler_expiry_date: string;
   tacho_2yr_expiry_date: string;
   tacho_6yr_expiry_date: string;
+  rfl_type: string;
+  rfl_expiry_date: string;
+  rfl_renewal_method: string;
+  rfl_renewal_term_months: string;
+  rfl_supplier: string;
 };
 
 const blank: EditableFields = {
