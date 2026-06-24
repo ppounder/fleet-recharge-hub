@@ -33,6 +33,7 @@ interface TyreReadingsHistoryProps {
   vehicleId: string;
   wheelPlan: string;
   assetType?: string;
+  section?: "details" | "readings" | "both";
 }
 
 interface TyreReading {
@@ -135,7 +136,7 @@ const TYRE_MANUFACTURERS = [
 ];
 const OTHER_MANUFACTURER = "Other";
 
-export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
+export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section = "both" }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -500,6 +501,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
 
   return (
     <div className="space-y-8">
+      {section !== "readings" && (<>
       {/* ============ Tyre details section ============ */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -584,7 +586,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </Table>
         </div>
       </section>
+      </>)}
 
+      {section !== "details" && (<>
       {/* ============ Tyre readings section ============ */}
       <div className="flex items-center justify-between">
         <div>
@@ -680,6 +684,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </TableBody>
         </Table>
       </div>
+      </>)}
 
       <Dialog
         open={open}
