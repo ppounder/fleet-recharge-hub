@@ -250,7 +250,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                   value={form.tread_depth}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d*$/.test(v)) setForm((f) => ({ ...f, tread_depth: v }));
+                    if (v === "" || /^\d*\.?\d?$/.test(v)) setForm((f) => ({ ...f, tread_depth: v }));
                   }}
                   placeholder=""
                 />
