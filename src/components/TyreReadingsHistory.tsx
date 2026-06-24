@@ -203,7 +203,10 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       const { error } = await supabase.from("tyre_readings").update({
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
-        tread_depth: parseFloat(parsed.tread_depth),
+        tread_depth: parseFloat(parsed.tread_centre),
+        tread_outer: parsed.tread_outer ? parseFloat(parsed.tread_outer) : null,
+        tread_centre: parseFloat(parsed.tread_centre),
+        tread_inner: parsed.tread_inner ? parseFloat(parsed.tread_inner) : null,
         pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
         pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
