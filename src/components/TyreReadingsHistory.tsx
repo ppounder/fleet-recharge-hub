@@ -97,7 +97,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const [editingId, setEditingId] = useState<string | null>(null);
   const initialForm = { position: "", tyre_code: "", tread_outer: "", tread_centre: "", tread_inner: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
-  type FormErrors = Partial<Record<"position" | "tread_outer" | "tread_centre" | "tread_inner" | "pressure" | "reading_date", string>>;
+  type FormErrors = Partial<Record<"position" | "tyre_code" | "tread_outer" | "tread_centre" | "tread_inner" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
 
   const treadOptional = z
@@ -108,6 +108,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
 
   const readingSchema = z.object({
     position: z.string().trim().min(1, { message: "Position is required" }),
+    tyre_code: z.string().trim().min(1, { message: "Tyre condition is required" }),
     tread_outer: treadOptional,
     tread_centre: z
       .string()
@@ -416,9 +417,14 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
               <Input
                 id="tyre_code"
                 value={form.tyre_code}
-                onChange={(e) => setForm((f) => ({ ...f, tyre_code: e.target.value }))}
-                placeholder="e.g. YG65FFX.OSF1O-1"
+                onChange={(e) => updateField("tyre_code", e.target.value)}
+                aria-invalid={!!errors.tyre_code}
+                aria-describedby={errors.tyre_code ? "tyre_code-error" : undefined}
+                className={cn(errors.tyre_code && "border-destructive focus-visible:ring-destructive")}
               />
+              {errors.tyre_code && (
+                <p id="tyre_code-error" className="text-xs text-destructive">{errors.tyre_code}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
