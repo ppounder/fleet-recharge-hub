@@ -1373,33 +1373,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
           vehicleLabel={vehicleLabel}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-          <div className="space-y-1.5">
-            <Label htmlFor="defect-status">Status</Label>
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-              <SelectTrigger id="defect-status" className="bg-card"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="defect-severity">Severity</Label>
-            <Select value={severityFilter} onValueChange={setSeverityFilter}>
-              <SelectTrigger id="defect-severity" className="bg-card"><SelectValue placeholder="Severity" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All severities</SelectItem>
-                <SelectItem value="safety">Safety</SelectItem>
-                <SelectItem value="non-safety">Non-safety</SelectItem>
-                <SelectItem value="advisory">Advisory</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
         <div className="rounded-md border overflow-hidden">
           <Table>
