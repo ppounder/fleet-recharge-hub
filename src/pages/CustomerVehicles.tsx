@@ -375,6 +375,142 @@ export default function CustomerVehicles() {
   );
 }
 
+function VehiclesTable({
+  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, onRowClick,
+}: {
+  vehicles: Vehicle[];
+  search: string;
+  setSearch: (s: string) => void;
+  sortKey: ColKey;
+  sortDir: "asc" | "desc";
+  setSort: (k: ColKey) => void;
+  visibleCols: ColKey[];
+  setVisibleCols: (c: ColKey[]) => void;
+  onRowClick: (v: Vehicle) => void;
+}) {
+  const isVisible = (k: ColKey) => visibleCols.includes(k);
+  const toggleCol = (k: ColKey, checked: boolean) => {
+    if (checked) setVisibleCols([...visibleCols, k]);
+    else setVisibleCols(visibleCols.filter((c) => c !== k));
+  };
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = vehicles;
+    if (q) {
+      list = list.filter((v) =>
+        [v.registration, (v as any).fleet_number, (v as any).asset_type, (v as any).asset_number, v.make, v.model, (v as any).derivative, (v as any).body_type, v.vin, v.status]
+          .filter(Boolean)
+          .some((f) => String(f).toLowerCase().includes(q))
+      );
+    }
+    const sorted = [...list].sort((a, b) => {
+      const va: any = sortKey === "vehicle" ? `${a.make} ${a.model}` : (a as any)[sortKey];
+      const vb: any = sortKey === "vehicle" ? `${b.make} ${b.model}` : (b as any)[sortKey];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      let cmp = 0;
+      if (typeof va === "number" && typeof vb === "number") cmp = va - vb;
+      else cmp = String(va).localeCompare(String(vb), undefined, { numeric: true });
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [vehicles, search, sortKey, sortDir]);
+
+  const SortHeader = ({ k, children, className }: { k: ColKey; children: React.ReactNode; className?: string }) => (
+    <TableHead className={className}>
+      <button onClick={() => setSort(k)} className="inline-flex items-center gap-1 hover:text-foreground">
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
+      </button>
+    </TableHead>
+  );
+
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search vehicles..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 bg-card"
+            />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Columns3 className="w-4 h-4" />
+                Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ALL_COLUMNS.map((c) => (
+                <DropdownMenuCheckboxItem
+                  key={c.key}
+                  checked={isVisible(c.key)}
+                  onCheckedChange={(v) => toggleCol(c.key, !!v)}
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  {c.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="rounded-md border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {ALL_COLUMNS.filter((c) => isVisible(c.key)).map((c) => (
+                  <SortHeader key={c.key} k={c.key} className={c.key === "mileage" ? "text-right" : ""}>
+                    {c.label}
+                  </SortHeader>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={visibleCols.length} className="text-center text-sm text-muted-foreground py-10">
+                    No vehicles match your search.
+                  </TableCell>
+                </TableRow>
+              ) : filtered.map((v) => (
+                <TableRow key={v.id} onClick={() => onRowClick(v)} className="cursor-pointer">
+                  {isVisible("registration") && (
+                    <TableCell><UKNumberPlate registration={v.registration} /></TableCell>
+                  )}
+                  {isVisible("fleet_number") && <TableCell>{(v as any).fleet_number || "—"}</TableCell>}
+                  {isVisible("asset_type") && <TableCell>{(v as any).asset_type || "—"}</TableCell>}
+                  {isVisible("vehicle") && (
+                    <TableCell className="font-medium">{v.make} {v.model}</TableCell>
+                  )}
+                  {isVisible("year") && <TableCell>{v.year ?? "—"}</TableCell>}
+                  {isVisible("mileage") && (
+                    <TableCell className="text-right tabular-nums">{v.mileage ? v.mileage.toLocaleString() : "—"}</TableCell>
+                  )}
+                  {isVisible("mot_due") && <TableCell>{v.mot_due ? formatDate(v.mot_due) : "—"}</TableCell>}
+                  {isVisible("next_service") && <TableCell>{v.next_service ? formatDate(v.next_service) : "—"}</TableCell>}
+                  {isVisible("status") && <TableCell><StatusBadge status={v.status} /></TableCell>}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+
 type SortKey = "reported_at" | "severity" | "status" | "title";
 type SortDir = "asc" | "desc";
 
