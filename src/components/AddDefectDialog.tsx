@@ -111,10 +111,11 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
   });
 
   function handleSave() {
-    const nextErrors: Record<string, { type?: string; description?: string; rectifiedDetails?: string }> = {};
+    type DefectErr = { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string };
+    const nextErrors: Record<string, DefectErr> = {};
     let hasError = false;
     defects.forEach((d) => {
-      const e: { type?: string; description?: string; rectifiedDetails?: string } = {};
+      const e: DefectErr = {};
       if (!d.type.trim()) {
         e.type = "Defect type is required";
         hasError = true;
@@ -123,8 +124,17 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
         e.rectifiedDetails = "Rectified details are required";
         hasError = true;
       }
-      if (e.type || e.description || e.rectifiedDetails) nextErrors[d.id] = e;
+      if (!d.reportedAt) {
+        e.reportedAt = "Date reported is required";
+        hasError = true;
+      }
+      if (!d.reportedBy.trim()) {
+        e.reportedBy = "Reported by is required";
+        hasError = true;
+      }
+      if (e.type || e.description || e.rectifiedDetails || e.reportedAt || e.reportedBy) nextErrors[d.id] = e;
     });
+
     setErrors(nextErrors);
     if (hasError) {
       setWarn("Please fix the highlighted fields.");
