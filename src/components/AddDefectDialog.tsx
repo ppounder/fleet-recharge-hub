@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Plus, Trash2, Camera, X, Upload, Undo2, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -305,13 +306,10 @@ function DefectCard({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor={`defect-${defect.id}-date`}>Date reported</Label>
-            <Input
+            <DatePicker
               id={`defect-${defect.id}-date`}
-              type="date"
               value={defect.reportedAt}
-              onChange={(e) => onChange({ ...defect, reportedAt: e.target.value })}
-              aria-invalid={!!errors.reportedAt}
-              aria-describedby={errors.reportedAt ? dateErrId : undefined}
+              onChange={(v) => onChange({ ...defect, reportedAt: v })}
               className={cn(errors.reportedAt && "border-destructive focus-visible:ring-destructive")}
             />
             {errors.reportedAt && (
@@ -429,11 +427,10 @@ function DefectCard({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor={`defect-${defect.id}-rectified-at`}>Rectified date</Label>
-                <Input
+                <DatePicker
                   id={`defect-${defect.id}-rectified-at`}
-                  type="date"
                   value={defect.rectifiedAt ?? ""}
-                  onChange={(e) => onChange({ ...defect, rectifiedAt: e.target.value })}
+                  onChange={(v) => onChange({ ...defect, rectifiedAt: v })}
                 />
               </div>
             </div>
