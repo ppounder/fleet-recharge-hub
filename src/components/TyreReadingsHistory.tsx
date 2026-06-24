@@ -193,6 +193,123 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     return map;
   }, [readings]);
 
+  // ---------- Tyre details (fitted tyres) ----------
+  const { data: tyres = [], isLoading: tyresLoading } = useQuery({
+    queryKey: ["tyres", vehicleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tyres")
+        .select("*")
+        .eq("vehicle_id", vehicleId)
+        .is("disposed_at", null)
+        .order("position", { ascending: true });
+      if (error) throw error;
+      return (data || []) as Tyre[];
+    },
+    enabled: !!vehicleId,
+  });
+
+  const activeTyrePositions = useMemo(() => new Set(tyres.map((t) => t.position)), [tyres]);
+
+  const initialTyreForm = {
+    position: "",
+    manufacturer: "",
+    tyre_size: "",
+    serial_number: "",
+    fitted_date: new Date().toISOString().slice(0, 10),
+  };
+  const [tyreOpen, setTyreOpen] = useState(false);
+  const [tyreEditingId, setTyreEditingId] = useState<string | null>(null);
+  const [tyreForm, setTyreForm] = useState(initialTyreForm);
+  type TyreErrors = Partial<Record<keyof typeof initialTyreForm, string>>;
+  const [tyreErrors, setTyreErrors] = useState<TyreErrors>({});
+
+  const updateTyreField = <K extends keyof typeof initialTyreForm>(key: K, value: string) => {
+    setTyreForm((prev) => ({ ...prev, [key]: value }));
+    if (tyreErrors[key]) setTyreErrors((p) => ({ ...p, [key]: undefined }));
+  };
+
+  const resetTyreForm = () => {
+    setTyreForm(initialTyreForm);
+    setTyreEditingId(null);
+    setTyreErrors({});
+  };
+
+  const tyreSchema = z.object({
+    position: z.string().trim().min(1, "Position is required"),
+    manufacturer: z.string().trim().min(1, "Manufacturer is required"),
+    tyre_size: z.string().trim().min(1, "Tyre size is required"),
+    serial_number: z.string().trim().min(1, "Serial number is required"),
+    fitted_date: z.string().min(1, "Date is required").refine((v) => !Number.isNaN(Date.parse(v)), "Invalid date"),
+  });
+
+  const saveTyre = useMutation({
+    mutationFn: async (parsed: z.infer<typeof tyreSchema>) => {
+      const payload = {
+        vehicle_id: vehicleId,
+        position: parsed.position,
+        manufacturer: parsed.manufacturer,
+        tyre_size: parsed.tyre_size,
+        serial_number: parsed.serial_number,
+        manufacture_date: dotToManufactureDate(parsed.serial_number),
+        fitted_date: parsed.fitted_date,
+      };
+      if (tyreEditingId) {
+        const { error } = await supabase.from("tyres").update(payload).eq("id", tyreEditingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("tyres").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
+      setTyreOpen(false);
+      resetTyreForm();
+      toast({ title: tyreEditingId ? "Tyre updated" : "Tyre added" });
+    },
+    onError: (e: any) =>
+      toast({
+        title: "Failed to save tyre",
+        description: e.message?.includes("tyres_active_position_unique")
+          ? "This position already has an active tyre."
+          : e.message,
+        variant: "destructive",
+      }),
+  });
+
+  const handleSaveTyre = () => {
+    const result = tyreSchema.safeParse(tyreForm);
+    if (!result.success) {
+      const errs: TyreErrors = {};
+      for (const i of result.error.issues) {
+        const k = i.path[0] as keyof TyreErrors;
+        if (k && !errs[k]) errs[k] = i.message;
+      }
+      setTyreErrors(errs);
+      return;
+    }
+    saveTyre.mutate(result.data);
+  };
+
+  const startEditTyre = (t: Tyre) => {
+    setTyreEditingId(t.id);
+    setTyreForm({
+      position: t.position,
+      manufacturer: t.manufacturer,
+      tyre_size: t.tyre_size,
+      serial_number: t.serial_number,
+      fitted_date: t.fitted_date,
+    });
+    setTyreErrors({});
+    setTyreOpen(true);
+  };
+
+  const availableTyrePositions = useMemo(
+    () => positions.filter((p) => !activeTyrePositions.has(p) || p === tyreForm.position),
+    [positions, activeTyrePositions, tyreForm.position],
+  );
+
   const create = useMutation({
     mutationFn: async (parsed: z.infer<typeof readingSchema>) => {
       const { error } = await supabase.from("tyre_readings").insert({
