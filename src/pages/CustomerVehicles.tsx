@@ -67,6 +67,14 @@ type EditableFields = {
   rfl_renewal_method: string;
   rfl_renewal_term_months: string;
   rfl_supplier: string;
+  odometer_start_distance: string;
+  last_known_distance: string;
+  last_known_distance_unit: string;
+  last_known_distance_recorded_at: string;
+  distance_source: string;
+  average_monthly_distance: string;
+  life_distance: string;
+  estimated_distance: string;
 };
 
 const blank: EditableFields = {
