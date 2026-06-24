@@ -400,22 +400,44 @@ function DefectCard({
           Rectified
         </label>
         {defect.rectified && (
-          <div className="space-y-1.5">
-            <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
-            <Textarea
-              id={`defect-${defect.id}-rectified`}
-              rows={2}
-              value={defect.rectifiedDetails ?? ""}
-              onChange={(e) => onChange({ ...defect, rectifiedDetails: e.target.value })}
-              placeholder="Describe how the defect was rectified…"
-              aria-invalid={!!errors.rectifiedDetails}
-              aria-describedby={errors.rectifiedDetails ? rectErrId : undefined}
-              className={cn(errors.rectifiedDetails && "border-destructive focus-visible:ring-destructive")}
-            />
-            {errors.rectifiedDetails && (
-              <p id={rectErrId} className="text-xs text-destructive">{errors.rectifiedDetails}</p>
-            )}
-          </div>
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
+              <Textarea
+                id={`defect-${defect.id}-rectified`}
+                rows={2}
+                value={defect.rectifiedDetails ?? ""}
+                onChange={(e) => onChange({ ...defect, rectifiedDetails: e.target.value })}
+                placeholder="Describe how the defect was rectified…"
+                aria-invalid={!!errors.rectifiedDetails}
+                aria-describedby={errors.rectifiedDetails ? rectErrId : undefined}
+                className={cn(errors.rectifiedDetails && "border-destructive focus-visible:ring-destructive")}
+              />
+              {errors.rectifiedDetails && (
+                <p id={rectErrId} className="text-xs text-destructive">{errors.rectifiedDetails}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor={`defect-${defect.id}-rectified-by`}>Rectified by</Label>
+                <Input
+                  id={`defect-${defect.id}-rectified-by`}
+                  value={defect.rectifiedBy ?? ""}
+                  onChange={(e) => onChange({ ...defect, rectifiedBy: e.target.value })}
+                  placeholder="Name"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`defect-${defect.id}-rectified-at`}>Rectified date</Label>
+                <Input
+                  id={`defect-${defect.id}-rectified-at`}
+                  type="date"
+                  value={defect.rectifiedAt ?? ""}
+                  onChange={(e) => onChange({ ...defect, rectifiedAt: e.target.value })}
+                />
+              </div>
+            </div>
+          </>
         )}
         <input
           type="file"
