@@ -816,30 +816,42 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                       {latest ? format(parseISO(latest.reading_date), "dd MMM yyyy") : "—"}
                     </TableCell>
                     <TableCell>
-                      {latest && (
-                        <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-1">
+                        {latest ? (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => startEdit(latest)}
+                              disabled={remove.isPending}
+                              aria-label="Edit latest reading"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))}
+                              disabled={remove.isPending}
+                              className={cn("text-destructive hover:bg-destructive hover:text-white")}
+                              aria-label="Delete latest reading"
+                            >
+                              {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
+                          </>
+                        ) : (
                           <Button
-                            size="icon"
+                            size="sm"
                             variant="ghost"
-                            onClick={() => startEdit(latest)}
-                            disabled={remove.isPending}
-                            aria-label="Edit latest reading"
+                            onClick={() => { setEditingId(null); setForm({ ...initialForm, position: pos }); setErrors({}); setOpen(true); }}
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add
                           </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))}
-                            disabled={remove.isPending}
-                            className={cn("text-destructive hover:bg-destructive hover:text-white")}
-                            aria-label="Delete latest reading"
-                          >
-                            {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </TableCell>
+
                   </TableRow>
                 );
               })
