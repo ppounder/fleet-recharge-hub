@@ -89,6 +89,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const initialForm = { position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
   type FormErrors = Partial<Record<"position" | "tread_depth" | "reading_date", string>>;
