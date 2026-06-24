@@ -524,6 +524,18 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
       notes: string | null;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
+
+      // Find any active tyre currently sitting at the target position (swap scenario).
+      const { data: occupant, error: occErr } = await supabase
+        .from("tyres")
+        .select("id")
+        .eq("vehicle_id", payload.vehicle_id)
+        .eq("position", payload.to_position)
+        .is("disposed_at", null)
+        .maybeSingle();
+      if (occErr) throw occErr;
+
+      // History entry for the primary move.
       const { error: histErr } = await supabase.from("tyre_position_changes").insert({
         tyre_id: payload.tyre_id,
         vehicle_id: payload.vehicle_id,
@@ -534,11 +546,35 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
         created_by: user?.id ?? null,
       });
       if (histErr) throw histErr;
-      const { error: updErr } = await supabase
-        .from("tyres")
-        .update({ position: payload.to_position })
-        .eq("id", payload.tyre_id);
-      if (updErr) throw updErr;
+
+      if (occupant && occupant.id !== payload.tyre_id) {
+        // Swap: park the occupant on a unique sentinel position to avoid the
+        // active-position unique index, move source to target, then place
+        // the occupant on the source position.
+        const sentinel = `__swap__${occupant.id}`;
+        const { error: e1 } = await supabase.from("tyres").update({ position: sentinel }).eq("id", occupant.id);
+        if (e1) throw e1;
+        const { error: e2 } = await supabase.from("tyres").update({ position: payload.to_position }).eq("id", payload.tyre_id);
+        if (e2) throw e2;
+        const { error: e3 } = await supabase.from("tyres").update({ position: payload.from_position }).eq("id", occupant.id);
+        if (e3) throw e3;
+        // Log the swapped tyre's move too.
+        await supabase.from("tyre_position_changes").insert({
+          tyre_id: occupant.id,
+          vehicle_id: payload.vehicle_id,
+          from_position: payload.to_position,
+          to_position: payload.from_position,
+          changed_at: payload.changed_at,
+          notes: payload.notes ? `Swap with ${payload.from_position}: ${payload.notes}` : `Swap with ${payload.from_position}`,
+          created_by: user?.id ?? null,
+        });
+      } else {
+        const { error: updErr } = await supabase
+          .from("tyres")
+          .update({ position: payload.to_position })
+          .eq("id", payload.tyre_id);
+        if (updErr) throw updErr;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
