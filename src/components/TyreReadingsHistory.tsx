@@ -95,22 +95,30 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const initialForm = { position: "", tyre_code: "", tread_depth: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
+  const initialForm = { position: "", tyre_code: "", tread_outer: "", tread_centre: "", tread_inner: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
-  type FormErrors = Partial<Record<"position" | "tread_depth" | "pressure" | "reading_date", string>>;
+  type FormErrors = Partial<Record<"position" | "tread_outer" | "tread_centre" | "tread_inner" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const treadOptional = z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
+    .refine((v) => v === "" || (parseFloat(v) >= 0 && parseFloat(v) <= 30), { message: "Must be between 0 and 30 mm" });
 
   const readingSchema = z.object({
     position: z.string().trim().min(1, { message: "Position is required" }),
-    tread_depth: z
+    tread_outer: treadOptional,
+    tread_centre: z
       .string()
       .trim()
-      .min(1, { message: "Tread depth is required" })
+      .min(1, { message: "Centre tread depth is required" })
       .refine((v) => /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
       .refine((v) => {
         const n = parseFloat(v);
         return n >= 0 && n <= 30;
-      }, { message: "Tread depth must be between 0 and 30 mm" }),
+      }, { message: "Must be between 0 and 30 mm" }),
+    tread_inner: treadOptional,
     pressure: z
       .string()
       .trim()
