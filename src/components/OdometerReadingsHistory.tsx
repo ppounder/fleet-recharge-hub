@@ -71,6 +71,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     setDate(now.toISOString().slice(0, 10));
     setTime(now.toTimeString().slice(0, 5));
     setEditing(null);
+    setErrors({});
   };
 
   const openAdd = () => {
@@ -86,16 +87,29 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     const d = new Date(r.recorded_at);
     setDate(d.toISOString().slice(0, 10));
     setTime(d.toTimeString().slice(0, 5));
+    setErrors({});
     setDialogOpen(true);
+  };
+
+  const validate = () => {
+    const next: typeof errors = {};
+    if (!source) next.source = "Source is required";
+    if (!reading) next.reading = "Reading is required";
+    else if (!/^\d+$/.test(reading)) next.reading = "Must be a whole number";
+    else if (Number(reading) > 9999999) next.reading = "Reading is too large";
+    if (!unit) next.unit = "Unit is required";
+    if (!date) next.date = "Date is required";
+    if (!time || !/^\d{2}:\d{2}$/.test(time)) next.time = "Valid time required";
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!reading || !/^\d+$/.test(reading)) throw new Error("Reading must be a whole number");
-      const recorded_at = new Date(`${date}T${time || "00:00"}:00`).toISOString();
+      const recorded_at = new Date(`${date}T${time}:00`).toISOString();
       const payload: any = {
         vehicle_id: vehicleId,
-        source: source || null,
+        source,
         reading: Number(reading),
         unit,
         recorded_at,
@@ -123,6 +137,11 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     },
     onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
   });
+
+  const handleSave = () => {
+    if (!validate()) return;
+    save.mutate();
+  };
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
