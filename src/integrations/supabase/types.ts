@@ -835,6 +835,62 @@ export type Database = {
           },
         ]
       }
+      tyres: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          disposed_at: string | null
+          disposed_notes: string | null
+          fitted_date: string
+          id: string
+          manufacture_date: string | null
+          manufacturer: string
+          position: string
+          serial_number: string
+          tyre_size: string
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          disposed_at?: string | null
+          disposed_notes?: string | null
+          fitted_date?: string
+          id?: string
+          manufacture_date?: string | null
+          manufacturer: string
+          position: string
+          serial_number: string
+          tyre_size: string
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          disposed_at?: string | null
+          disposed_notes?: string | null
+          fitted_date?: string
+          id?: string
+          manufacture_date?: string | null
+          manufacturer?: string
+          position?: string
+          serial_number?: string
+          tyre_size?: string
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tyres_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
