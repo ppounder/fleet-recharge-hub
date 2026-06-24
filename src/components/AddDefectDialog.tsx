@@ -247,6 +247,37 @@ function DefectCard({
         )}
       </div>
       <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor={`defect-${defect.id}-date`}>Date reported</Label>
+            <Input
+              id={`defect-${defect.id}-date`}
+              type="date"
+              value={defect.reportedAt}
+              onChange={(e) => onChange({ ...defect, reportedAt: e.target.value })}
+              aria-invalid={!!errors.reportedAt}
+              aria-describedby={errors.reportedAt ? dateErrId : undefined}
+              className={cn(errors.reportedAt && "border-destructive focus-visible:ring-destructive")}
+            />
+            {errors.reportedAt && (
+              <p id={dateErrId} className="text-xs text-destructive">{errors.reportedAt}</p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`defect-${defect.id}-reporter`}>Reported by</Label>
+            <Input
+              id={`defect-${defect.id}-reporter`}
+              value={defect.reportedBy}
+              onChange={(e) => onChange({ ...defect, reportedBy: e.target.value })}
+              aria-invalid={!!errors.reportedBy}
+              aria-describedby={errors.reportedBy ? reporterErrId : undefined}
+              className={cn(errors.reportedBy && "border-destructive focus-visible:ring-destructive")}
+            />
+            {errors.reportedBy && (
+              <p id={reporterErrId} className="text-xs text-destructive">{errors.reportedBy}</p>
+            )}
+          </div>
+        </div>
         <div className="space-y-1.5">
           <Label htmlFor={`defect-${defect.id}-type`}>Defect type</Label>
           <Select value={PRESETS.includes(defect.type) ? defect.type : ""} onValueChange={(v) => onChange({ ...defect, type: v })}>
