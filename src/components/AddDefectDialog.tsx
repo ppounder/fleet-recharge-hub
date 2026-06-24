@@ -8,13 +8,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Plus, Trash2, Camera, X, Upload } from "lucide-react";
+import { Plus, Trash2, Camera, X, Upload, Undo2, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 
 type Severity = "safety" | "non-safety" | "advisory";
+
+type DamageMark = { x: number; y: number };
 
 type Defect = {
   id: string;
@@ -23,6 +25,7 @@ type Defect = {
   severity: Severity;
   rectified: boolean;
   photos: string[];
+  damageMarks?: DamageMark[];
 };
 
 const PRESETS = ["Bulb out", "Damage", "Leaking", "Worn", "Cracked", "Missing", "Other"];
@@ -213,6 +216,12 @@ function DefectCard({
             </label>
           </RadioGroup>
         </div>
+        {defect.type === "Damage" && (
+          <DamageDiagram
+            marks={defect.damageMarks ?? []}
+            onChange={(marks) => onChange({ ...defect, damageMarks: marks })}
+          />
+        )}
         <label className="flex items-center gap-2 rounded-md border bg-card p-3 text-sm cursor-pointer">
           <Checkbox checked={defect.rectified} onCheckedChange={(v) => onChange({ ...defect, rectified: !!v })} />
           Self-rectified
@@ -259,6 +268,84 @@ function DefectCard({
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function DamageDiagram({
+  marks,
+  onChange,
+}: {
+  marks: DamageMark[];
+  onChange: (marks: DamageMark[]) => void;
+}) {
+  function handleClick(e: React.MouseEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    onChange([...marks, { x, y }]);
+  }
+
+  return (
+    <div className="rounded-md border bg-card p-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Damage location
+        </Label>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 text-xs"
+            disabled={marks.length === 0}
+            onClick={() => onChange(marks.slice(0, -1))}
+          >
+            <Undo2 className="h-3.5 w-3.5" /> Undo
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 text-xs"
+            disabled={marks.length === 0}
+            onClick={() => onChange([])}
+          >
+            <Trash className="h-3.5 w-3.5" /> Clear
+          </Button>
+        </div>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">Tap the diagram to mark damaged area</p>
+      <div className="mt-3 rounded-md bg-muted/40 p-3">
+        <svg
+          viewBox="0 0 100 180"
+          onClick={handleClick}
+          className="mx-auto block h-72 w-auto cursor-crosshair"
+          aria-label="Vehicle damage diagram"
+        >
+          {/* Mirrors */}
+          <rect x="14" y="22" width="6" height="10" rx="1" fill="hsl(var(--foreground))" opacity="0.7" />
+          <rect x="80" y="22" width="6" height="10" rx="1" fill="hsl(var(--foreground))" opacity="0.7" />
+          {/* Cab */}
+          <rect x="28" y="10" width="44" height="34" rx="6" fill="hsl(var(--foreground))" />
+          {/* Body */}
+          <rect x="22" y="48" width="56" height="118" rx="8" fill="hsl(var(--foreground))" />
+          {/* Wheels */}
+          <rect x="14" y="58" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+          <rect x="78" y="58" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+          <rect x="14" y="142" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+          <rect x="78" y="142" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+          {/* Marks */}
+          {marks.map((m, i) => (
+            <g key={i}>
+              <circle cx={m.x} cy={m.y} r="3.5" fill="hsl(var(--destructive))" stroke="white" strokeWidth="1" />
+              <text x={m.x} y={m.y + 1.4} fontSize="4" textAnchor="middle" fill="white" fontWeight="bold">
+                {i + 1}
+              </text>
+            </g>
+          ))}
+        </svg>
       </div>
     </div>
   );
