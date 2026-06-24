@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DatePicker } from "@/components/ui/date-picker";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, cn } from "@/lib/utils";
 
 type Reading = {
   id: string;
@@ -46,9 +46,8 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
   const [reading, setReading] = useState("");
   const [unit, setUnit] = useState("Miles");
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [time, setTime] = useState<string>(
-    new Date().toTimeString().slice(0, 5),
-  );
+  const [time, setTime] = useState<string>(new Date().toTimeString().slice(0, 5));
+  const [errors, setErrors] = useState<{ source?: string; reading?: string; unit?: string; date?: string; time?: string }>({});
 
   const { data: readings = [], isLoading } = useQuery({
     queryKey: ["odometer_readings", vehicleId],
@@ -72,6 +71,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     setDate(now.toISOString().slice(0, 10));
     setTime(now.toTimeString().slice(0, 5));
     setEditing(null);
+    setErrors({});
   };
 
   const openAdd = () => {
@@ -87,16 +87,29 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     const d = new Date(r.recorded_at);
     setDate(d.toISOString().slice(0, 10));
     setTime(d.toTimeString().slice(0, 5));
+    setErrors({});
     setDialogOpen(true);
+  };
+
+  const validate = () => {
+    const next: typeof errors = {};
+    if (!source) next.source = "Source is required";
+    if (!reading) next.reading = "Reading is required";
+    else if (!/^\d+$/.test(reading)) next.reading = "Must be a whole number";
+    else if (Number(reading) > 9999999) next.reading = "Reading is too large";
+    if (!unit) next.unit = "Unit is required";
+    if (!date) next.date = "Date is required";
+    if (!time || !/^\d{2}:\d{2}$/.test(time)) next.time = "Valid time required";
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!reading || !/^\d+$/.test(reading)) throw new Error("Reading must be a whole number");
-      const recorded_at = new Date(`${date}T${time || "00:00"}:00`).toISOString();
+      const recorded_at = new Date(`${date}T${time}:00`).toISOString();
       const payload: any = {
         vehicle_id: vehicleId,
-        source: source || null,
+        source,
         reading: Number(reading),
         unit,
         recorded_at,
@@ -124,6 +137,11 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     },
     onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
   });
+
+  const handleSave = () => {
+    if (!validate()) return;
+    save.mutate();
+  };
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
@@ -193,51 +211,103 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Source</Label>
-              <Select value={source} onValueChange={setSource}>
-                <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+              <Label htmlFor="odo_source">Source</Label>
+              <Select
+                value={source}
+                onValueChange={(v) => {
+                  setSource(v);
+                  if (errors.source) setErrors((e) => ({ ...e, source: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  id="odo_source"
+                  aria-invalid={!!errors.source}
+                  className={cn(errors.source && "border-destructive focus:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select source" />
+                </SelectTrigger>
                 <SelectContent>
                   {SOURCES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {errors.source && <p className="text-xs text-destructive">{errors.source}</p>}
             </div>
             <div className="grid grid-cols-[1fr_140px] gap-3">
               <div className="space-y-1.5">
-                <Label>Odometer reading</Label>
+                <Label htmlFor="odo_reading">Odometer reading</Label>
                 <Input
+                  id="odo_reading"
                   type="text"
                   inputMode="numeric"
                   value={reading}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === "" || /^\d+$/.test(v)) setReading(v);
+                    if (v === "" || /^\d+$/.test(v)) {
+                      setReading(v);
+                      if (errors.reading) setErrors((er) => ({ ...er, reading: undefined }));
+                    }
                   }}
+                  aria-invalid={!!errors.reading}
+                  className={cn(errors.reading && "border-destructive focus-visible:ring-destructive")}
                 />
+                {errors.reading && <p className="text-xs text-destructive">{errors.reading}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label>Unit</Label>
-                <Select value={unit} onValueChange={setUnit}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Label htmlFor="odo_unit">Unit</Label>
+                <Select
+                  value={unit}
+                  onValueChange={(v) => {
+                    setUnit(v);
+                    if (errors.unit) setErrors((e) => ({ ...e, unit: undefined }));
+                  }}
+                >
+                  <SelectTrigger
+                    id="odo_unit"
+                    aria-invalid={!!errors.unit}
+                    className={cn(errors.unit && "border-destructive focus:ring-destructive")}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {UNITS.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {errors.unit && <p className="text-xs text-destructive">{errors.unit}</p>}
               </div>
             </div>
             <div className="grid grid-cols-[1fr_140px] gap-3">
               <div className="space-y-1.5">
-                <Label>Date</Label>
-                <DatePicker value={date} onChange={setDate} />
+                <Label htmlFor="odo_date">Date</Label>
+                <DatePicker
+                  id="odo_date"
+                  value={date}
+                  onChange={(v) => {
+                    setDate(v);
+                    if (errors.date) setErrors((e) => ({ ...e, date: undefined }));
+                  }}
+                />
+                {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label>Time</Label>
-                <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+                <Label htmlFor="odo_time">Time</Label>
+                <Input
+                  id="odo_time"
+                  type="time"
+                  value={time}
+                  onChange={(e) => {
+                    setTime(e.target.value);
+                    if (errors.time) setErrors((er) => ({ ...er, time: undefined }));
+                  }}
+                  aria-invalid={!!errors.time}
+                  className={cn(errors.time && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.time && <p className="text-xs text-destructive">{errors.time}</p>}
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => save.mutate()} disabled={save.isPending}>
+            <Button onClick={handleSave} disabled={save.isPending}>
               {save.isPending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
