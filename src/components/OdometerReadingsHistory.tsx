@@ -37,7 +37,7 @@ interface Props {
 
 export function OdometerReadingsHistory({ vehicleId }: Props) {
   const qc = useQueryClient();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Reading | null>(null);
   const [deleting, setDeleting] = useState<Reading | null>(null);
