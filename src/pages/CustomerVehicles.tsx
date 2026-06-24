@@ -275,17 +275,27 @@ export default function CustomerVehicles() {
                               </SelectContent>
                             </Select>
                           ) : k === "status" ? (
-                            <div className="relative">
-                              <Input id={k} value={form[k] === "off-road" ? "Off Road" : form[k] ? "On Road" : ""} readOnly className="bg-card pr-9" />
-                              <button
-                                type="button"
-                                onClick={() => setStatusDialogOpen(true)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground"
-                                aria-label="Edit status"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                            </div>
+                            creating ? (
+                              <Select value={form.status || ""} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
+                                <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select status" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="on-road">On Road</SelectItem>
+                                  <SelectItem value="off-road">Off Road</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="relative">
+                                <Input id={k} value={form[k] === "off-road" ? "Off Road" : form[k] ? "On Road" : ""} readOnly className="bg-card pr-9" />
+                                <button
+                                  type="button"
+                                  onClick={() => setStatusDialogOpen(true)}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground"
+                                  aria-label="Edit status"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
