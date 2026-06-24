@@ -708,9 +708,10 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                         <div className="flex justify-end gap-1">
                           {t ? (
                             <>
-                              <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre">
+                              <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre" title="Edit">
                                 <Pencil className="h-4 w-4" />
                               </Button>
+
                               <Button
                                 size="icon"
                                 variant="ghost"
