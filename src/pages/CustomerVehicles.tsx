@@ -797,6 +797,17 @@ export default function CustomerVehicles() {
                   </div>
                 </div>
               </CollapsibleCard>
+              {selected ? (
+                <CollapsibleCard title="Odometer Readings">
+                  <OdometerReadingsHistory vehicleId={selected.id} />
+                </CollapsibleCard>
+              ) : (
+                <CollapsibleCard title="Odometer Readings">
+                  <div className="rounded-md border bg-card px-3 py-6 text-sm text-muted-foreground">
+                    Readings can be recorded once the asset is created.
+                  </div>
+                </CollapsibleCard>
+              )}
             </TabsContent>
 
 
