@@ -270,6 +270,8 @@ export default function CustomerVehicles() {
       mot_due: "MOT due",
       next_service: "Next service",
       mileage: "Mileage",
+      registered_date: "Registered date",
+      date_in_service: "Date in service",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
