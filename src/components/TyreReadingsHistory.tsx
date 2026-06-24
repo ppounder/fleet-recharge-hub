@@ -136,7 +136,7 @@ const TYRE_MANUFACTURERS = [
 ];
 const OTHER_MANUFACTURER = "Other";
 
-export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
+export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section = "both" }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
