@@ -315,7 +315,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="tyre_code">Tyre condition (optional)</Label>
+              <Label htmlFor="tyre_code">Tyre condition</Label>
               <Input
                 id="tyre_code"
                 value={form.tyre_code}
