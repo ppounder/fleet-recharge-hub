@@ -180,7 +180,7 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
           );
         })}
       </svg>
-      <div className="text-xs text-muted-foreground flex items-center gap-4">
+      <div className="text-xs text-muted-foreground flex flex-col items-center gap-1.5 text-center">
         <span>{plan}</span>
         {!isTrailer && driven > 0 && (
           <span className="inline-flex items-center gap-1.5">
