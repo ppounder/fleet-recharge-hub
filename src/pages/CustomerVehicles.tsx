@@ -286,6 +286,15 @@ export default function CustomerVehicles() {
                                 <Pencil className="w-4 h-4" />
                               </button>
                             </div>
+                          ) : k === "body_type" ? (
+                            <Select value={form.body_type || ""} onValueChange={(v) => setForm((f) => ({ ...f, body_type: v }))}>
+                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder={form.asset_type ? "Select body type" : "Select asset type first"} /></SelectTrigger>
+                              <SelectContent>
+                                {(BODY_TYPES_BY_ASSET[form.asset_type] || BODY_TYPES_BY_ASSET._default).map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
