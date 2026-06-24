@@ -38,6 +38,7 @@ type EditableFields = {
   asset_number: string;
   asset_type: string;
   body_type: string;
+  wheel_plan: string;
   make: string;
   model: string;
   derivative: string;
@@ -55,6 +56,7 @@ const blank: EditableFields = {
   asset_number: "",
   asset_type: "",
   body_type: "",
+  wheel_plan: "",
   make: "",
   model: "",
   derivative: "",
@@ -73,6 +75,7 @@ function toForm(v: Vehicle): EditableFields {
     asset_number: (v as any).asset_number || "",
     asset_type: (v as any).asset_type || "",
     body_type: (v as any).body_type || "",
+    wheel_plan: (v as any).wheel_plan || "",
     make: v.make || "",
     model: v.model || "",
     derivative: (v as any).derivative || "",
@@ -92,6 +95,29 @@ const BODY_TYPES_BY_ASSET: Record<string, string[]> = {
   "Tail Lift": ["Column", "Cantilever", "Tuckaway", "Slider"],
   _default: ["Other"],
 };
+
+const WHEEL_PLANS_BY_ASSET: Record<string, string[]> = {
+  Car: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x4)"],
+  Van: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x4)"],
+  HGV: [
+    "2-Axle Rigid (4x2)",
+    "3-Axle Rigid (6x2)",
+    "3-Axle Rigid (6x4)",
+    "4-Axle Rigid (8x2)",
+    "4-Axle Rigid (8x4)",
+    "2-Axle Tractor (4x2)",
+    "3-Axle Tractor (6x2)",
+    "3-Axle Tractor (6x4)",
+  ],
+  Trailer: [
+    "Single Axle",
+    "Twin Axle",
+    "Tri Axle",
+    "Quad Axle",
+  ],
+};
+const WHEEL_PLAN_ASSET_TYPES = new Set(["Car", "Van", "HGV", "Trailer"]);
+
 
 
 type ColKey = "registration" | "fleet_number" | "asset_type" | "vehicle" | "year" | "mileage" | "mot_due" | "next_service" | "status";
@@ -176,6 +202,7 @@ export default function CustomerVehicles() {
           asset_number: form.asset_number || null,
           asset_type: form.asset_type || null,
           body_type: form.body_type || null,
+          wheel_plan: form.wheel_plan || null,
           derivative: form.derivative || null,
           year: form.year ? Number(form.year) : null,
           mot_due: form.mot_due || null,
@@ -203,6 +230,7 @@ export default function CustomerVehicles() {
         asset_number: form.asset_number || null,
         asset_type: form.asset_type || null,
         body_type: form.body_type || null,
+        wheel_plan: form.wheel_plan || null,
         make: form.make,
         model: form.model,
         derivative: form.derivative || null,
@@ -226,6 +254,7 @@ export default function CustomerVehicles() {
       asset_number: "Asset number",
       asset_type: "Asset type",
       body_type: "Body type",
+      wheel_plan: "Wheel plan",
       make: "Make",
       model: "Model",
       derivative: "Derivative",
@@ -238,6 +267,7 @@ export default function CustomerVehicles() {
       ["status", "vin"],
       ["registration", "fleet_number", "asset_number"],
       ["asset_type", "body_type"],
+      ...(WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) ? [["wheel_plan"] as (keyof EditableFields)[]] : []),
       ["make", "model", "derivative"],
     ];
 
@@ -301,6 +331,15 @@ export default function CustomerVehicles() {
                               <SelectTrigger id={k} className="bg-card"><SelectValue placeholder={form.asset_type ? "Select body type" : "Select asset type first"} /></SelectTrigger>
                               <SelectContent>
                                 {(BODY_TYPES_BY_ASSET[form.asset_type] || BODY_TYPES_BY_ASSET._default).map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : k === "wheel_plan" ? (
+                            <Select value={form.wheel_plan || ""} onValueChange={(v) => setForm((f) => ({ ...f, wheel_plan: v }))}>
+                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select wheel plan" /></SelectTrigger>
+                              <SelectContent>
+                                {(WHEEL_PLANS_BY_ASSET[form.asset_type] || []).map((opt) => (
                                   <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                                 ))}
                               </SelectContent>
