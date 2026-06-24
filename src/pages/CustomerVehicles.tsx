@@ -1891,12 +1891,32 @@ function DefectMediaDialog({
     <Dialog open={!!defect} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Attachments</DialogTitle>
+          <DialogTitle>Defect attachments</DialogTitle>
           <DialogDescription>
             {defect ? `Photos and damage area for "${defect.title}".` : ""}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
+          {defect && (
+            <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+              <div className="space-y-1">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Defect type</div>
+                <div className="text-sm font-medium">{defect.title}</div>
+              </div>
+              {defect.description && (
+                <div className="space-y-1">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Description</div>
+                  <div className="text-sm whitespace-pre-wrap">{defect.description}</div>
+                </div>
+              )}
+              {defect.rectified_details && defect.rectified_details.trim() && (
+                <div className="space-y-1">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectification details</div>
+                  <div className="text-sm whitespace-pre-wrap">{defect.rectified_details}</div>
+                </div>
+              )}
+            </div>
+          )}
           {photos.length > 0 && (
             <div className="space-y-2">
               <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Photos</div>
