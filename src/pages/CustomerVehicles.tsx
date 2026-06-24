@@ -152,6 +152,14 @@ function toForm(v: Vehicle): EditableFields {
     rfl_renewal_method: (v as any).rfl_renewal_method || "",
     rfl_renewal_term_months: (v as any).rfl_renewal_term_months != null ? String((v as any).rfl_renewal_term_months) : "",
     rfl_supplier: (v as any).rfl_supplier || "",
+    odometer_start_distance: (v as any).odometer_start_distance != null ? String((v as any).odometer_start_distance) : "",
+    last_known_distance: (v as any).last_known_distance != null ? String((v as any).last_known_distance) : "",
+    last_known_distance_unit: (v as any).last_known_distance_unit || "",
+    last_known_distance_recorded_at: (v as any).last_known_distance_recorded_at || "",
+    distance_source: (v as any).distance_source || "",
+    average_monthly_distance: (v as any).average_monthly_distance != null ? String((v as any).average_monthly_distance) : "",
+    life_distance: (v as any).life_distance != null ? String((v as any).life_distance) : "",
+    estimated_distance: (v as any).estimated_distance != null ? String((v as any).estimated_distance) : "",
   };
 }
 
