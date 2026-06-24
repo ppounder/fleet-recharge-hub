@@ -65,7 +65,6 @@ const blank: EditableFields = {
   model: "",
   derivative: "",
   year: "",
-  year: "",
   mot_due: "",
   next_service: "",
   mileage: "",
