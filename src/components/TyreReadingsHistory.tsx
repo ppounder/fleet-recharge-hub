@@ -1079,6 +1079,123 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
         </DialogContent>
       </Dialog>
 
+      {/* ============ Change tyre position dialog ============ */}
+      <Dialog
+        open={changePosOpen}
+        onOpenChange={(next) => {
+          setChangePosOpen(next);
+          if (!next) {
+            setChangePosForm(initialChangePosForm);
+            setChangePosErrors({});
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change tyre position</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Current position</Label>
+              <Input value={changePosForm.from_position} disabled />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="change_to_position">New position</Label>
+              <Select
+                value={changePosForm.to_position || undefined}
+                onValueChange={(v) => {
+                  setChangePosForm((f) => ({ ...f, to_position: v }));
+                  if (changePosErrors.to_position) setChangePosErrors((e) => ({ ...e, to_position: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  id="change_to_position"
+                  aria-invalid={!!changePosErrors.to_position}
+                  className={cn(changePosErrors.to_position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder={availableChangeTargets.length ? "Select position" : "No empty positions"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableChangeTargets.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {changePosErrors.to_position && (
+                <p className="text-xs text-destructive">{changePosErrors.to_position}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="change_date">Position date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="change_date"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !changePosForm.date && "text-muted-foreground",
+                        changePosErrors.date && "border-destructive",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {changePosForm.date ? format(parseISO(changePosForm.date), "dd MMM yyyy") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={changePosForm.date ? parseISO(changePosForm.date) : undefined}
+                      onSelect={(d) => {
+                        setChangePosForm((f) => ({ ...f, date: d ? format(d, "yyyy-MM-dd") : "" }));
+                        if (changePosErrors.date) setChangePosErrors((e) => ({ ...e, date: undefined }));
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {changePosErrors.date && <p className="text-xs text-destructive">{changePosErrors.date}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="change_time">Time</Label>
+                <Input
+                  id="change_time"
+                  type="time"
+                  value={changePosForm.time}
+                  onChange={(e) => {
+                    setChangePosForm((f) => ({ ...f, time: e.target.value }));
+                    if (changePosErrors.time) setChangePosErrors((er) => ({ ...er, time: undefined }));
+                  }}
+                  aria-invalid={!!changePosErrors.time}
+                  className={cn(changePosErrors.time && "border-destructive focus-visible:ring-destructive")}
+                />
+                {changePosErrors.time && <p className="text-xs text-destructive">{changePosErrors.time}</p>}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="change_notes">Notes (optional)</Label>
+              <Textarea
+                id="change_notes"
+                rows={2}
+                value={changePosForm.notes}
+                onChange={(e) => setChangePosForm((f) => ({ ...f, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setChangePosOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleChangePosition}
+              disabled={changePosition.isPending || availableChangeTargets.length === 0}
+            >
+              {changePosition.isPending ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* ============ Add / Edit Tyre dialog ============ */}
       <Dialog
         open={tyreOpen}
