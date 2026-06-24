@@ -684,6 +684,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
           </TableBody>
         </Table>
       </div>
+      </>)}
 
       <Dialog
         open={open}
