@@ -355,6 +355,11 @@ export default function CustomerVehicles() {
       loler_expiry_date: "LOLER expiry date",
       tacho_2yr_expiry_date: "2yr Tacho expiry date",
       tacho_6yr_expiry_date: "6yr Tacho expiry date",
+      rfl_type: "RFL type",
+      rfl_expiry_date: "RFL expiry date",
+      rfl_renewal_method: "Renewal method",
+      rfl_renewal_term_months: "Renewal term (months)",
+      rfl_supplier: "RFL supplier",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
