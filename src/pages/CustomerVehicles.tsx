@@ -83,6 +83,16 @@ function toForm(v: Vehicle): EditableFields {
   };
 }
 
+const BODY_TYPES_BY_ASSET: Record<string, string[]> = {
+  Car: ["Saloon", "Hatchback", "Estate", "SUV", "Coupe", "Convertible", "MPV", "Pickup"],
+  Van: ["Panel Van", "Crew Van", "Luton", "Dropside", "Tipper", "Box Van", "Refrigerated", "Curtainsider"],
+  HGV: ["Rigid", "Tractor Unit", "Box", "Curtainsider", "Tipper", "Tanker", "Skeletal", "Refrigerated", "Flatbed"],
+  Trailer: ["Curtainsider", "Box", "Flatbed", "Skeletal", "Tipper", "Tanker", "Refrigerated", "Low Loader"],
+  Plant: ["Excavator", "Forklift", "Telehandler", "Dumper", "Roller", "Generator", "Compressor"],
+  "Tail Lift": ["Column", "Cantilever", "Tuckaway", "Slider"],
+  _default: ["Other"],
+};
+
 
 type ColKey = "registration" | "fleet_number" | "asset_type" | "vehicle" | "year" | "mileage" | "mot_due" | "next_service" | "status";
 const ALL_COLUMNS: { key: ColKey; label: string }[] = [
