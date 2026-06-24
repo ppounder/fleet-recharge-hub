@@ -292,14 +292,27 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     </TableCell>
                     <TableCell>
                       {latest && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => remove.mutate(latest.id)}
-                          aria-label="Delete latest reading"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => startEdit(latest)}
+                            disabled={remove.isPending}
+                            aria-label="Edit latest reading"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => remove.mutate(latest.id)}
+                            disabled={remove.isPending}
+                            className={cn("text-destructive hover:bg-destructive hover:text-white")}
+                            aria-label="Delete latest reading"
+                          >
+                            {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>
