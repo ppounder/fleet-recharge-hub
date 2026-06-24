@@ -1352,6 +1352,30 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             )}
           </TableCell>
         );
+      case "actions":
+        return (
+          <TableCell key={k} className="w-[100px]">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Edit defect"
+                onClick={(e) => { e.stopPropagation(); setEditDefect(d); }}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Delete defect"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={(e) => { e.stopPropagation(); setDeleteDefect(d); }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </TableCell>
+        );
     }
   };
 
