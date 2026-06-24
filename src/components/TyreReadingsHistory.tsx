@@ -506,7 +506,6 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold">Tyre details</h3>
             <p className="text-sm text-muted-foreground">Fitted tyres per wheel position.</p>
           </div>
           <Button
