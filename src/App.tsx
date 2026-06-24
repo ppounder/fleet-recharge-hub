@@ -22,6 +22,7 @@ import WorkCategoriesSettings from "./pages/JobTypesSettings";
 import VatBandsSettings from "./pages/VatBandsSettings";
 import WorkCodesSettings from "./pages/WorkCodesSettings";
 import PartsSettings from "./pages/PartsSettings";
+import IntegrationsSettings from "./pages/IntegrationsSettings";
 import CustomerVehicles from "./pages/CustomerVehicles";
 import CustomerActiveWork from "./pages/CustomerActiveWork";
 import NotFound from "./pages/NotFound";
