@@ -58,33 +58,70 @@ function blank(reportedBy = ""): Defect {
   };
 }
 
+import type { VehicleDefect } from "@/hooks/useVehicleDefects";
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   vehicleId: string;
   vehicleLabel?: string;
+  editDefect?: VehicleDefect | null;
 }
 
-export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }: Props) {
+export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, editDefect }: Props) {
   const { user, profile } = useAuth();
   const qc = useQueryClient();
   const defaultReporter = profile?.full_name || user?.email || "";
+  const isEdit = !!editDefect;
   const [defects, setDefects] = useState<Defect[]>([blank(defaultReporter)]);
   const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string }>>({});
   const [warn, setWarn] = useState("");
 
   useEffect(() => {
     if (open) {
-      setDefects([blank(defaultReporter)]);
+      if (editDefect) {
+        setDefects([{
+          id: editDefect.id,
+          type: editDefect.title,
+          description: editDefect.description ?? "",
+          severity: editDefect.severity,
+          rectified: editDefect.status === "rectified",
+          rectifiedDetails: "",
+          photos: [],
+          reportedAt: editDefect.reported_at ? editDefect.reported_at.slice(0, 10) : todayISO(),
+          reportedBy: editDefect.reported_by ?? defaultReporter,
+        }]);
+      } else {
+        setDefects([blank(defaultReporter)]);
+      }
       setErrors({});
       setWarn("");
     }
-  }, [open, defaultReporter]);
+  }, [open, defaultReporter, editDefect]);
 
   const validDefects = defects.filter((d) => d.type.trim());
 
   const save = useMutation({
     mutationFn: async () => {
+      if (isEdit && editDefect) {
+        const d = defects[0];
+        const nextStatus = d.rectified
+          ? "rectified"
+          : (editDefect.status === "rectified" ? "open" : editDefect.status);
+        const { error } = await supabase
+          .from("vehicle_defects" as any)
+          .update({
+            title: d.type,
+            description: d.description || null,
+            severity: d.severity,
+            status: nextStatus,
+            reported_by: d.reportedBy || null,
+            reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : editDefect.reported_at,
+          })
+          .eq("id", editDefect.id);
+        if (error) throw error;
+        return;
+      }
       const rows = validDefects
         .filter((d) => !d.rectified)
         .map((d) => ({
@@ -104,7 +141,7 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
-      toast({ title: "Defect reported" });
+      toast({ title: isEdit ? "Defect updated" : "Defect reported" });
       onOpenChange(false);
     },
     onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
@@ -161,9 +198,9 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add defect</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit defect" : "Add defect"}</DialogTitle>
           <DialogDescription>
-            {vehicleLabel ? `For ${vehicleLabel}` : "Record one or more defects for this asset."}
+            {vehicleLabel ? `For ${vehicleLabel}` : (isEdit ? "Update the details for this defect." : "Record one or more defects for this asset.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -173,15 +210,17 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
               key={d.id}
               defect={d}
               index={i}
-              canDelete={defects.length > 1}
+              canDelete={!isEdit && defects.length > 1}
               errors={errors[d.id] ?? {}}
               onChange={(nd) => updateDefect(d.id, nd)}
               onDelete={() => setDefects(defects.filter((x) => x.id !== d.id))}
             />
           ))}
-          <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank(defaultReporter)])}>
-            <Plus className="h-4 w-4" /> Add another defect
-          </Button>
+          {!isEdit && (
+            <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank(defaultReporter)])}>
+              <Plus className="h-4 w-4" /> Add another defect
+            </Button>
+          )}
           {warn && <Alert variant="destructive"><AlertDescription>{warn}</AlertDescription></Alert>}
         </div>
 

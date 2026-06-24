@@ -1448,14 +1448,14 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
         </div>
       </div>
 
-      <EditDefectDialog
-        defect={editDefect}
+      <AddDefectDialog
+        open={!!editDefect}
         onOpenChange={(o) => { if (!o) setEditDefect(null); }}
-        onSaved={() => {
-          queryClient.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
-          setEditDefect(null);
-        }}
+        vehicleId={vehicleId}
+        vehicleLabel={vehicleLabel}
+        editDefect={editDefect}
       />
+
 
       <AlertDialog open={!!deleteDefect} onOpenChange={(o) => { if (!o) setDeleteDefect(null); }}>
         <AlertDialogContent>
@@ -1481,157 +1481,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
   );
 }
 
-function EditDefectDialog({
-  defect,
-  onOpenChange,
-  onSaved,
-}: {
-  defect: VehicleDefect | null;
-  onOpenChange: (open: boolean) => void;
-  onSaved: () => void;
-}) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [severity, setSeverity] = useState<string>("non-safety");
-  const [status, setStatus] = useState<string>("open");
-  const [reportedAt, setReportedAt] = useState<string>("");
-  const [reportedBy, setReportedBy] = useState<string>("");
-  const [errors, setErrors] = useState<{ title?: string; reportedAt?: string; reportedBy?: string }>({});
-
-  useEffect(() => {
-    if (defect) {
-      setTitle(defect.title);
-      setDescription(defect.description ?? "");
-      setSeverity(defect.severity);
-      setStatus(defect.status);
-      setReportedAt(defect.reported_at ? defect.reported_at.slice(0, 10) : "");
-      setReportedBy(defect.reported_by ?? "");
-      setErrors({});
-    }
-  }, [defect]);
-
-  const save = useMutation({
-    mutationFn: async () => {
-      if (!defect) return;
-      const { error } = await supabase
-        .from("vehicle_defects" as any)
-        .update({
-          title,
-          description: description || null,
-          severity,
-          status,
-          reported_at: reportedAt ? new Date(reportedAt).toISOString() : defect.reported_at,
-          reported_by: reportedBy || null,
-        })
-        .eq("id", defect.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({ title: "Defect updated" });
-      onSaved();
-    },
-    onError: (e: any) => toast({ title: "Update failed", description: e.message, variant: "destructive" }),
-  });
-
-  function handleSave() {
-    const e: typeof errors = {};
-    if (!title.trim()) e.title = "Defect type is required";
-    if (!reportedAt) e.reportedAt = "Date reported is required";
-    if (!reportedBy.trim()) e.reportedBy = "Reported by is required";
-    setErrors(e);
-    if (Object.keys(e).length) return;
-    save.mutate();
-  }
-
-  return (
-    <Dialog open={!!defect} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit defect</DialogTitle>
-          <DialogDescription>Update the details for this defect.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-defect-date">Date reported</Label>
-              <Input
-                id="edit-defect-date"
-                type="date"
-                value={reportedAt}
-                onChange={(e) => setReportedAt(e.target.value)}
-                aria-invalid={!!errors.reportedAt}
-                className={cn(errors.reportedAt && "border-destructive focus-visible:ring-destructive")}
-              />
-              {errors.reportedAt && <p className="text-xs text-destructive">{errors.reportedAt}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-defect-reporter">Reported by</Label>
-              <Input
-                id="edit-defect-reporter"
-                value={reportedBy}
-                onChange={(e) => setReportedBy(e.target.value)}
-                aria-invalid={!!errors.reportedBy}
-                className={cn(errors.reportedBy && "border-destructive focus-visible:ring-destructive")}
-              />
-              {errors.reportedBy && <p className="text-xs text-destructive">{errors.reportedBy}</p>}
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-defect-title">Defect type</Label>
-            <Input
-              id="edit-defect-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              aria-invalid={!!errors.title}
-              className={cn(errors.title && "border-destructive focus-visible:ring-destructive")}
-            />
-            {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-defect-description">Description</Label>
-            <Textarea
-              id="edit-defect-description"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-defect-severity">Severity</Label>
-              <Select value={severity} onValueChange={setSeverity}>
-                <SelectTrigger id="edit-defect-severity"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="safety">Safety</SelectItem>
-                  <SelectItem value="non-safety">Non-safety</SelectItem>
-                  <SelectItem value="advisory">Advisory</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-defect-status">Status</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger id="edit-defect-status"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in-progress">In progress</SelectItem>
-                  <SelectItem value="rectified">Rectified</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={save.isPending}>Cancel</Button>
-          <Button onClick={handleSave} disabled={save.isPending}>
-            {save.isPending ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function DefectColumnsDialog({
   visibleCols, columnOrder, onApply,
