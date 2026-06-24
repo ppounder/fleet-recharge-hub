@@ -28,6 +28,8 @@ type Defect = {
   rectifiedDetails?: string;
   photos: string[];
   damageMarks?: DamageMark[];
+  reportedAt: string;
+  reportedBy: string;
 };
 
 const PRESETS = ["Bulb out", "Damage", "Leaking", "Worn", "Cracked", "Missing", "Other"];
@@ -36,8 +38,24 @@ function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-function blank(): Defect {
-  return { id: uid(), type: "", description: "", severity: "non-safety", rectified: false, rectifiedDetails: "", photos: [] };
+function todayISO() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function blank(reportedBy = ""): Defect {
+  return {
+    id: uid(),
+    type: "",
+    description: "",
+    severity: "non-safety",
+    rectified: false,
+    rectifiedDetails: "",
+    photos: [],
+    reportedAt: todayISO(),
+    reportedBy,
+  };
 }
 
 interface Props {
