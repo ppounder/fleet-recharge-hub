@@ -563,7 +563,97 @@ export default function CustomerVehicles() {
                   </div>
                 </div>
               </CollapsibleCard>
+              <CollapsibleCard title="Road Fund Licence">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_type">RFL type</Label>
+                    <Select value={form.rfl_type || "__none__"} onValueChange={(v) => setForm((f) => ({ ...f, rfl_type: v === "__none__" ? "" : v }))}>
+                      <SelectTrigger id="rfl_type" className="bg-card"><SelectValue placeholder="Select RFL type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="PLG">PLG (Private Light Goods)</SelectItem>
+                        <SelectItem value="PHGV">PHGV (Private HGV)</SelectItem>
+                        <SelectItem value="HGV">HGV</SelectItem>
+                        <SelectItem value="LGV">LGV</SelectItem>
+                        <SelectItem value="PSV">PSV (Public Service Vehicle)</SelectItem>
+                        <SelectItem value="Motorcycle">Motorcycle</SelectItem>
+                        <SelectItem value="Agricultural">Agricultural</SelectItem>
+                        <SelectItem value="Special Vehicle">Special Vehicle</SelectItem>
+                        <SelectItem value="Electric">Electric</SelectItem>
+                        <SelectItem value="Historic">Historic</SelectItem>
+                        <SelectItem value="Exempt">Exempt</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_expiry_date">RFL expiry date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button id="rfl_expiry_date" variant="outline" className={cn("w-full justify-start text-left font-normal bg-card", !form.rfl_expiry_date && "text-muted-foreground")}>
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {form.rfl_expiry_date ? format(parseISO(form.rfl_expiry_date), "dd MMM yyyy") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={form.rfl_expiry_date ? parseISO(form.rfl_expiry_date) : undefined}
+                          onSelect={(d) => setForm((f) => ({ ...f, rfl_expiry_date: d ? format(d, "yyyy-MM-dd") : "" }))}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_renewal_method">Renewal method</Label>
+                    <Select value={form.rfl_renewal_method || "__none__"} onValueChange={(v) => setForm((f) => ({ ...f, rfl_renewal_method: v === "__none__" ? "" : v }))}>
+                      <SelectTrigger id="rfl_renewal_method" className="bg-card"><SelectValue placeholder="Select renewal method" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Auto">Auto</SelectItem>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="Manual">Manual</SelectItem>
+                        <SelectItem value="DVLA Electronic">DVLA Electronic</SelectItem>
+                        <SelectItem value="DVLA eRFL">DVLA eRFL</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_renewal_term_months">Renewal term (months)</Label>
+                    <Input
+                      id="rfl_renewal_term_months"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.rfl_renewal_term_months}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, rfl_renewal_term_months: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_supplier">RFL supplier</Label>
+                    <Select value={form.rfl_supplier || "__none__"} onValueChange={(v) => setForm((f) => ({ ...f, rfl_supplier: v === "__none__" ? "" : v }))}>
+                      <SelectTrigger id="rfl_supplier" className="bg-card"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="DVLA">DVLA</SelectItem>
+                        <SelectItem value="Post Office">Post Office</SelectItem>
+                        <SelectItem value="Lex Autolease">Lex Autolease</SelectItem>
+                        <SelectItem value="Arval">Arval</SelectItem>
+                        <SelectItem value="Alphabet">Alphabet</SelectItem>
+                        <SelectItem value="LeasePlan">LeasePlan</SelectItem>
+                        <SelectItem value="Hitachi Capital">Hitachi Capital</SelectItem>
+                        <SelectItem value="Zenith">Zenith</SelectItem>
+                        <SelectItem value="Ogilvie Fleet">Ogilvie Fleet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CollapsibleCard>
             </TabsContent>
+
 
             {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
               <TabsContent value="tyres" className="space-y-4">
