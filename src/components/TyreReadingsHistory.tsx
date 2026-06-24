@@ -111,6 +111,30 @@ function dotToManufactureDate(serial: string): string | null {
   return `Week ${String(ww).padStart(2, "0")} / 20${String(yy).padStart(2, "0")}`;
 }
 
+const TYRE_MANUFACTURERS = [
+  "Bridgestone",
+  "Continental",
+  "Michelin",
+  "Goodyear",
+  "Pirelli",
+  "Dunlop",
+  "Hankook",
+  "Yokohama",
+  "Firestone",
+  "Kumho",
+  "Toyo",
+  "Falken",
+  "BFGoodrich",
+  "Nokian",
+  "General Tire",
+  "Cooper",
+  "Maxxis",
+  "Nexen",
+  "Avon",
+  "Vredestein",
+  "Other",
+];
+
 export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -965,13 +989,23 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
-                <Input
-                  id="tyre_manufacturer"
+                <Select
                   value={tyreForm.manufacturer}
-                  onChange={(e) => updateTyreField("manufacturer", e.target.value)}
-                  aria-invalid={!!tyreErrors.manufacturer}
-                  className={cn(tyreErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
-                />
+                  onValueChange={(v) => updateTyreField("manufacturer", v)}
+                >
+                  <SelectTrigger
+                    id="tyre_manufacturer"
+                    aria-invalid={!!tyreErrors.manufacturer}
+                    className={cn(tyreErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                  >
+                    <SelectValue placeholder="Select manufacturer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TYRE_MANUFACTURERS.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {tyreErrors.manufacturer && <p className="text-xs text-destructive">{tyreErrors.manufacturer}</p>}
               </div>
               <div className="space-y-1.5">
