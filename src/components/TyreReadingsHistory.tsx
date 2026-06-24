@@ -85,7 +85,35 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) });
+  const initialForm = { position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) };
+  const [form, setForm] = useState(initialForm);
+  type FormErrors = Partial<Record<"position" | "tread_depth" | "reading_date", string>>;
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const readingSchema = z.object({
+    position: z.string().trim().min(1, { message: "Position is required" }),
+    tread_depth: z
+      .string()
+      .trim()
+      .min(1, { message: "Tread depth is required" })
+      .refine((v) => /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
+      .refine((v) => {
+        const n = parseFloat(v);
+        return n >= 0 && n <= 30;
+      }, { message: "Tread depth must be between 0 and 30 mm" }),
+    reading_date: z
+      .string()
+      .min(1, { message: "Reading date is required" })
+      .refine((v) => !Number.isNaN(Date.parse(v)), { message: "Enter a valid date" }),
+  });
+
+  const updateField = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
+  };
+
 
   const positions = useMemo(() => derivePositions(wheelPlan, assetType), [wheelPlan, assetType]);
 
