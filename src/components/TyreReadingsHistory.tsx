@@ -277,16 +277,68 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     ? positions
     : Array.from(new Set(readings.map((r) => r.position)));
 
+  // ----- Dispose tyre dialog state -----
+  const initialDisposeForm = {
+    position: "",
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+  };
+  const [disposeOpen, setDisposeOpen] = useState(false);
+  const [disposeForm, setDisposeForm] = useState(initialDisposeForm);
+  type DisposeErrors = Partial<Record<"position" | "date" | "time", string>>;
+  const [disposeErrors, setDisposeErrors] = useState<DisposeErrors>({});
+
+  const dispose = useMutation({
+    mutationFn: async (payload: { vehicle_id: string; position: string; disposed_at: string }) => {
+      const { error } = await supabase.from("tyre_disposals").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyre_disposals", vehicleId] });
+      setDisposeOpen(false);
+      setDisposeForm(initialDisposeForm);
+      setDisposeErrors({});
+      toast({ title: "Tyre disposed" });
+    },
+    onError: (e: any) => toast({ title: "Failed to dispose tyre", description: e.message, variant: "destructive" }),
+  });
+
+  const handleDispose = () => {
+    const errs: DisposeErrors = {};
+    if (!disposeForm.position) errs.position = "Position is required";
+    if (!disposeForm.date) errs.date = "Date is required";
+    if (!disposeForm.time) errs.time = "Time is required";
+    if (Object.keys(errs).length) {
+      setDisposeErrors(errs);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
+      return;
+    }
+    setDisposeErrors({});
+    const iso = new Date(`${disposeForm.date}T${disposeForm.time}`).toISOString();
+    dispose.mutate({ vehicle_id: vehicleId, position: disposeForm.position, disposed_at: iso });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Latest tread depth (mm) for each wheel position.
         </p>
-        <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Add reading
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { setDisposeForm(initialDisposeForm); setDisposeErrors({}); setDisposeOpen(true); }}
+            disabled={!positions.length}
+          >
+            <Wrench className="w-4 h-4 mr-1.5" />
+            Dispose tyre
+          </Button>
+          <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add reading
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border bg-card overflow-hidden">
