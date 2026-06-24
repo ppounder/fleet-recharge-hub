@@ -269,50 +269,97 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         </Table>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) {
+            setForm(initialForm);
+            setErrors({});
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add tyre reading</DialogTitle>
+            <DialogDescription>Record the latest tread depth for a wheel position.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Position</Label>
-              <Select value={form.position} onValueChange={(v) => setForm((f) => ({ ...f, position: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+              <Label htmlFor="position">Position</Label>
+              <Select
+                value={form.position}
+                onValueChange={(v) => updateField("position", v)}
+              >
+                <SelectTrigger
+                  id="position"
+                  aria-invalid={!!errors.position}
+                  aria-describedby={errors.position ? "position-error" : undefined}
+                  className={cn(errors.position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
                 <SelectContent>
                   {positions.map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {errors.position && (
+                <p id="position-error" className="text-xs text-destructive">{errors.position}</p>
+              )}
             </div>
+
             <div className="space-y-1.5">
-              <Label>Tyre code (optional)</Label>
-              <Input value={form.tyre_code} onChange={(e) => setForm((f) => ({ ...f, tyre_code: e.target.value }))} placeholder="e.g. YG65FFX.OSF1O-1" />
+              <Label htmlFor="tyre_code">Tyre code (optional)</Label>
+              <Input
+                id="tyre_code"
+                value={form.tyre_code}
+                onChange={(e) => setForm((f) => ({ ...f, tyre_code: e.target.value }))}
+                placeholder="e.g. YG65FFX.OSF1O-1"
+              />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Tread depth (mm)</Label>
+                <Label htmlFor="tread_depth">Tread depth (mm)</Label>
                 <Input
+                  id="tread_depth"
                   type="text"
                   inputMode="decimal"
                   value={form.tread_depth}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d?$/.test(v)) setForm((f) => ({ ...f, tread_depth: v }));
+                    if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("tread_depth", v);
                   }}
-                  placeholder=""
+                  aria-invalid={!!errors.tread_depth}
+                  aria-describedby={errors.tread_depth ? "tread_depth-error" : undefined}
+                  className={cn(errors.tread_depth && "border-destructive focus-visible:ring-destructive")}
                 />
+                {errors.tread_depth && (
+                  <p id="tread_depth-error" className="text-xs text-destructive">{errors.tread_depth}</p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <Label>Reading date</Label>
-                <Input type="date" value={form.reading_date} onChange={(e) => setForm((f) => ({ ...f, reading_date: e.target.value }))} />
+                <Label htmlFor="reading_date">Reading date</Label>
+                <Input
+                  id="reading_date"
+                  type="date"
+                  value={form.reading_date}
+                  onChange={(e) => updateField("reading_date", e.target.value)}
+                  aria-invalid={!!errors.reading_date}
+                  aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
+                  className={cn(errors.reading_date && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.reading_date && (
+                  <p id="reading_date-error" className="text-xs text-destructive">{errors.reading_date}</p>
+                )}
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={() => create.mutate()} disabled={create.isPending}>
+            <Button onClick={handleSave} disabled={create.isPending}>
               {create.isPending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
