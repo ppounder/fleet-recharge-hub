@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Search } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, RefreshCw, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -26,7 +26,7 @@ import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -397,6 +397,13 @@ function VehiclesTable({
   setColumnOrder: (c: ColKey[]) => void;
   onRowClick: (v: Vehicle) => void;
 }) {
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+    setRefreshing(false);
+  };
   const isVisible = (k: ColKey) => visibleCols.includes(k);
   const orderedColumns = useMemo(
     () => columnOrder.map((k) => ALL_COLUMNS.find((c) => c.key === k)!).filter(Boolean),
@@ -464,6 +471,10 @@ function VehiclesTable({
             />
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+              Refresh data
+            </Button>
             <CreateVehicleDialog />
             <ManageColumnsDialog
               visibleCols={visibleCols}

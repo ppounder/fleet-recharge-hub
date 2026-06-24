@@ -57,11 +57,11 @@ export function CreateVehicleDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add Vehicle</Button>
+        <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add Asset</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Vehicle to Fleet</DialogTitle>
+          <DialogTitle>Add Asset to Fleet</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -107,7 +107,7 @@ export function CreateVehicleDialog() {
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={createVehicle.isPending}>
-              {createVehicle.isPending ? "Adding..." : "Add Vehicle"}
+              {createVehicle.isPending ? "Adding..." : "Add Asset"}
             </Button>
           </div>
         </form>
