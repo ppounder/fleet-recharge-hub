@@ -89,6 +89,8 @@ function toForm(v: Vehicle): EditableFields {
     mot_due: v.mot_due || "",
     next_service: v.next_service || "",
     mileage: v.mileage != null ? String(v.mileage) : "",
+    registered_date: (v as any).registered_date || "",
+    date_in_service: (v as any).date_in_service || "",
   };
 }
 
