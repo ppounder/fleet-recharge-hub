@@ -112,28 +112,28 @@ function dotToManufactureDate(serial: string): string | null {
 }
 
 const TYRE_MANUFACTURERS = [
+  "Avon",
+  "BFGoodrich",
   "Bridgestone",
   "Continental",
-  "Michelin",
-  "Goodyear",
-  "Pirelli",
-  "Dunlop",
-  "Hankook",
-  "Yokohama",
-  "Firestone",
-  "Kumho",
-  "Toyo",
-  "Falken",
-  "BFGoodrich",
-  "Nokian",
-  "General Tire",
   "Cooper",
+  "Dunlop",
+  "Falken",
+  "Firestone",
+  "General Tire",
+  "Goodyear",
+  "Hankook",
+  "Kumho",
   "Maxxis",
+  "Michelin",
   "Nexen",
-  "Avon",
+  "Nokian",
+  "Pirelli",
+  "Toyo",
   "Vredestein",
-  "Other",
+  "Yokohama",
 ];
+const OTHER_MANUFACTURER = "Other";
 
 export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
@@ -247,6 +247,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const [tyreForm, setTyreForm] = useState(initialTyreForm);
   type TyreErrors = Partial<Record<keyof typeof initialTyreForm, string>>;
   const [tyreErrors, setTyreErrors] = useState<TyreErrors>({});
+  const [manufacturerIsOther, setManufacturerIsOther] = useState(false);
 
   const updateTyreField = <K extends keyof typeof initialTyreForm>(key: K, value: string) => {
     setTyreForm((prev) => ({ ...prev, [key]: value }));
@@ -257,6 +258,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     setTyreForm(initialTyreForm);
     setTyreEditingId(null);
     setTyreErrors({});
+    setManufacturerIsOther(false);
   };
 
   const tyreSchema = z.object({
@@ -326,6 +328,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       fitted_date: t.fitted_date,
     });
     setTyreErrors({});
+    setManufacturerIsOther(!!t.manufacturer && !TYRE_MANUFACTURERS.includes(t.manufacturer));
     setTyreOpen(true);
   };
 
@@ -990,8 +993,22 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
                 <Select
-                  value={tyreForm.manufacturer}
-                  onValueChange={(v) => updateTyreField("manufacturer", v)}
+                  value={
+                    manufacturerIsOther
+                      ? OTHER_MANUFACTURER
+                      : TYRE_MANUFACTURERS.includes(tyreForm.manufacturer)
+                        ? tyreForm.manufacturer
+                        : ""
+                  }
+                  onValueChange={(v) => {
+                    if (v === OTHER_MANUFACTURER) {
+                      setManufacturerIsOther(true);
+                      updateTyreField("manufacturer", "");
+                    } else {
+                      setManufacturerIsOther(false);
+                      updateTyreField("manufacturer", v);
+                    }
+                  }}
                 >
                   <SelectTrigger
                     id="tyre_manufacturer"
@@ -1004,8 +1021,19 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     {TYRE_MANUFACTURERS.map((m) => (
                       <SelectItem key={m} value={m}>{m}</SelectItem>
                     ))}
+                    <SelectItem value={OTHER_MANUFACTURER}>{OTHER_MANUFACTURER}</SelectItem>
                   </SelectContent>
                 </Select>
+                {manufacturerIsOther && (
+                  <Input
+                    autoFocus
+                    placeholder="Enter manufacturer"
+                    value={tyreForm.manufacturer}
+                    onChange={(e) => updateTyreField("manufacturer", e.target.value)}
+                    aria-invalid={!!tyreErrors.manufacturer}
+                    className={cn(tyreErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                  />
+                )}
                 {tyreErrors.manufacturer && <p className="text-xs text-destructive">{tyreErrors.manufacturer}</p>}
               </div>
               <div className="space-y-1.5">
