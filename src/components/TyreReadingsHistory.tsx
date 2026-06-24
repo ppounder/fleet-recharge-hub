@@ -41,6 +41,8 @@ interface TyreReading {
   position: string;
   tyre_code: string | null;
   tread_depth: number;
+  pressure: number | null;
+  pressure_unit: string | null;
   reading_date: string;
 }
 
@@ -90,9 +92,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const initialForm = { position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) };
+  const initialForm = { position: "", tyre_code: "", tread_depth: "", pressure: "", pressure_unit: "PSI", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
-  type FormErrors = Partial<Record<"position" | "tread_depth" | "reading_date", string>>;
+  type FormErrors = Partial<Record<"position" | "tread_depth" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
 
   const readingSchema = z.object({
@@ -106,6 +108,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         const n = parseFloat(v);
         return n >= 0 && n <= 30;
       }, { message: "Tread depth must be between 0 and 30 mm" }),
+    pressure: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
+      .refine((v) => {
+        if (v === "") return true;
+        const n = parseFloat(v);
+        return n >= 0 && n <= 200;
+      }, { message: "Pressure must be between 0 and 200" }),
     reading_date: z
       .string()
       .min(1, { message: "Reading date is required" })
@@ -153,6 +164,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
         tread_depth: parseFloat(parsed.tread_depth),
+        pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
+        pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
       });
       if (error) throw error;
@@ -174,6 +187,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
         tread_depth: parseFloat(parsed.tread_depth),
+        pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
+        pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
       }).eq("id", id);
       if (error) throw error;
@@ -216,11 +231,14 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       position: r.position,
       tyre_code: r.tyre_code ?? "",
       tread_depth: Number(r.tread_depth).toFixed(1),
+      pressure: r.pressure != null ? Number(r.pressure).toFixed(1) : "",
+      pressure_unit: r.pressure_unit ?? "PSI",
       reading_date: r.reading_date,
     });
     setErrors({});
     setOpen(true);
   };
+
 
 
 
@@ -255,6 +273,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
               <TableHead className="w-12">#</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="w-40">Latest Tread Depth</TableHead>
+              <TableHead className="w-32">Pressure</TableHead>
               <TableHead className="w-32">Date taken</TableHead>
               <TableHead className="w-24 text-right">Actions</TableHead>
             </TableRow>
@@ -262,13 +281,13 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : positionsToShow.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                   Select a wheel plan to see tyre positions.
                 </TableCell>
               </TableRow>
@@ -286,6 +305,11 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     </TableCell>
                     <TableCell>
                       {latest ? `${Number(latest.tread_depth).toFixed(1)} mm` : <span className="text-muted-foreground">—</span>}
+                    </TableCell>
+                    <TableCell>
+                      {latest?.pressure != null
+                        ? `${Number(latest.pressure).toFixed(1)} ${latest.pressure_unit ?? ""}`.trim()
+                        : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {latest ? format(parseISO(latest.reading_date), "dd MMM yyyy") : "—"}
@@ -396,6 +420,40 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                 )}
               </div>
               <div className="space-y-1.5">
+                <Label htmlFor="pressure">Pressure</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="pressure"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.pressure}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("pressure", v);
+                    }}
+                    aria-invalid={!!errors.pressure}
+                    aria-describedby={errors.pressure ? "pressure-error" : undefined}
+                    className={cn("flex-1", errors.pressure && "border-destructive focus-visible:ring-destructive")}
+                    placeholder="e.g. 110"
+                  />
+                  <Select
+                    value={form.pressure_unit}
+                    onValueChange={(v) => updateField("pressure_unit", v)}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PSI">PSI</SelectItem>
+                      <SelectItem value="Bar">Bar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {errors.pressure && (
+                  <p id="pressure-error" className="text-xs text-destructive">{errors.pressure}</p>
+                )}
+              </div>
+              <div className="space-y-1.5 col-span-2">
                 <Label htmlFor="reading_date">Date taken</Label>
                 <Popover>
                   <PopoverTrigger asChild>

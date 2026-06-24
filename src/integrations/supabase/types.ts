@@ -743,6 +743,8 @@ export type Database = {
           created_at: string
           id: string
           position: string
+          pressure: number | null
+          pressure_unit: string | null
           reading_date: string
           tread_depth: number
           tyre_code: string | null
@@ -753,6 +755,8 @@ export type Database = {
           created_at?: string
           id?: string
           position: string
+          pressure?: number | null
+          pressure_unit?: string | null
           reading_date?: string
           tread_depth: number
           tyre_code?: string | null
@@ -763,6 +767,8 @@ export type Database = {
           created_at?: string
           id?: string
           position?: string
+          pressure?: number | null
+          pressure_unit?: string | null
           reading_date?: string
           tread_depth?: number
           tyre_code?: string | null
