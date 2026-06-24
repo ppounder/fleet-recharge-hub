@@ -58,14 +58,17 @@ function blank(reportedBy = ""): Defect {
   };
 }
 
+import type { VehicleDefect } from "@/hooks/useVehicleDefects";
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   vehicleId: string;
   vehicleLabel?: string;
+  editDefect?: VehicleDefect | null;
 }
 
-export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }: Props) {
+export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, editDefect }: Props) {
   const { user, profile } = useAuth();
   const qc = useQueryClient();
   const defaultReporter = profile?.full_name || user?.email || "";
