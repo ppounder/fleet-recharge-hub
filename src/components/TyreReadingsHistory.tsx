@@ -830,7 +830,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => remove.mutate(latest.id)}
+                            onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))}
                             disabled={remove.isPending}
                             className={cn("text-destructive hover:bg-destructive hover:text-white")}
                             aria-label="Delete latest reading"
