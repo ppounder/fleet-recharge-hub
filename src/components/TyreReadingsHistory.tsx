@@ -417,9 +417,14 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
               <Input
                 id="tyre_code"
                 value={form.tyre_code}
-                onChange={(e) => setForm((f) => ({ ...f, tyre_code: e.target.value }))}
-                placeholder="e.g. YG65FFX.OSF1O-1"
+                onChange={(e) => updateField("tyre_code", e.target.value)}
+                aria-invalid={!!errors.tyre_code}
+                aria-describedby={errors.tyre_code ? "tyre_code-error" : undefined}
+                className={cn(errors.tyre_code && "border-destructive focus-visible:ring-destructive")}
               />
+              {errors.tyre_code && (
+                <p id="tyre_code-error" className="text-xs text-destructive">{errors.tyre_code}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
