@@ -40,13 +40,13 @@ export function DatePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal bg-card",
+            "w-full justify-between text-left font-normal bg-card",
             !parsed && "text-muted-foreground",
             className,
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
           {parsed ? format(parsed, "dd MMM yyyy") : <span>{placeholder}</span>}
+          <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-70" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
