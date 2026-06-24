@@ -367,16 +367,18 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           </Button>
         </DialogFooter>
       </DialogContent>
-      <MaintenanceMessageDialog
-        vehicleId={vehicle.id}
-        vehicleStatus={vehicle.status}
-        fleetId={(vehicle as any).fleet_id ?? null}
-        changedBy={changedBy}
-        open={msgDialogOpen}
-        onOpenChange={setMsgDialogOpen}
-        currentMessage={message}
-        onCurrentMessageChange={setMessage}
-      />
+      {vehicle?.id && (
+        <MaintenanceMessageDialog
+          vehicleId={vehicle.id}
+          vehicleStatus={vehicle.status}
+          fleetId={(vehicle as any).fleet_id ?? null}
+          changedBy={changedBy}
+          open={msgDialogOpen}
+          onOpenChange={setMsgDialogOpen}
+          currentMessage={message}
+          onCurrentMessageChange={setMessage}
+        />
+      )}
     </Dialog>
   );
 }
