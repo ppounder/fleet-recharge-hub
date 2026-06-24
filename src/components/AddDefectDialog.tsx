@@ -51,11 +51,13 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
   const { user, profile } = useAuth();
   const qc = useQueryClient();
   const [defects, setDefects] = useState<Defect[]>([blank()]);
+  const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string }>>({});
   const [warn, setWarn] = useState("");
 
   useEffect(() => {
     if (open) {
       setDefects([blank()]);
+      setErrors({});
       setWarn("");
     }
   }, [open]);
@@ -90,12 +92,40 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
   });
 
   function handleSave() {
+    const nextErrors: Record<string, { type?: string; description?: string; rectifiedDetails?: string }> = {};
+    let hasError = false;
+    defects.forEach((d) => {
+      const e: { type?: string; description?: string; rectifiedDetails?: string } = {};
+      if (!d.type.trim()) {
+        e.type = "Defect type is required";
+        hasError = true;
+      }
+      if (d.rectified && !(d.rectifiedDetails ?? "").trim()) {
+        e.rectifiedDetails = "Rectified details are required";
+        hasError = true;
+      }
+      if (e.type || e.description || e.rectifiedDetails) nextErrors[d.id] = e;
+    });
+    setErrors(nextErrors);
+    if (hasError) {
+      setWarn("Please fix the highlighted fields.");
+      return;
+    }
     if (validDefects.length === 0) {
       setWarn("Add at least one defect with a type.");
       return;
     }
     setWarn("");
     save.mutate();
+  }
+
+  function updateDefect(id: string, nd: Defect) {
+    setDefects(defects.map((x) => (x.id === id ? nd : x)));
+    if (errors[id]) {
+      const next = { ...errors };
+      delete next[id];
+      setErrors(next);
+    }
   }
 
   return (
@@ -115,7 +145,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
               defect={d}
               index={i}
               canDelete={defects.length > 1}
-              onChange={(nd) => setDefects(defects.map((x) => (x.id === d.id ? nd : x)))}
+              errors={errors[d.id] ?? {}}
+              onChange={(nd) => updateDefect(d.id, nd)}
               onDelete={() => setDefects(defects.filter((x) => x.id !== d.id))}
             />
           ))}
@@ -123,17 +154,19 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
             <Plus className="h-4 w-4" /> Add another defect
           </Button>
           {warn && <Alert variant="destructive"><AlertDescription>{warn}</AlertDescription></Alert>}
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)} disabled={save.isPending}>
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleSave} disabled={save.isPending}>
-              {save.isPending ? "Saving…" : "Save"}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={save.isPending}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={save.isPending}>
+            {save.isPending ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
+
   );
 }
 
