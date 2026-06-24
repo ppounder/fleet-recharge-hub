@@ -87,7 +87,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
           severity: editDefect.severity,
           rectified: editDefect.status === "rectified",
           rectifiedDetails: editDefect.rectified_details ?? "",
-          photos: [],
+          photos: editDefect.photos ?? [],
+          damageMarks: editDefect.damage_marks ?? [],
           reportedAt: editDefect.reported_at ? editDefect.reported_at.slice(0, 10) : todayISO(),
           reportedBy: editDefect.reported_by ?? defaultReporter,
         }]);
@@ -118,6 +119,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
             reported_by: d.reportedBy || null,
             reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : editDefect.reported_at,
             rectified_details: d.rectified ? (d.rectifiedDetails || null) : null,
+            photos: d.photos ?? [],
+            damage_marks: d.damageMarks ?? [],
           })
           .eq("id", editDefect.id);
         if (error) throw error;
@@ -133,6 +136,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
           reported_by: d.reportedBy || null,
           reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : new Date().toISOString(),
           rectified_details: d.rectified ? (d.rectifiedDetails || null) : null,
+          photos: d.photos ?? [],
+          damage_marks: d.damageMarks ?? [],
         }));
 
       if (rows.length > 0) {

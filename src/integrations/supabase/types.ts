@@ -1045,9 +1045,11 @@ export type Database = {
       vehicle_defects: {
         Row: {
           created_at: string
+          damage_marks: Json
           description: string | null
           id: string
           job_id: string | null
+          photos: string[]
           rectified_details: string | null
           reported_at: string
           reported_by: string | null
@@ -1059,9 +1061,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          damage_marks?: Json
           description?: string | null
           id?: string
           job_id?: string | null
+          photos?: string[]
           rectified_details?: string | null
           reported_at?: string
           reported_by?: string | null
@@ -1073,9 +1077,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          damage_marks?: Json
           description?: string | null
           id?: string
           job_id?: string | null
+          photos?: string[]
           rectified_details?: string | null
           reported_at?: string
           reported_by?: string | null

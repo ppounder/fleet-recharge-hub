@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Calendar as CalendarIcon, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
@@ -1240,6 +1240,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
   const [addOpen, setAddOpen] = useState(false);
   const [editDefect, setEditDefect] = useState<VehicleDefect | null>(null);
   const [deleteDefect, setDeleteDefect] = useState<VehicleDefect | null>(null);
+  const [mediaDefect, setMediaDefect] = useState<VehicleDefect | null>(null);
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [visibleCols, setVisibleCols] = useState<DefectColKey[]>(DEFECT_DEFAULT_VISIBLE);
@@ -1363,10 +1364,22 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             )}
           </TableCell>
         );
-      case "actions":
+      case "actions": {
+        const hasMedia = (d.photos?.length ?? 0) > 0 || (d.damage_marks?.length ?? 0) > 0;
         return (
-          <TableCell key={k} className="w-[100px]">
+          <TableCell key={k} className="w-[130px]">
             <div className="flex items-center gap-1">
+              {hasMedia && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="View attachments"
+                  title="View attachments"
+                  onClick={(e) => { e.stopPropagation(); setMediaDefect(d); }}
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -1389,6 +1402,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             </div>
           </TableCell>
         );
+      }
     }
   };
 
@@ -1503,6 +1517,8 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
         editDefect={editDefect}
       />
 
+
+      <DefectMediaDialog defect={mediaDefect} onOpenChange={(o) => { if (!o) setMediaDefect(null); }} />
 
       <AlertDialog open={!!deleteDefect} onOpenChange={(o) => { if (!o) setDeleteDefect(null); }}>
         <AlertDialogContent>
@@ -1861,3 +1877,69 @@ function CollapsibleCard({
 
 
 
+
+function DefectMediaDialog({
+  defect,
+  onOpenChange,
+}: {
+  defect: VehicleDefect | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const photos = defect?.photos ?? [];
+  const marks = defect?.damage_marks ?? [];
+  return (
+    <Dialog open={!!defect} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Attachments</DialogTitle>
+          <DialogDescription>
+            {defect ? `Photos and damage area for "${defect.title}".` : ""}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6">
+          {photos.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Photos</div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {photos.map((p, i) => (
+                  <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-md border bg-muted">
+                    <img src={p} alt={`Photo ${i + 1}`} className="h-32 w-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+          {marks.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Damage location</div>
+              <div className="rounded-md bg-muted/40 p-3">
+                <svg viewBox="0 0 100 180" className="mx-auto block h-72 w-auto" aria-label="Vehicle damage diagram">
+                  <rect x="14" y="22" width="6" height="10" rx="1" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="80" y="22" width="6" height="10" rx="1" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="28" y="10" width="44" height="34" rx="6" fill="hsl(var(--foreground))" />
+                  <rect x="22" y="48" width="56" height="118" rx="8" fill="hsl(var(--foreground))" />
+                  <rect x="14" y="58" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="78" y="58" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="14" y="142" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  <rect x="78" y="142" width="8" height="16" rx="1.5" fill="hsl(var(--foreground))" opacity="0.7" />
+                  {marks.map((m, i) => (
+                    <g key={i}>
+                      <circle cx={m.x} cy={m.y} r="3.5" fill="hsl(var(--destructive))" stroke="white" strokeWidth="1" />
+                      <text x={m.x} y={m.y + 1.4} fontSize="4" textAnchor="middle" fill="white" fontWeight="bold">{i + 1}</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+            </div>
+          )}
+          {photos.length === 0 && marks.length === 0 && (
+            <p className="text-sm text-muted-foreground">No attachments for this defect.</p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
