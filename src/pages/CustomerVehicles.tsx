@@ -1518,6 +1518,8 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
       />
 
 
+      <DefectMediaDialog defect={mediaDefect} onOpenChange={(o) => { if (!o) setMediaDefect(null); }} />
+
       <AlertDialog open={!!deleteDefect} onOpenChange={(o) => { if (!o) setDeleteDefect(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
