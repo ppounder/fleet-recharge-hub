@@ -73,6 +73,10 @@ export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const update = useUpdateVehicle();
   const [selected, setSelected] = useState<Vehicle | null>(null);
+  const location = useLocation();
+  useEffect(() => {
+    setSelected(null);
+  }, [location.key]);
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [msgDialogOpen, setMsgDialogOpen] = useState(false);
