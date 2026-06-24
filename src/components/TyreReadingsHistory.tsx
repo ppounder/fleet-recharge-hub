@@ -218,7 +218,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
               <TableHead className="w-12">#</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="w-40">Latest Tread Depth</TableHead>
-              <TableHead className="w-32">Last Reading</TableHead>
+              <TableHead className="w-32">Date taken</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
