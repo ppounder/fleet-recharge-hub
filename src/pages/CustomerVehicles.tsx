@@ -335,6 +335,15 @@ export default function CustomerVehicles() {
                                 ))}
                               </SelectContent>
                             </Select>
+                          ) : k === "wheel_plan" ? (
+                            <Select value={form.wheel_plan || ""} onValueChange={(v) => setForm((f) => ({ ...f, wheel_plan: v }))}>
+                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select wheel plan" /></SelectTrigger>
+                              <SelectContent>
+                                {(WHEEL_PLANS_BY_ASSET[form.asset_type] || []).map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
