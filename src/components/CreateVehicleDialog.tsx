@@ -57,7 +57,7 @@ export function CreateVehicleDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add Vehicle</Button>
+        <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add Asset</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
