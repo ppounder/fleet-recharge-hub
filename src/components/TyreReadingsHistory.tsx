@@ -849,7 +849,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                   <SelectValue placeholder="Select position" />
                 </SelectTrigger>
                 <SelectContent>
-                  {positions.map((p) => (
+                  {Array.from(activeTyrePositions).map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>
