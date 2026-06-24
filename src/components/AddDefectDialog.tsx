@@ -427,11 +427,10 @@ function DefectCard({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor={`defect-${defect.id}-rectified-at`}>Rectified date</Label>
-                <Input
+                <DatePicker
                   id={`defect-${defect.id}-rectified-at`}
-                  type="date"
                   value={defect.rectifiedAt ?? ""}
-                  onChange={(e) => onChange({ ...defect, rectifiedAt: e.target.value })}
+                  onChange={(v) => onChange({ ...defect, rectifiedAt: v })}
                 />
               </div>
             </div>
