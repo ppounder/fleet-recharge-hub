@@ -686,6 +686,121 @@ export default function CustomerVehicles() {
               </CollapsibleCard>
             </TabsContent>
 
+            <TabsContent value="distance" className="space-y-4">
+              <CollapsibleCard title="Odometer Details">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="odometer_start_distance">Odometer start distance</Label>
+                    <Input
+                      id="odometer_start_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.odometer_start_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, odometer_start_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="last_known_distance">Last known distance</Label>
+                    <div className="grid grid-cols-[1fr_160px] gap-2">
+                      <Input
+                        id="last_known_distance"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.last_known_distance}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, last_known_distance: v }));
+                        }}
+                        className="bg-card"
+                      />
+                      <Select
+                        value={form.last_known_distance_unit || "__none__"}
+                        onValueChange={(v) => setForm((f) => ({ ...f, last_known_distance_unit: v === "__none__" ? "" : v }))}
+                      >
+                        <SelectTrigger className="bg-card"><SelectValue placeholder="Unit" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">—</SelectItem>
+                          <SelectItem value="Miles">Miles</SelectItem>
+                          <SelectItem value="Kms">Kms</SelectItem>
+                          <SelectItem value="Hours">Hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Reading taken: {form.last_known_distance_recorded_at ? format(parseISO(form.last_known_distance_recorded_at), "dd MMM yyyy HH:mm") : "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="distance_source">Source</Label>
+                    <Select
+                      value={form.distance_source || "__none__"}
+                      onValueChange={(v) => setForm((f) => ({ ...f, distance_source: v === "__none__" ? "" : v }))}
+                    >
+                      <SelectTrigger id="distance_source" className="bg-card"><SelectValue placeholder="Select source" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="Manual">Manual</SelectItem>
+                        <SelectItem value="Telematics">Telematics</SelectItem>
+                        <SelectItem value="Driver">Driver</SelectItem>
+                        <SelectItem value="Supplier">Supplier</SelectItem>
+                        <SelectItem value="MOT">MOT</SelectItem>
+                        <SelectItem value="Service">Service</SelectItem>
+                        <SelectItem value="Estimated">Estimated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="average_monthly_distance">Average monthly distance</Label>
+                    <Input
+                      id="average_monthly_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.average_monthly_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, average_monthly_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="life_distance">Life distance</Label>
+                    <Input
+                      id="life_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.life_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, life_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="estimated_distance">Estimated distance</Label>
+                    <Input
+                      id="estimated_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.estimated_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, estimated_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                </div>
+              </CollapsibleCard>
+            </TabsContent>
+
+
+
 
             {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
               <TabsContent value="tyres" className="space-y-4">
