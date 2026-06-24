@@ -163,9 +163,14 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
 
   const handleSave = async () => {
+    const newStatus = offRoad ? "off-road" : "on-road";
+    if (draft || !vehicle?.id) {
+      onStatusChanged?.(newStatus);
+      onOpenChange(false);
+      return;
+    }
     setSaving(true);
     try {
-      const newStatus = offRoad ? "off-road" : "on-road";
       const changedAt = new Date(`${date}T${time || "00:00"}:00`).toISOString();
 
       const { error: histErr } = await supabase.from("vehicle_status_history").insert({
@@ -201,6 +206,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
       setSaving(false);
     }
   };
+
 
   const lockedClass = "bg-muted";
 
