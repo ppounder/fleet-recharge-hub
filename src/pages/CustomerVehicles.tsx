@@ -606,36 +606,36 @@ export default function CustomerVehicles() {
                     <DatePicker id="last_service_date" value={form.last_service_date} onChange={(v) => setForm((f) => ({ ...f, last_service_date: v }))} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="next_service_date">Next service date</Label>
-                    <DatePicker id="next_service_date" value={form.next_service_date} onChange={(v) => setForm((f) => ({ ...f, next_service_date: v }))} />
+                    <Label htmlFor="next_service_date" className={cn(isDateExpired(form.next_service_date) && "text-destructive")}>Next service date</Label>
+                    <DatePicker id="next_service_date" value={form.next_service_date} onChange={(v) => setForm((f) => ({ ...f, next_service_date: v }))} className={cn(isDateExpired(form.next_service_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="last_inspection_date">Last inspection date</Label>
                     <DatePicker id="last_inspection_date" value={form.last_inspection_date} onChange={(v) => setForm((f) => ({ ...f, last_inspection_date: v }))} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="next_inspection_date">Next inspection date</Label>
-                    <DatePicker id="next_inspection_date" value={form.next_inspection_date} onChange={(v) => setForm((f) => ({ ...f, next_inspection_date: v }))} />
+                    <Label htmlFor="next_inspection_date" className={cn(isDateExpired(form.next_inspection_date) && "text-destructive")}>Next inspection date</Label>
+                    <DatePicker id="next_inspection_date" value={form.next_inspection_date} onChange={(v) => setForm((f) => ({ ...f, next_inspection_date: v }))} className={cn(isDateExpired(form.next_inspection_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="mot_issued_date">MOT issued date</Label>
                     <DatePicker id="mot_issued_date" value={form.mot_issued_date} onChange={(v) => setForm((f) => ({ ...f, mot_issued_date: v }))} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="mot_expiry_date">MOT expiry date</Label>
-                    <DatePicker id="mot_expiry_date" value={form.mot_expiry_date} onChange={(v) => setForm((f) => ({ ...f, mot_expiry_date: v }))} />
+                    <Label htmlFor="mot_expiry_date" className={cn(isDateExpired(form.mot_expiry_date) && "text-destructive")}>MOT expiry date</Label>
+                    <DatePicker id="mot_expiry_date" value={form.mot_expiry_date} onChange={(v) => setForm((f) => ({ ...f, mot_expiry_date: v }))} className={cn(isDateExpired(form.mot_expiry_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="loler_expiry_date">LOLER expiry date</Label>
-                    <DatePicker id="loler_expiry_date" value={form.loler_expiry_date} onChange={(v) => setForm((f) => ({ ...f, loler_expiry_date: v }))} />
+                    <Label htmlFor="loler_expiry_date" className={cn(isDateExpired(form.loler_expiry_date) && "text-destructive")}>LOLER expiry date</Label>
+                    <DatePicker id="loler_expiry_date" value={form.loler_expiry_date} onChange={(v) => setForm((f) => ({ ...f, loler_expiry_date: v }))} className={cn(isDateExpired(form.loler_expiry_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="tacho_2yr_expiry_date">2yr Tacho expiry date</Label>
-                    <DatePicker id="tacho_2yr_expiry_date" value={form.tacho_2yr_expiry_date} onChange={(v) => setForm((f) => ({ ...f, tacho_2yr_expiry_date: v }))} />
+                    <Label htmlFor="tacho_2yr_expiry_date" className={cn(isDateExpired(form.tacho_2yr_expiry_date) && "text-destructive")}>2yr Tacho expiry date</Label>
+                    <DatePicker id="tacho_2yr_expiry_date" value={form.tacho_2yr_expiry_date} onChange={(v) => setForm((f) => ({ ...f, tacho_2yr_expiry_date: v }))} className={cn(isDateExpired(form.tacho_2yr_expiry_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="tacho_6yr_expiry_date">6yr Tacho expiry date</Label>
-                    <DatePicker id="tacho_6yr_expiry_date" value={form.tacho_6yr_expiry_date} onChange={(v) => setForm((f) => ({ ...f, tacho_6yr_expiry_date: v }))} />
+                    <Label htmlFor="tacho_6yr_expiry_date" className={cn(isDateExpired(form.tacho_6yr_expiry_date) && "text-destructive")}>6yr Tacho expiry date</Label>
+                    <DatePicker id="tacho_6yr_expiry_date" value={form.tacho_6yr_expiry_date} onChange={(v) => setForm((f) => ({ ...f, tacho_6yr_expiry_date: v }))} className={cn(isDateExpired(form.tacho_6yr_expiry_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                 </div>
               </CollapsibleCard>
@@ -662,8 +662,8 @@ export default function CustomerVehicles() {
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="rfl_expiry_date">RFL expiry date</Label>
-                    <DatePicker id="rfl_expiry_date" value={form.rfl_expiry_date} onChange={(v) => setForm((f) => ({ ...f, rfl_expiry_date: v }))} />
+                    <Label htmlFor="rfl_expiry_date" className={cn(isDateExpired(form.rfl_expiry_date) && "text-destructive")}>RFL expiry date</Label>
+                    <DatePicker id="rfl_expiry_date" value={form.rfl_expiry_date} onChange={(v) => setForm((f) => ({ ...f, rfl_expiry_date: v }))} className={cn(isDateExpired(form.rfl_expiry_date) && "text-destructive font-semibold border-destructive")} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="rfl_renewal_method">Renewal method</Label>
