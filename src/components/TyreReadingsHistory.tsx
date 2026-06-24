@@ -591,7 +591,6 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
       {/* ============ Tyre readings section ============ */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold">Tyre readings</h3>
           <p className="text-sm text-muted-foreground">Latest tread depth (mm) for each wheel position.</p>
         </div>
         <div className="flex items-center gap-2">

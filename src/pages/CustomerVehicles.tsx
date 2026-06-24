@@ -466,7 +466,7 @@ export default function CustomerVehicles() {
                         section="details"
                       />
                     </CollapsibleCard>
-                    <CollapsibleCard title="Tyre Reading History">
+                    <CollapsibleCard title="Tyre Readings">
                       <TyreReadingsHistory
                         vehicleId={selected.id}
                         wheelPlan={form.wheel_plan}
