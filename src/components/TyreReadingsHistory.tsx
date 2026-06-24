@@ -532,35 +532,51 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             <TableBody>
               {tyresLoading ? (
                 <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">Loading…</TableCell></TableRow>
-              ) : tyres.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No tyres added yet.</TableCell></TableRow>
+              ) : positions.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No tyre positions for this wheel plan.</TableCell></TableRow>
               ) : (
-                tyres.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell>{t.position}</TableCell>
-                    <TableCell>{t.manufacturer}</TableCell>
-                    <TableCell>{t.tyre_size}</TableCell>
-                    <TableCell className="font-mono text-xs">{t.serial_number}</TableCell>
-                    <TableCell className="text-muted-foreground">{t.manufacture_date ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{format(parseISO(t.fitted_date), "dd MMM yyyy")}</TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => startDispose(t.position)}
-                          className="text-destructive hover:bg-destructive hover:text-white"
-                          aria-label="Dispose tyre"
-                        >
-                          <Wrench className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                positions.map((pos) => {
+                  const t = tyres.find((x) => x.position === pos);
+                  return (
+                    <TableRow key={pos}>
+                      <TableCell>{pos}</TableCell>
+                      <TableCell>{t?.manufacturer ?? "—"}</TableCell>
+                      <TableCell>{t?.tyre_size ?? "—"}</TableCell>
+                      <TableCell className="font-mono text-xs">{t?.serial_number ?? "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">{t?.manufacture_date ?? "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">{t ? format(parseISO(t.fitted_date), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-1">
+                          {t ? (
+                            <>
+                              <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => startDispose(t.position)}
+                                className="text-destructive hover:bg-destructive hover:text-white"
+                                aria-label="Dispose tyre"
+                              >
+                                <Wrench className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => { resetTyreForm(); setTyreForm((f) => ({ ...f, position: pos })); setTyreOpen(true); }}
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
