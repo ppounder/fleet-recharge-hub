@@ -1216,17 +1216,18 @@ const severityVariant = (s: string) =>
 const statusVariant = (s: string) =>
   s === "open" ? "destructive" : s === "in-progress" ? "default" : "secondary";
 
-type DefectColKey = "reported_at" | "title" | "severity" | "status" | "job";
+type DefectColKey = "reported_at" | "title" | "severity" | "status" | "job" | "actions";
 const DEFECT_COLUMNS: { key: DefectColKey; label: string }[] = [
   { key: "reported_at", label: "Reported" },
   { key: "title", label: "Defect" },
   { key: "severity", label: "Severity" },
   { key: "status", label: "Status" },
   { key: "job", label: "Work Order" },
+  { key: "actions", label: "Actions" },
 ];
-const DEFECT_LOCKED: DefectColKey[] = ["reported_at", "title"];
-const DEFECT_DEFAULT_ORDER: DefectColKey[] = ["reported_at", "title", "severity", "status", "job"];
-const DEFECT_DEFAULT_VISIBLE: DefectColKey[] = ["reported_at", "title", "severity", "status", "job"];
+const DEFECT_LOCKED: DefectColKey[] = ["reported_at", "title", "actions"];
+const DEFECT_DEFAULT_ORDER: DefectColKey[] = ["reported_at", "title", "severity", "status", "job", "actions"];
+const DEFECT_DEFAULT_VISIBLE: DefectColKey[] = ["reported_at", "title", "severity", "status", "job", "actions"];
 
 function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicleLabel?: string }) {
   const { data: defects = [], isLoading } = useVehicleDefects(vehicleId);
