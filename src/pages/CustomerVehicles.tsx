@@ -457,7 +457,7 @@ export default function CustomerVehicles() {
                 </CollapsibleCard>
 
                 {selected && form.wheel_plan && (
-                  <>
+                  <div className="space-y-6">
                     <CollapsibleCard title="Tyre Details">
                       <TyreReadingsHistory
                         vehicleId={selected.id}
