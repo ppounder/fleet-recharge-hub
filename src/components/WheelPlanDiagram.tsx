@@ -49,7 +49,7 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
   const axleHalfLen = chassisWidth / 2 + 14; // from centerline to wheel inner edge
 
   const height = marginY * 2 + Math.max(1, axles) * axleSpacing;
-  const width = (axleHalfLen + wheelW + 8) * 2;
+  const width = (axleHalfLen + wheelW + 8 + (twinRear ? wheelW + 2 : 0)) * 2;
   const cx = width / 2;
 
   const axleYs: number[] = [];
