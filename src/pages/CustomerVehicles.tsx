@@ -210,7 +210,7 @@ export default function CustomerVehicles() {
   if (selected || creating) {
     const labels: Record<keyof EditableFields, string> = {
       status: "Status",
-      vin: "VIN",
+      vin: form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN",
       registration: "Registration number",
       fleet_number: "Fleet number",
       asset_number: "Asset number",
