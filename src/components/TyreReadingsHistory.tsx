@@ -92,7 +92,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const initialForm = { position: "", tyre_code: "", tread_depth: "", pressure: "", pressure_unit: "PSI", reading_date: new Date().toISOString().slice(0, 10) };
+  const initialForm = { position: "", tyre_code: "", tread_depth: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
   type FormErrors = Partial<Record<"position" | "tread_depth" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
@@ -232,7 +232,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       tyre_code: r.tyre_code ?? "",
       tread_depth: Number(r.tread_depth).toFixed(1),
       pressure: r.pressure != null ? Number(r.pressure).toFixed(1) : "",
-      pressure_unit: r.pressure_unit ?? "PSI",
+      pressure_unit: (r.pressure_unit ?? "psi").toLowerCase(),
       reading_date: r.reading_date,
     });
     setErrors({});
@@ -444,8 +444,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PSI">PSI</SelectItem>
-                      <SelectItem value="Bar">Bar</SelectItem>
+                      <SelectItem value="psi">psi</SelectItem>
+                      <SelectItem value="bar">bar</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
