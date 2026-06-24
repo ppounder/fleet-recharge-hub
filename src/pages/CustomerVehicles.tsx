@@ -624,14 +624,6 @@ export default function CustomerVehicles() {
                       <SelectContent>
                         <SelectItem value="__none__">None</SelectItem>
                         <SelectItem value="DVLA">DVLA</SelectItem>
-                        <SelectItem value="Post Office">Post Office</SelectItem>
-                        <SelectItem value="Lex Autolease">Lex Autolease</SelectItem>
-                        <SelectItem value="Arval">Arval</SelectItem>
-                        <SelectItem value="Alphabet">Alphabet</SelectItem>
-                        <SelectItem value="LeasePlan">LeasePlan</SelectItem>
-                        <SelectItem value="Hitachi Capital">Hitachi Capital</SelectItem>
-                        <SelectItem value="Zenith">Zenith</SelectItem>
-                        <SelectItem value="Ogilvie Fleet">Ogilvie Fleet</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
