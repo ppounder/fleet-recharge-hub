@@ -545,20 +545,20 @@ function ManageColumnsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
         <Columns3 className="w-4 h-4" />
         Manage columns
       </Button>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Manage columns</DialogTitle>
-          <DialogDescription>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Manage columns</SheetTitle>
+          <SheetDescription>
             Select the columns you most want to see. Drag the items into the order you want them shown in the table.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="rounded-md border divide-y max-h-[60vh] overflow-y-auto">
+        <div className="rounded-md border divide-y flex-1 overflow-y-auto mt-4">
           {draftOrder.map((k) => {
             const col = ALL_COLUMNS.find((c) => c.key === k)!;
             const locked = LOCKED_COLS.includes(k);
@@ -588,12 +588,12 @@ function ManageColumnsDialog({
           })}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <SheetFooter className="gap-2 sm:gap-2">
           <Button variant="outline" onClick={handleReset}>Reset</Button>
           <Button onClick={handleApply}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
