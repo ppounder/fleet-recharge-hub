@@ -499,6 +499,101 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
     dispose.mutate({ vehicle_id: vehicleId, position: disposeForm.position, disposed_at: iso });
   };
 
+  // ----- Change tyre position dialog state -----
+  const initialChangePosForm = {
+    tyre_id: "",
+    from_position: "",
+    to_position: "",
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+    notes: "",
+  };
+  const [changePosOpen, setChangePosOpen] = useState(false);
+  const [changePosForm, setChangePosForm] = useState(initialChangePosForm);
+  type ChangePosErrors = Partial<Record<"to_position" | "date" | "time", string>>;
+  const [changePosErrors, setChangePosErrors] = useState<ChangePosErrors>({});
+
+  const changePosition = useMutation({
+    mutationFn: async (payload: {
+      tyre_id: string;
+      vehicle_id: string;
+      from_position: string;
+      to_position: string;
+      changed_at: string;
+      notes: string | null;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: histErr } = await supabase.from("tyre_position_changes").insert({
+        tyre_id: payload.tyre_id,
+        vehicle_id: payload.vehicle_id,
+        from_position: payload.from_position,
+        to_position: payload.to_position,
+        changed_at: payload.changed_at,
+        notes: payload.notes,
+        created_by: user?.id ?? null,
+      });
+      if (histErr) throw histErr;
+      const { error: updErr } = await supabase
+        .from("tyres")
+        .update({ position: payload.to_position })
+        .eq("id", payload.tyre_id);
+      if (updErr) throw updErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["tyre_position_changes", vehicleId] });
+      setChangePosOpen(false);
+      setChangePosForm(initialChangePosForm);
+      setChangePosErrors({});
+      toast({ title: "Tyre position changed" });
+    },
+    onError: (e: any) =>
+      toast({
+        title: "Failed to change tyre position",
+        description: e.message?.includes("tyres_active_position_unique")
+          ? "That position already has an active tyre."
+          : e.message,
+        variant: "destructive",
+      }),
+  });
+
+  const startChangePosition = (t: TyreRecord) => {
+    setChangePosForm({
+      ...initialChangePosForm,
+      tyre_id: t.id,
+      from_position: t.position,
+    });
+    setChangePosErrors({});
+    setChangePosOpen(true);
+  };
+
+  const handleChangePosition = () => {
+    const errs: ChangePosErrors = {};
+    if (!changePosForm.to_position) errs.to_position = "New position is required";
+    if (changePosForm.to_position === changePosForm.from_position) errs.to_position = "Choose a different position";
+    if (!changePosForm.date) errs.date = "Date is required";
+    if (!changePosForm.time) errs.time = "Time is required";
+    if (Object.keys(errs).length) {
+      setChangePosErrors(errs);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
+      return;
+    }
+    const iso = new Date(`${changePosForm.date}T${changePosForm.time}`).toISOString();
+    changePosition.mutate({
+      tyre_id: changePosForm.tyre_id,
+      vehicle_id: vehicleId,
+      from_position: changePosForm.from_position,
+      to_position: changePosForm.to_position,
+      changed_at: iso,
+      notes: changePosForm.notes.trim() || null,
+    });
+  };
+
+  const availableChangeTargets = useMemo(
+    () => positions.filter((p) => p !== changePosForm.from_position && !activeTyrePositions.has(p)),
+    [positions, activeTyrePositions, changePosForm.from_position],
+  );
+
   return (
     <div className="space-y-8">
       {section !== "readings" && (<>
