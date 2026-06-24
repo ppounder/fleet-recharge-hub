@@ -213,18 +213,20 @@ export default function CustomerVehicles() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+              <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setCreating(false); }}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Vehicle Details</h1>
-                <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
-                  <UKNumberPlate registration={selected.registration} />
-                  · {selected.make} {selected.model}
-                </p>
+                <h1 className="text-2xl font-bold">{creating ? "New Asset" : "Vehicle Details"}</h1>
+                {!creating && selected && (
+                  <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
+                    <UKNumberPlate registration={selected.registration} />
+                    · {selected.make} {selected.model}
+                  </p>
+                )}
               </div>
             </div>
-            <StatusBadge status={selected.status} />
+            {!creating && selected && <StatusBadge status={selected.status} />}
           </div>
 
           <Tabs defaultValue="info">
