@@ -66,8 +66,8 @@ export default function Fleet() {
                       <TableCell className="text-xs">{v.model}</TableCell>
                       <TableCell className="text-xs">{v.year ?? "—"}</TableCell>
                       <TableCell className="text-xs">{v.mileage ? `${v.mileage.toLocaleString()} mi` : "—"}</TableCell>
-                      <TableCell className="text-xs">{formatDate(v.mot_due)}</TableCell>
-                      <TableCell className="text-xs">{formatDate(v.next_service)}</TableCell>
+                      <TableCell className={cn("text-xs", isDateExpired(v.mot_due) && "text-destructive font-semibold")}>{formatDate(v.mot_due)}</TableCell>
+                      <TableCell className={cn("text-xs", isDateExpired(v.next_service) && "text-destructive font-semibold")}>{formatDate(v.next_service)}</TableCell>
                       <TableCell className="text-xs">{v.customer_id ? customerMap.get(v.customer_id) ?? "—" : "—"}</TableCell>
                       <TableCell><StatusBadge status={v.status} /></TableCell>
                     </TableRow>
