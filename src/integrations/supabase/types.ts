@@ -779,6 +779,57 @@ export type Database = {
           },
         ]
       }
+      tyre_position_changes: {
+        Row: {
+          changed_at: string
+          created_at: string
+          created_by: string | null
+          from_position: string
+          id: string
+          notes: string | null
+          to_position: string
+          tyre_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          changed_at: string
+          created_at?: string
+          created_by?: string | null
+          from_position: string
+          id?: string
+          notes?: string | null
+          to_position: string
+          tyre_id: string
+          vehicle_id: string
+        }
+        Update: {
+          changed_at?: string
+          created_at?: string
+          created_by?: string | null
+          from_position?: string
+          id?: string
+          notes?: string | null
+          to_position?: string
+          tyre_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tyre_position_changes_tyre_id_fkey"
+            columns: ["tyre_id"]
+            isOneToOne: false
+            referencedRelation: "tyres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tyre_position_changes_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tyre_readings: {
         Row: {
           created_at: string
