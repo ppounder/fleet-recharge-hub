@@ -16,8 +16,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, cn } from "@/lib/utils";
 
 type Reading = {
   id: string;
