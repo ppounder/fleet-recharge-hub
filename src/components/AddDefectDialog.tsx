@@ -248,7 +248,7 @@ function DefectCard({
       </div>
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor={`defect-${defect.id}-type`}>Type</Label>
+          <Label htmlFor={`defect-${defect.id}-type`}>Defect type</Label>
           <Select value={PRESETS.includes(defect.type) ? defect.type : ""} onValueChange={(v) => onChange({ ...defect, type: v })}>
             <SelectTrigger
               id={`defect-${defect.id}-type`}
