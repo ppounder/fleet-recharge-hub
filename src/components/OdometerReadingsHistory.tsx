@@ -194,10 +194,9 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Source</Label>
-              <Select value={source || "__none__"} onValueChange={(v) => setSource(v === "__none__" ? "" : v)}>
+              <Select value={source} onValueChange={setSource}>
                 <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">None</SelectItem>
                   {SOURCES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
