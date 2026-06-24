@@ -112,22 +112,39 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
         {/* Axles + wheels */}
         {axleYs.map((y, i) => {
           const isDriven = drivenSet.has(i);
+          const isRear = i === axles - 1;
+          const doubled = twinRear && isRear;
           const wheelFill = isDriven
             ? "hsl(var(--primary))"
             : "hsl(var(--muted-foreground) / 0.85)";
+          const leftInner = cx - axleHalfLen - wheelW;
+          const rightInner = cx + axleHalfLen;
+          const gap = 2;
           return (
             <g key={i}>
               {/* Axle bar */}
               <rect
-                x={cx - axleHalfLen}
+                x={cx - axleHalfLen - (doubled ? wheelW + gap : 0)}
                 y={y - axleBarThickness / 2}
-                width={axleHalfLen * 2}
+                width={axleHalfLen * 2 + (doubled ? (wheelW + gap) * 2 : 0)}
                 height={axleBarThickness}
                 fill="hsl(var(--foreground) / 0.6)"
               />
-              {/* Left wheel */}
+              {/* Left wheel(s) */}
+              {doubled && (
+                <rect
+                  x={leftInner - wheelW - gap}
+                  y={y - wheelH / 2}
+                  width={wheelW}
+                  height={wheelH}
+                  rx={2}
+                  fill={wheelFill}
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth={1}
+                />
+              )}
               <rect
-                x={cx - axleHalfLen - wheelW}
+                x={leftInner}
                 y={y - wheelH / 2}
                 width={wheelW}
                 height={wheelH}
@@ -136,9 +153,9 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
                 stroke="hsl(var(--foreground))"
                 strokeWidth={1}
               />
-              {/* Right wheel */}
+              {/* Right wheel(s) */}
               <rect
-                x={cx + axleHalfLen}
+                x={rightInner}
                 y={y - wheelH / 2}
                 width={wheelW}
                 height={wheelH}
@@ -147,6 +164,18 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
                 stroke="hsl(var(--foreground))"
                 strokeWidth={1}
               />
+              {doubled && (
+                <rect
+                  x={rightInner + wheelW + gap}
+                  y={y - wheelH / 2}
+                  width={wheelW}
+                  height={wheelH}
+                  rx={2}
+                  fill={wheelFill}
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth={1}
+                />
+              )}
             </g>
           );
         })}
