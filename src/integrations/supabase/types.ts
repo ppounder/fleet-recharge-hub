@@ -1050,6 +1050,8 @@ export type Database = {
           id: string
           job_id: string | null
           photos: string[]
+          rectified_at: string | null
+          rectified_by: string | null
           rectified_details: string | null
           reported_at: string
           reported_by: string | null
@@ -1066,6 +1068,8 @@ export type Database = {
           id?: string
           job_id?: string | null
           photos?: string[]
+          rectified_at?: string | null
+          rectified_by?: string | null
           rectified_details?: string | null
           reported_at?: string
           reported_by?: string | null
@@ -1082,6 +1086,8 @@ export type Database = {
           id?: string
           job_id?: string | null
           photos?: string[]
+          rectified_at?: string | null
+          rectified_by?: string | null
           rectified_details?: string | null
           reported_at?: string
           reported_by?: string | null

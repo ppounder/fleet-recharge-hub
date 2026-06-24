@@ -26,6 +26,8 @@ type Defect = {
   severity: Severity;
   rectified: boolean;
   rectifiedDetails?: string;
+  rectifiedBy?: string;
+  rectifiedAt?: string;
   photos: string[];
   damageMarks?: DamageMark[];
   reportedAt: string;
@@ -52,6 +54,8 @@ function blank(reportedBy = ""): Defect {
     severity: "non-safety",
     rectified: false,
     rectifiedDetails: "",
+    rectifiedBy: "",
+    rectifiedAt: "",
     photos: [],
     reportedAt: todayISO(),
     reportedBy,
@@ -87,6 +91,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
           severity: editDefect.severity,
           rectified: editDefect.status === "rectified",
           rectifiedDetails: editDefect.rectified_details ?? "",
+          rectifiedBy: editDefect.rectified_by ?? (editDefect.status === "rectified" ? "" : defaultReporter),
+          rectifiedAt: editDefect.rectified_at ? editDefect.rectified_at.slice(0, 10) : (editDefect.status === "rectified" ? "" : todayISO()),
           photos: editDefect.photos ?? [],
           damageMarks: editDefect.damage_marks ?? [],
           reportedAt: editDefect.reported_at ? editDefect.reported_at.slice(0, 10) : todayISO(),
@@ -119,6 +125,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
             reported_by: d.reportedBy || null,
             reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : editDefect.reported_at,
             rectified_details: d.rectified ? (d.rectifiedDetails || null) : null,
+            rectified_by: d.rectified ? (d.rectifiedBy || null) : null,
+            rectified_at: d.rectified && d.rectifiedAt ? new Date(d.rectifiedAt).toISOString() : null,
             photos: d.photos ?? [],
             damage_marks: d.damageMarks ?? [],
           })
@@ -136,6 +144,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
           reported_by: d.reportedBy || null,
           reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : new Date().toISOString(),
           rectified_details: d.rectified ? (d.rectifiedDetails || null) : null,
+          rectified_by: d.rectified ? (d.rectifiedBy || null) : null,
+          rectified_at: d.rectified && d.rectifiedAt ? new Date(d.rectifiedAt).toISOString() : null,
           photos: d.photos ?? [],
           damage_marks: d.damageMarks ?? [],
         }));
@@ -390,22 +400,44 @@ function DefectCard({
           Rectified
         </label>
         {defect.rectified && (
-          <div className="space-y-1.5">
-            <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
-            <Textarea
-              id={`defect-${defect.id}-rectified`}
-              rows={2}
-              value={defect.rectifiedDetails ?? ""}
-              onChange={(e) => onChange({ ...defect, rectifiedDetails: e.target.value })}
-              placeholder="Describe how the defect was rectified…"
-              aria-invalid={!!errors.rectifiedDetails}
-              aria-describedby={errors.rectifiedDetails ? rectErrId : undefined}
-              className={cn(errors.rectifiedDetails && "border-destructive focus-visible:ring-destructive")}
-            />
-            {errors.rectifiedDetails && (
-              <p id={rectErrId} className="text-xs text-destructive">{errors.rectifiedDetails}</p>
-            )}
-          </div>
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
+              <Textarea
+                id={`defect-${defect.id}-rectified`}
+                rows={2}
+                value={defect.rectifiedDetails ?? ""}
+                onChange={(e) => onChange({ ...defect, rectifiedDetails: e.target.value })}
+                placeholder="Describe how the defect was rectified…"
+                aria-invalid={!!errors.rectifiedDetails}
+                aria-describedby={errors.rectifiedDetails ? rectErrId : undefined}
+                className={cn(errors.rectifiedDetails && "border-destructive focus-visible:ring-destructive")}
+              />
+              {errors.rectifiedDetails && (
+                <p id={rectErrId} className="text-xs text-destructive">{errors.rectifiedDetails}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor={`defect-${defect.id}-rectified-by`}>Rectified by</Label>
+                <Input
+                  id={`defect-${defect.id}-rectified-by`}
+                  value={defect.rectifiedBy ?? ""}
+                  onChange={(e) => onChange({ ...defect, rectifiedBy: e.target.value })}
+                  placeholder="Name"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`defect-${defect.id}-rectified-at`}>Rectified date</Label>
+                <Input
+                  id={`defect-${defect.id}-rectified-at`}
+                  type="date"
+                  value={defect.rectifiedAt ?? ""}
+                  onChange={(e) => onChange({ ...defect, rectifiedAt: e.target.value })}
+                />
+              </div>
+            </div>
+          </>
         )}
         <input
           type="file"

@@ -17,6 +17,8 @@ export type VehicleDefect = {
   status: DefectStatus;
   reported_by: string | null;
   rectified_details: string | null;
+  rectified_by: string | null;
+  rectified_at: string | null;
   photos: string[];
   damage_marks: DamageMark[];
   job?: { id: string; job_number: string; status: string } | null;
