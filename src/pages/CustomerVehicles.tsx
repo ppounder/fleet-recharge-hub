@@ -254,6 +254,22 @@ export default function CustomerVehicles() {
   });
   const latestMessage = recentNotes[0]?.maintenance_message ?? "";
 
+  const { data: latestOdoReading } = useQuery({
+    queryKey: ["vehicle-latest-odo-reading", selected?.id],
+    enabled: !!selected?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("odometer_readings")
+        .select("reading, unit, recorded_at, source")
+        .eq("vehicle_id", selected!.id)
+        .order("recorded_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
