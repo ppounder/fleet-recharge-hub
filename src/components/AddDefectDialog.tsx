@@ -26,6 +26,8 @@ type Defect = {
   severity: Severity;
   rectified: boolean;
   rectifiedDetails?: string;
+  rectifiedBy?: string;
+  rectifiedAt?: string;
   photos: string[];
   damageMarks?: DamageMark[];
   reportedAt: string;
@@ -52,6 +54,8 @@ function blank(reportedBy = ""): Defect {
     severity: "non-safety",
     rectified: false,
     rectifiedDetails: "",
+    rectifiedBy: "",
+    rectifiedAt: "",
     photos: [],
     reportedAt: todayISO(),
     reportedBy,
@@ -87,6 +91,8 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
           severity: editDefect.severity,
           rectified: editDefect.status === "rectified",
           rectifiedDetails: editDefect.rectified_details ?? "",
+          rectifiedBy: editDefect.rectified_by ?? (editDefect.status === "rectified" ? "" : defaultReporter),
+          rectifiedAt: editDefect.rectified_at ? editDefect.rectified_at.slice(0, 10) : (editDefect.status === "rectified" ? "" : todayISO()),
           photos: editDefect.photos ?? [],
           damageMarks: editDefect.damage_marks ?? [],
           reportedAt: editDefect.reported_at ? editDefect.reported_at.slice(0, 10) : todayISO(),
