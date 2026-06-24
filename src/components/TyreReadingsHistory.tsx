@@ -653,6 +653,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                               <Button
                                 size="icon"
                                 variant="ghost"
+                                onClick={() => startChangePosition(t)}
+                                aria-label="Change tyre position"
+                                title="Change tyre position"
+                              >
+                                <ArrowLeftRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
                                 onClick={() => startDispose(t.position)}
                                 className="text-destructive hover:bg-destructive hover:text-white"
                                 aria-label="Dispose tyre"
