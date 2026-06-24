@@ -704,8 +704,8 @@ export default function CustomerVehicles() {
                       className="bg-card"
                     />
                   </div>
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <div className="grid grid-cols-[1fr_160px] gap-2">
+                  <div className="space-y-1.5">
+                    <div className="grid grid-cols-[1fr_90px] gap-2">
                       <div className="space-y-1.5">
                         <Label htmlFor="last_known_distance">Last known distance</Label>
                         <Input
