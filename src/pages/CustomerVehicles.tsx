@@ -1510,7 +1510,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
                                 {d.rectified_at && (
                                   <div className="space-y-1">
                                     <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectified date</div>
-                                    <div className="text-sm">{new Date(d.rectified_at).toLocaleDateString()}</div>
+                                    <div className="text-sm">{formatDate(d.rectified_at)}</div>
                                   </div>
                                 )}
                               </div>
@@ -1944,7 +1944,7 @@ function DefectMediaDialog({
                   {defect.rectified_at && (
                     <div className="space-y-1">
                       <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectified date</div>
-                      <div className="text-sm">{new Date(defect.rectified_at).toLocaleDateString()}</div>
+                      <div className="text-sm">{formatDate(defect.rectified_at)}</div>
                     </div>
                   )}
                 </div>
