@@ -90,6 +90,27 @@ function derivePositions(plan: string, assetType?: string): string[] {
   return out;
 }
 
+interface Tyre {
+  id: string;
+  vehicle_id: string;
+  position: string;
+  manufacturer: string;
+  tyre_size: string;
+  serial_number: string;
+  manufacture_date: string | null;
+  fitted_date: string;
+  disposed_at: string | null;
+}
+
+function dotToManufactureDate(serial: string): string | null {
+  const last4 = (serial || "").replace(/\s+/g, "").slice(-4);
+  if (!/^\d{4}$/.test(last4)) return null;
+  const ww = parseInt(last4.slice(0, 2), 10);
+  const yy = parseInt(last4.slice(2, 4), 10);
+  if (ww < 1 || ww > 53) return null;
+  return `Week ${String(ww).padStart(2, "0")} / 20${String(yy).padStart(2, "0")}`;
+}
+
 export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
   const { toast } = useToast();
