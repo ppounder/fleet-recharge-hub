@@ -9,9 +9,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useVehicles, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
+import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,7 +19,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
-import { CreateVehicleDialog } from "@/components/CreateVehicleDialog";
+
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
@@ -91,7 +91,10 @@ const LOCKED_COLS: ColKey[] = ["registration"];
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const update = useUpdateVehicle();
+  const createVehicle = useCreateVehicle();
+  const { user } = useAuth();
   const [selected, setSelected] = useState<Vehicle | null>(null);
+  const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<ColKey>("registration");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -100,6 +103,7 @@ export default function CustomerVehicles() {
   const location = useLocation();
   useEffect(() => {
     setSelected(null);
+    setCreating(false);
   }, [location.key]);
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -127,12 +131,41 @@ export default function CustomerVehicles() {
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
-  }, [selected]);
+    else if (creating) setForm(blank);
+  }, [selected, creating]);
 
   const set = (k: keyof EditableFields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleSave = async () => {
+    if (creating) {
+      if (!form.registration.trim() || !form.make.trim() || !form.model.trim()) {
+        toast({ title: "Missing required fields", description: "Registration, Make and Model are required", variant: "destructive" });
+        return;
+      }
+      try {
+        const created = await createVehicle.mutateAsync({
+          registration: form.registration.toUpperCase(),
+          make: form.make,
+          model: form.model,
+          status: form.status || "on-road",
+          vin: form.vin || null,
+          fleet_number: form.fleet_number || null,
+          asset_number: form.asset_number || null,
+          asset_type: form.asset_type || null,
+          body_type: form.body_type || null,
+          derivative: form.derivative || null,
+          fleet_manager_id: user?.id ?? null,
+          fleet_id: profile?.fleet_id ?? null,
+        } as any);
+        toast({ title: "Asset created", description: created.registration });
+        setCreating(false);
+        setSelected(created as Vehicle);
+      } catch (e: any) {
+        toast({ title: "Create failed", description: e.message, variant: "destructive" });
+      }
+      return;
+    }
     if (!selected) return;
     try {
       await update.mutateAsync({
@@ -154,7 +187,7 @@ export default function CustomerVehicles() {
     }
   };
 
-  if (selected) {
+  if (selected || creating) {
     const labels: Record<keyof EditableFields, string> = {
       status: "Status",
       vin: "VIN",
@@ -180,25 +213,27 @@ export default function CustomerVehicles() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+              <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setCreating(false); }}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Vehicle Details</h1>
-                <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
-                  <UKNumberPlate registration={selected.registration} />
-                  · {selected.make} {selected.model}
-                </p>
+                <h1 className="text-2xl font-bold">{creating ? "New Asset" : "Vehicle Details"}</h1>
+                {!creating && selected && (
+                  <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
+                    <UKNumberPlate registration={selected.registration} />
+                    · {selected.make} {selected.model}
+                  </p>
+                )}
               </div>
             </div>
-            <StatusBadge status={selected.status} />
+            {!creating && selected && <StatusBadge status={selected.status} />}
           </div>
 
           <Tabs defaultValue="info">
             <TabsList className="bg-transparent text-sidebar-foreground gap-2 h-auto">
               <TabsTrigger value="info" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle Information</TabsTrigger>
-              <TabsTrigger value="dates" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>
-              <TabsTrigger value="defects" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Defect History</TabsTrigger>
+              {!creating && <TabsTrigger value="dates" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>}
+              {!creating && <TabsTrigger value="defects" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Defect History</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
@@ -240,102 +275,112 @@ export default function CustomerVehicles() {
                 </div>
               </CollapsibleCard>
 
-              <CompanyDetails vehicle={selected} />
+              {selected && <CompanyDetails vehicle={selected} />}
 
-              <CollapsibleCard title="Notes">
-                <div className="space-y-1.5">
-                  <div className="relative rounded-md border bg-card">
-                    <button
-                      type="button"
-                      onClick={() => setMsgDialogOpen(true)}
-                      className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground z-10"
-                      aria-label="Edit notes"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    {recentNotes.length === 0 ? (
+              {selected && (
+                <CollapsibleCard title="Notes">
+                  <div className="space-y-1.5">
+                    <div className="relative rounded-md border bg-card">
                       <button
                         type="button"
                         onClick={() => setMsgDialogOpen(true)}
-                        className="w-full text-left text-sm text-muted-foreground px-3 py-6"
+                        className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground z-10"
+                        aria-label="Edit notes"
                       >
-                        No note recorded
+                        <Pencil className="w-4 h-4" />
                       </button>
-                    ) : (
-                      <ul className="divide-y">
-                        {recentNotes.map((n: any) => (
-                          <li
-                            key={n.id}
-                            onClick={() => setMsgDialogOpen(true)}
-                            className="px-3 py-2 cursor-pointer hover:bg-muted/40"
-                          >
-                            <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
-                            <div className="text-sm whitespace-pre-wrap break-words pr-8">{n.maintenance_message}</div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                      {recentNotes.length === 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setMsgDialogOpen(true)}
+                          className="w-full text-left text-sm text-muted-foreground px-3 py-6"
+                        >
+                          No note recorded
+                        </button>
+                      ) : (
+                        <ul className="divide-y">
+                          {recentNotes.map((n: any) => (
+                            <li
+                              key={n.id}
+                              onClick={() => setMsgDialogOpen(true)}
+                              className="px-3 py-2 cursor-pointer hover:bg-muted/40"
+                            >
+                              <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
+                              <div className="text-sm whitespace-pre-wrap break-words pr-8">{n.maintenance_message}</div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CollapsibleCard>
+                </CollapsibleCard>
+              )}
 
             </TabsContent>
 
-            <TabsContent value="dates">
-              <CollapsibleCard title="Key Dates">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="year">Year</Label>
-                    <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
+            {selected && (
+              <TabsContent value="dates">
+                <CollapsibleCard title="Key Dates">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="year">Year</Label>
+                      <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mot_due">MOT due</Label>
+                      <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="next_service">Next service</Label>
+                      <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mileage">Mileage</Label>
+                      <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly className="bg-card" />
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="mot_due">MOT due</Label>
-                    <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="next_service">Next service</Label>
-                    <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="mileage">Mileage</Label>
-                    <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly className="bg-card" />
-                  </div>
-                </div>
-              </CollapsibleCard>
-            </TabsContent>
+                </CollapsibleCard>
+              </TabsContent>
+            )}
 
-            <TabsContent value="defects">
-              <DefectHistory vehicleId={selected.id} />
-            </TabsContent>
+            {selected && (
+              <TabsContent value="defects">
+                <DefectHistory vehicleId={selected.id} />
+              </TabsContent>
+            )}
           </Tabs>
 
 
           <div className="sticky bottom-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-t flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setSelected(null)} disabled={update.isPending}>
+            <Button variant="outline" onClick={() => { setSelected(null); setCreating(false); }} disabled={update.isPending || createVehicle.isPending}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={update.isPending}>
-              {update.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Save
+            <Button onClick={handleSave} disabled={update.isPending || createVehicle.isPending}>
+              {(update.isPending || createVehicle.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {creating ? "Create Asset" : "Save"}
             </Button>
           </div>
         </div>
-        <VehicleStatusDialog
-          vehicle={selected}
-          open={statusDialogOpen}
-          onOpenChange={setStatusDialogOpen}
-          onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
-        />
-        <MaintenanceMessageDialog
-          vehicleId={selected.id}
-          vehicleStatus={selected.status}
-          fleetId={(selected as any).fleet_id ?? null}
-          changedBy={profile?.full_name || ""}
-          open={msgDialogOpen}
-          onOpenChange={setMsgDialogOpen}
-          currentMessage={latestMessage}
-          onCurrentMessageChange={() => {}}
-        />
+        {selected && (
+          <>
+            <VehicleStatusDialog
+              vehicle={selected}
+              open={statusDialogOpen}
+              onOpenChange={setStatusDialogOpen}
+              onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
+            />
+            <MaintenanceMessageDialog
+              vehicleId={selected.id}
+              vehicleStatus={selected.status}
+              fleetId={(selected as any).fleet_id ?? null}
+              changedBy={profile?.full_name || ""}
+              open={msgDialogOpen}
+              onOpenChange={setMsgDialogOpen}
+              currentMessage={latestMessage}
+              onCurrentMessageChange={() => {}}
+            />
+          </>
+        )}
       </AppLayout>
     );
   }
@@ -375,6 +420,7 @@ export default function CustomerVehicles() {
             columnOrder={columnOrder}
             setColumnOrder={setColumnOrder}
             onRowClick={setSelected}
+            onAdd={() => setCreating(true)}
           />
         )}
       </div>
@@ -383,7 +429,7 @@ export default function CustomerVehicles() {
 }
 
 function VehiclesTable({
-  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, columnOrder, setColumnOrder, onRowClick,
+  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, columnOrder, setColumnOrder, onRowClick, onAdd,
 }: {
   vehicles: Vehicle[];
   search: string;
@@ -396,6 +442,7 @@ function VehiclesTable({
   columnOrder: ColKey[];
   setColumnOrder: (c: ColKey[]) => void;
   onRowClick: (v: Vehicle) => void;
+  onAdd: () => void;
 }) {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
@@ -475,7 +522,9 @@ function VehiclesTable({
               <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
               Refresh data
             </Button>
-            <CreateVehicleDialog />
+            <Button size="sm" onClick={onAdd}>
+              <Plus className="w-4 h-4 mr-1" /> Add Asset
+            </Button>
             <ManageColumnsDialog
               visibleCols={visibleCols}
               columnOrder={columnOrder}
