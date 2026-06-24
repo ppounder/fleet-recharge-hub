@@ -430,9 +430,18 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     mutationFn: async (payload: { vehicle_id: string; position: string; disposed_at: string }) => {
       const { error } = await supabase.from("tyre_disposals").insert(payload);
       if (error) throw error;
+      // Mark the active tyre at that position as disposed so it's removed from the active view.
+      const { error: updErr } = await supabase
+        .from("tyres")
+        .update({ disposed_at: payload.disposed_at })
+        .eq("vehicle_id", payload.vehicle_id)
+        .eq("position", payload.position)
+        .is("disposed_at", null);
+      if (updErr) throw updErr;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyre_disposals", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
       setDisposeOpen(false);
       setDisposeForm(initialDisposeForm);
       setDisposeErrors({});
@@ -440,6 +449,12 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     },
     onError: (e: any) => toast({ title: "Failed to dispose tyre", description: e.message, variant: "destructive" }),
   });
+
+  const startDispose = (position?: string) => {
+    setDisposeForm({ ...initialDisposeForm, position: position ?? "" });
+    setDisposeErrors({});
+    setDisposeOpen(true);
+  };
 
   const handleDispose = () => {
     const errs: DisposeErrors = {};
