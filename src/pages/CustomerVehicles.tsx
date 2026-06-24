@@ -1240,6 +1240,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
   const [addOpen, setAddOpen] = useState(false);
   const [editDefect, setEditDefect] = useState<VehicleDefect | null>(null);
   const [deleteDefect, setDeleteDefect] = useState<VehicleDefect | null>(null);
+  const [mediaDefect, setMediaDefect] = useState<VehicleDefect | null>(null);
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [visibleCols, setVisibleCols] = useState<DefectColKey[]>(DEFECT_DEFAULT_VISIBLE);
@@ -1363,10 +1364,22 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             )}
           </TableCell>
         );
-      case "actions":
+      case "actions": {
+        const hasMedia = (d.photos?.length ?? 0) > 0 || (d.damage_marks?.length ?? 0) > 0;
         return (
-          <TableCell key={k} className="w-[100px]">
+          <TableCell key={k} className="w-[130px]">
             <div className="flex items-center gap-1">
+              {hasMedia && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="View attachments"
+                  title="View attachments"
+                  onClick={(e) => { e.stopPropagation(); setMediaDefect(d); }}
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -1389,6 +1402,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             </div>
           </TableCell>
         );
+      }
     }
   };
 
