@@ -41,6 +41,9 @@ interface TyreReading {
   position: string;
   tyre_code: string | null;
   tread_depth: number;
+  tread_outer: number | null;
+  tread_centre: number | null;
+  tread_inner: number | null;
   pressure: number | null;
   pressure_unit: string | null;
   reading_date: string;
@@ -92,22 +95,30 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const initialForm = { position: "", tyre_code: "", tread_depth: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
+  const initialForm = { position: "", tyre_code: "", tread_outer: "", tread_centre: "", tread_inner: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
-  type FormErrors = Partial<Record<"position" | "tread_depth" | "pressure" | "reading_date", string>>;
+  type FormErrors = Partial<Record<"position" | "tread_outer" | "tread_centre" | "tread_inner" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const treadOptional = z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
+    .refine((v) => v === "" || (parseFloat(v) >= 0 && parseFloat(v) <= 30), { message: "Must be between 0 and 30 mm" });
 
   const readingSchema = z.object({
     position: z.string().trim().min(1, { message: "Position is required" }),
-    tread_depth: z
+    tread_outer: treadOptional,
+    tread_centre: z
       .string()
       .trim()
-      .min(1, { message: "Tread depth is required" })
+      .min(1, { message: "Centre tread depth is required" })
       .refine((v) => /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
       .refine((v) => {
         const n = parseFloat(v);
         return n >= 0 && n <= 30;
-      }, { message: "Tread depth must be between 0 and 30 mm" }),
+      }, { message: "Must be between 0 and 30 mm" }),
+    tread_inner: treadOptional,
     pressure: z
       .string()
       .trim()
@@ -166,7 +177,10 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         vehicle_id: vehicleId,
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
-        tread_depth: parseFloat(parsed.tread_depth),
+        tread_depth: parseFloat(parsed.tread_centre),
+        tread_outer: parsed.tread_outer ? parseFloat(parsed.tread_outer) : null,
+        tread_centre: parseFloat(parsed.tread_centre),
+        tread_inner: parsed.tread_inner ? parseFloat(parsed.tread_inner) : null,
         pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
         pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
@@ -189,7 +203,10 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       const { error } = await supabase.from("tyre_readings").update({
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
-        tread_depth: parseFloat(parsed.tread_depth),
+        tread_depth: parseFloat(parsed.tread_centre),
+        tread_outer: parsed.tread_outer ? parseFloat(parsed.tread_outer) : null,
+        tread_centre: parseFloat(parsed.tread_centre),
+        tread_inner: parsed.tread_inner ? parseFloat(parsed.tread_inner) : null,
         pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
         pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
@@ -233,7 +250,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     setForm({
       position: r.position,
       tyre_code: r.tyre_code ?? "",
-      tread_depth: Number(r.tread_depth).toFixed(1),
+      tread_outer: r.tread_outer != null ? Number(r.tread_outer).toFixed(1) : "",
+      tread_centre: r.tread_centre != null ? Number(r.tread_centre).toFixed(1) : Number(r.tread_depth).toFixed(1),
+      tread_inner: r.tread_inner != null ? Number(r.tread_inner).toFixed(1) : "",
       pressure: r.pressure != null ? Number(r.pressure).toFixed(1) : "",
       pressure_unit: (r.pressure_unit ?? "psi").toLowerCase(),
       reading_date: r.reading_date,
@@ -404,23 +423,36 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="tread_depth">Tread depth (mm)</Label>
-                <Input
-                  id="tread_depth"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.tread_depth}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("tread_depth", v);
-                  }}
-                  aria-invalid={!!errors.tread_depth}
-                  aria-describedby={errors.tread_depth ? "tread_depth-error" : undefined}
-                  className={cn(errors.tread_depth && "border-destructive focus-visible:ring-destructive")}
-                />
-                {errors.tread_depth && (
-                  <p id="tread_depth-error" className="text-xs text-destructive">{errors.tread_depth}</p>
-                )}
+                <Label>Tread depth (mm)</Label>
+                <div className="space-y-2">
+                  {([
+                    { key: "tread_outer", label: "Outer" },
+                    { key: "tread_centre", label: "Centre" },
+                    { key: "tread_inner", label: "Inner" },
+                  ] as const).map(({ key, label }) => (
+                    <div key={key} className="grid grid-cols-[80px_1fr] items-center gap-2">
+                      <Label htmlFor={key} className="text-xs text-muted-foreground font-normal">{label}</Label>
+                      <div>
+                        <Input
+                          id={key}
+                          type="text"
+                          inputMode="decimal"
+                          value={form[key]}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "" || /^\d*\.?\d?$/.test(v)) updateField(key, v);
+                          }}
+                          aria-invalid={!!errors[key]}
+                          aria-describedby={errors[key] ? `${key}-error` : undefined}
+                          className={cn("h-8", errors[key] && "border-destructive focus-visible:ring-destructive")}
+                        />
+                        {errors[key] && (
+                          <p id={`${key}-error`} className="text-xs text-destructive mt-1">{errors[key]}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pressure">Pressure</Label>
