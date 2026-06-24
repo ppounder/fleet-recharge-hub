@@ -461,6 +461,13 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
     time: new Date().toTimeString().slice(0, 5),
   };
   const [disposeOpen, setDisposeOpen] = useState(false);
+  const [confirm, setConfirm] = useState<{ open: boolean; message: string; onConfirm: () => void }>({
+    open: false,
+    message: "",
+    onConfirm: () => {},
+  });
+  const askConfirm = (message: string, onConfirm: () => void) =>
+    setConfirm({ open: true, message, onConfirm });
   const [disposeForm, setDisposeForm] = useState(initialDisposeForm);
   type DisposeErrors = Partial<Record<"position" | "date" | "time", string>>;
   const [disposeErrors, setDisposeErrors] = useState<DisposeErrors>({});
