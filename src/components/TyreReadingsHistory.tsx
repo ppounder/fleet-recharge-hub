@@ -164,6 +164,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
         tread_depth: parseFloat(parsed.tread_depth),
+        pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
+        pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
       });
       if (error) throw error;
@@ -185,6 +187,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         position: parsed.position,
         tyre_code: form.tyre_code.trim() || null,
         tread_depth: parseFloat(parsed.tread_depth),
+        pressure: parsed.pressure ? parseFloat(parsed.pressure) : null,
+        pressure_unit: parsed.pressure ? form.pressure_unit : null,
         reading_date: parsed.reading_date,
       }).eq("id", id);
       if (error) throw error;
@@ -227,11 +231,14 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       position: r.position,
       tyre_code: r.tyre_code ?? "",
       tread_depth: Number(r.tread_depth).toFixed(1),
+      pressure: r.pressure != null ? Number(r.pressure).toFixed(1) : "",
+      pressure_unit: r.pressure_unit ?? "PSI",
       reading_date: r.reading_date,
     });
     setErrors({});
     setOpen(true);
   };
+
 
 
 
