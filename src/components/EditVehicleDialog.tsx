@@ -122,11 +122,11 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>MOT Due</Label>
-              <Input value={motDue} onChange={(e) => setMotDue(e.target.value)} type="date" />
+              <DatePicker value={motDue} onChange={setMotDue} />
             </div>
             <div className="space-y-2">
               <Label>Next Service</Label>
-              <Input value={nextService} onChange={(e) => setNextService(e.target.value)} type="date" />
+              <DatePicker value={nextService} onChange={setNextService} />
             </div>
           </div>
           <div className="space-y-2">
