@@ -397,6 +397,13 @@ function VehiclesTable({
   setColumnOrder: (c: ColKey[]) => void;
   onRowClick: (v: Vehicle) => void;
 }) {
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+    setRefreshing(false);
+  };
   const isVisible = (k: ColKey) => visibleCols.includes(k);
   const orderedColumns = useMemo(
     () => columnOrder.map((k) => ALL_COLUMNS.find((c) => c.key === k)!).filter(Boolean),
