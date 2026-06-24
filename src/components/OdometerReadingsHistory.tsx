@@ -46,9 +46,8 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
   const [reading, setReading] = useState("");
   const [unit, setUnit] = useState("Miles");
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [time, setTime] = useState<string>(
-    new Date().toTimeString().slice(0, 5),
-  );
+  const [time, setTime] = useState<string>(new Date().toTimeString().slice(0, 5));
+  const [errors, setErrors] = useState<{ source?: string; reading?: string; unit?: string; date?: string; time?: string }>({});
 
   const { data: readings = [], isLoading } = useQuery({
     queryKey: ["odometer_readings", vehicleId],
