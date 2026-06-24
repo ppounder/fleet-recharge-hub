@@ -1305,14 +1305,19 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
     [columnOrder]
   );
 
-  const SortHeader = ({ k, children }: { k: DefectColKey; children: React.ReactNode }) => (
-    <TableHead>
-      <button onClick={() => toggleSort(k as SortKey)} className="inline-flex items-center gap-1 hover:text-foreground">
-        {children}
-        <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
-      </button>
-    </TableHead>
-  );
+  const SortHeader = ({ k, children }: { k: DefectColKey; children: React.ReactNode }) => {
+    if (k === "actions") {
+      return <TableHead>{children}</TableHead>;
+    }
+    return (
+      <TableHead>
+        <button onClick={() => toggleSort(k as SortKey)} className="inline-flex items-center gap-1 hover:text-foreground">
+          {children}
+          <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
+        </button>
+      </TableHead>
+    );
+  };
 
   const renderCell = (k: DefectColKey, d: VehicleDefect) => {
     switch (k) {
