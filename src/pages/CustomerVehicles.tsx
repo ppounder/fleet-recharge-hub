@@ -67,6 +67,14 @@ type EditableFields = {
   rfl_renewal_method: string;
   rfl_renewal_term_months: string;
   rfl_supplier: string;
+  odometer_start_distance: string;
+  last_known_distance: string;
+  last_known_distance_unit: string;
+  last_known_distance_recorded_at: string;
+  distance_source: string;
+  average_monthly_distance: string;
+  life_distance: string;
+  estimated_distance: string;
 };
 
 const blank: EditableFields = {
@@ -101,6 +109,14 @@ const blank: EditableFields = {
   rfl_renewal_method: "",
   rfl_renewal_term_months: "",
   rfl_supplier: "",
+  odometer_start_distance: "",
+  last_known_distance: "",
+  last_known_distance_unit: "",
+  last_known_distance_recorded_at: "",
+  distance_source: "",
+  average_monthly_distance: "",
+  life_distance: "",
+  estimated_distance: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
@@ -136,6 +152,14 @@ function toForm(v: Vehicle): EditableFields {
     rfl_renewal_method: (v as any).rfl_renewal_method || "",
     rfl_renewal_term_months: (v as any).rfl_renewal_term_months != null ? String((v as any).rfl_renewal_term_months) : "",
     rfl_supplier: (v as any).rfl_supplier || "",
+    odometer_start_distance: (v as any).odometer_start_distance != null ? String((v as any).odometer_start_distance) : "",
+    last_known_distance: (v as any).last_known_distance != null ? String((v as any).last_known_distance) : "",
+    last_known_distance_unit: (v as any).last_known_distance_unit || "",
+    last_known_distance_recorded_at: (v as any).last_known_distance_recorded_at || "",
+    distance_source: (v as any).distance_source || "",
+    average_monthly_distance: (v as any).average_monthly_distance != null ? String((v as any).average_monthly_distance) : "",
+    life_distance: (v as any).life_distance != null ? String((v as any).life_distance) : "",
+    estimated_distance: (v as any).estimated_distance != null ? String((v as any).estimated_distance) : "",
   };
 }
 
@@ -277,6 +301,14 @@ export default function CustomerVehicles() {
           rfl_renewal_method: form.rfl_renewal_method || null,
           rfl_renewal_term_months: form.rfl_renewal_term_months ? Number(form.rfl_renewal_term_months) : null,
           rfl_supplier: form.rfl_supplier || null,
+          odometer_start_distance: form.odometer_start_distance ? Number(form.odometer_start_distance) : null,
+          last_known_distance: form.last_known_distance ? Number(form.last_known_distance) : null,
+          last_known_distance_unit: form.last_known_distance_unit || null,
+          last_known_distance_recorded_at: form.last_known_distance ? new Date().toISOString() : null,
+          distance_source: form.distance_source || null,
+          average_monthly_distance: form.average_monthly_distance ? Number(form.average_monthly_distance) : null,
+          life_distance: form.life_distance ? Number(form.life_distance) : null,
+          estimated_distance: form.estimated_distance ? Number(form.estimated_distance) : null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
@@ -323,6 +355,20 @@ export default function CustomerVehicles() {
         rfl_renewal_method: form.rfl_renewal_method || null,
         rfl_renewal_term_months: form.rfl_renewal_term_months ? Number(form.rfl_renewal_term_months) : null,
         rfl_supplier: form.rfl_supplier || null,
+        odometer_start_distance: form.odometer_start_distance ? Number(form.odometer_start_distance) : null,
+        last_known_distance: form.last_known_distance ? Number(form.last_known_distance) : null,
+        last_known_distance_unit: form.last_known_distance_unit || null,
+        last_known_distance_recorded_at: (() => {
+          const prev = (selected as any).last_known_distance;
+          const next = form.last_known_distance ? Number(form.last_known_distance) : null;
+          if (next == null) return null;
+          if (prev !== next) return new Date().toISOString();
+          return (selected as any).last_known_distance_recorded_at || new Date().toISOString();
+        })(),
+        distance_source: form.distance_source || null,
+        average_monthly_distance: form.average_monthly_distance ? Number(form.average_monthly_distance) : null,
+        life_distance: form.life_distance ? Number(form.life_distance) : null,
+        estimated_distance: form.estimated_distance ? Number(form.estimated_distance) : null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
@@ -363,6 +409,14 @@ export default function CustomerVehicles() {
       rfl_renewal_method: "Renewal method",
       rfl_renewal_term_months: "Renewal term (months)",
       rfl_supplier: "RFL supplier",
+      odometer_start_distance: "Odometer start distance",
+      last_known_distance: "Last known distance",
+      last_known_distance_unit: "Unit",
+      last_known_distance_recorded_at: "Reading taken",
+      distance_source: "Source",
+      average_monthly_distance: "Average monthly distance",
+      life_distance: "Life distance",
+      estimated_distance: "Estimated distance",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
@@ -396,6 +450,7 @@ export default function CustomerVehicles() {
             <TabsList className="bg-transparent text-sidebar-foreground gap-2 h-auto">
               <TabsTrigger value="info" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Vehicle / Asset Details</TabsTrigger>
               <TabsTrigger value="dates" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Key Dates</TabsTrigger>
+              <TabsTrigger value="distance" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Distance</TabsTrigger>
               {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
                 <TabsTrigger value="tyres" className="bg-card text-sidebar data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground">Tyres</TabsTrigger>
               )}
@@ -630,6 +685,121 @@ export default function CustomerVehicles() {
                 </div>
               </CollapsibleCard>
             </TabsContent>
+
+            <TabsContent value="distance" className="space-y-4">
+              <CollapsibleCard title="Odometer Details">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="odometer_start_distance">Odometer start distance</Label>
+                    <Input
+                      id="odometer_start_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.odometer_start_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, odometer_start_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="last_known_distance">Last known distance</Label>
+                    <div className="grid grid-cols-[1fr_160px] gap-2">
+                      <Input
+                        id="last_known_distance"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.last_known_distance}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, last_known_distance: v }));
+                        }}
+                        className="bg-card"
+                      />
+                      <Select
+                        value={form.last_known_distance_unit || "__none__"}
+                        onValueChange={(v) => setForm((f) => ({ ...f, last_known_distance_unit: v === "__none__" ? "" : v }))}
+                      >
+                        <SelectTrigger className="bg-card"><SelectValue placeholder="Unit" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">—</SelectItem>
+                          <SelectItem value="Miles">Miles</SelectItem>
+                          <SelectItem value="Kms">Kms</SelectItem>
+                          <SelectItem value="Hours">Hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Reading taken: {form.last_known_distance_recorded_at ? format(parseISO(form.last_known_distance_recorded_at), "dd MMM yyyy HH:mm") : "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="distance_source">Source</Label>
+                    <Select
+                      value={form.distance_source || "__none__"}
+                      onValueChange={(v) => setForm((f) => ({ ...f, distance_source: v === "__none__" ? "" : v }))}
+                    >
+                      <SelectTrigger id="distance_source" className="bg-card"><SelectValue placeholder="Select source" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="Manual">Manual</SelectItem>
+                        <SelectItem value="Telematics">Telematics</SelectItem>
+                        <SelectItem value="Driver">Driver</SelectItem>
+                        <SelectItem value="Supplier">Supplier</SelectItem>
+                        <SelectItem value="MOT">MOT</SelectItem>
+                        <SelectItem value="Service">Service</SelectItem>
+                        <SelectItem value="Estimated">Estimated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="average_monthly_distance">Average monthly distance</Label>
+                    <Input
+                      id="average_monthly_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.average_monthly_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, average_monthly_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="life_distance">Life distance</Label>
+                    <Input
+                      id="life_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.life_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, life_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="estimated_distance">Estimated distance</Label>
+                    <Input
+                      id="estimated_distance"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.estimated_distance}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, estimated_distance: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                </div>
+              </CollapsibleCard>
+            </TabsContent>
+
+
 
 
             {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
