@@ -6,6 +6,9 @@ interface WheelPlanDiagramProps {
 function parsePlan(plan: string, assetType?: string) {
   const isTrailer = assetType === "Trailer";
   const isTractor = /Tractor/i.test(plan);
+  // Twin rear wheels: "4x2T" or explicit "Twin Rear"
+  const twinRear =
+    !isTrailer && (/\d+x\d+T\b/i.test(plan) || /Twin Rear/i.test(plan));
 
   let axles = 2;
   let driven = 1;
@@ -29,7 +32,7 @@ function parsePlan(plan: string, assetType?: string) {
     }
   }
 
-  return { axles, driven, isTrailer, isTractor };
+  return { axles, driven, isTrailer, isTractor, twinRear };
 }
 
 export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
