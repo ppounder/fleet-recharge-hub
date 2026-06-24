@@ -22,6 +22,7 @@ import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog"
 
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { WheelPlanDiagram } from "@/components/WheelPlanDiagram";
+import { TyreReadingsHistory } from "@/components/TyreReadingsHistory";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
