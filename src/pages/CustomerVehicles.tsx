@@ -354,29 +354,21 @@ export default function CustomerVehicles() {
               <p className="text-sm text-muted-foreground">No vehicles assigned to your account yet.</p>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {vehicles.map((v) => (
-              <Card
-                key={v.id}
-                className="hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => setSelected(v)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base"><UKNumberPlate registration={v.registration} /></CardTitle>
-                    <StatusBadge status={v.status} />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p className="font-medium">{v.make} {v.model} {v.year && `(${v.year})`}</p>
-                  {v.mileage && <p className="text-muted-foreground">{v.mileage.toLocaleString()} miles</p>}
-                  {v.mot_due && <p className="text-muted-foreground">MOT Due: {formatDate(v.mot_due)}</p>}
-                  {v.next_service && <p className="text-muted-foreground">Next Service: {formatDate(v.next_service)}</p>}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+) : (
+          <VehiclesTable
+            vehicles={vehicles}
+            search={search}
+            setSearch={setSearch}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            setSort={(k) => {
+              if (k === sortKey) setSortDir(sortDir === "asc" ? "desc" : "asc");
+              else { setSortKey(k); setSortDir("asc"); }
+            }}
+            visibleCols={visibleCols}
+            setVisibleCols={setVisibleCols}
+            onRowClick={setSelected}
+          />
         )}
       </div>
     </AppLayout>
