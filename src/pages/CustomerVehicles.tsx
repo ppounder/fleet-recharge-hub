@@ -436,7 +436,7 @@ export default function CustomerVehicles() {
             </TabsContent>
 
             {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
-              <TabsContent value="tyres">
+              <TabsContent value="tyres" className="space-y-6">
                 <CollapsibleCard title="Wheel Plan">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-start">
                     <div className="space-y-1.5">
@@ -457,7 +457,7 @@ export default function CustomerVehicles() {
                 </CollapsibleCard>
 
                 {selected && form.wheel_plan && (
-                  <>
+                  <div className="space-y-6">
                     <CollapsibleCard title="Tyre Details">
                       <TyreReadingsHistory
                         vehicleId={selected.id}
@@ -474,7 +474,7 @@ export default function CustomerVehicles() {
                         section="readings"
                       />
                     </CollapsibleCard>
-                  </>
+                  </div>
                 )}
               </TabsContent>
             )}
