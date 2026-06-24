@@ -450,7 +450,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                           }}
                           aria-invalid={!!errors[key]}
                           aria-describedby={errors[key] ? `${key}-error` : undefined}
-                          className={cn("h-8", errors[key] && "border-destructive focus-visible:ring-destructive")}
+                          className={cn(errors[key] && "border-destructive focus-visible:ring-destructive")}
                         />
                         {errors[key] && (
                           <p id={`${key}-error`} className="text-xs text-destructive mt-1">{errors[key]}</p>
