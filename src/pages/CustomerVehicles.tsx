@@ -19,6 +19,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
+import { CreateVehicleDialog } from "@/components/CreateVehicleDialog";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
@@ -462,11 +463,14 @@ function VehiclesTable({
               className="pl-8 bg-card"
             />
           </div>
-          <ManageColumnsDialog
-            visibleCols={visibleCols}
-            columnOrder={columnOrder}
-            onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
-          />
+          <div className="flex items-center gap-2">
+            <CreateVehicleDialog />
+            <ManageColumnsDialog
+              visibleCols={visibleCols}
+              columnOrder={columnOrder}
+              onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+            />
+          </div>
         </div>
 
         <div className="rounded-md border overflow-hidden">
