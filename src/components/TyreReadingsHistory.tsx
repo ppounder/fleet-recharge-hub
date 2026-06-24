@@ -684,9 +684,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                       <TableCell>{pos}</TableCell>
                       <TableCell>{t?.manufacturer ?? "—"}</TableCell>
                       <TableCell>{t?.tyre_size ?? "—"}</TableCell>
-                      <TableCell className="font-mono text-xs">{t?.serial_number ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{t?.manufacture_date ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{t ? format(parseISO(t.fitted_date), "dd MMM yyyy") : "—"}</TableCell>
+                      <TableCell>{t?.serial_number ?? "—"}</TableCell>
+                      <TableCell>{t?.manufacture_date ?? "—"}</TableCell>
+                      <TableCell>{t ? format(parseISO(t.fitted_date), "dd MMM yyyy") : "—"}</TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-1">
                           {t ? (
