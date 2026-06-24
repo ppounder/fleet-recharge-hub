@@ -69,10 +69,28 @@ function toForm(v: Vehicle): EditableFields {
 }
 
 
+type ColKey = "registration" | "fleet_number" | "asset_type" | "vehicle" | "year" | "mileage" | "mot_due" | "next_service" | "status";
+const ALL_COLUMNS: { key: ColKey; label: string }[] = [
+  { key: "registration", label: "Registration" },
+  { key: "fleet_number", label: "Fleet No." },
+  { key: "asset_type", label: "Asset Type" },
+  { key: "vehicle", label: "Vehicle" },
+  { key: "year", label: "Year" },
+  { key: "mileage", label: "Mileage" },
+  { key: "mot_due", label: "MOT Due" },
+  { key: "next_service", label: "Next Service" },
+  { key: "status", label: "Status" },
+];
+const DEFAULT_VISIBLE: ColKey[] = ["registration", "fleet_number", "asset_type", "vehicle", "mileage", "mot_due", "status"];
+
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const update = useUpdateVehicle();
   const [selected, setSelected] = useState<Vehicle | null>(null);
+  const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<ColKey>("registration");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
   const location = useLocation();
   useEffect(() => {
     setSelected(null);
