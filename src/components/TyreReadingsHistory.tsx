@@ -627,8 +627,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
   };
 
   const availableChangeTargets = useMemo(
-    () => positions.filter((p) => p !== changePosForm.from_position && !activeTyrePositions.has(p)),
-    [positions, activeTyrePositions, changePosForm.from_position],
+    () => positions.filter((p) => p !== changePosForm.from_position),
+    [positions, changePosForm.from_position],
+  );
+  const targetIsOccupied = useMemo(
+    () =>
+      !!changePosForm.to_position &&
+      changePosForm.to_position !== changePosForm.from_position &&
+      activeTyrePositions.has(changePosForm.to_position),
+    [activeTyrePositions, changePosForm.to_position, changePosForm.from_position],
   );
 
   return (
