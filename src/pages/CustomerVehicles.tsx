@@ -83,6 +83,16 @@ function toForm(v: Vehicle): EditableFields {
   };
 }
 
+const BODY_TYPES_BY_ASSET: Record<string, string[]> = {
+  Car: ["Saloon", "Hatchback", "Estate", "SUV", "Coupe", "Convertible", "MPV", "Pickup"],
+  Van: ["Panel Van", "Crew Van", "Luton", "Dropside", "Tipper", "Box Van", "Refrigerated", "Curtainsider"],
+  HGV: ["Rigid", "Tractor Unit", "Box", "Curtainsider", "Tipper", "Tanker", "Skeletal", "Refrigerated", "Flatbed"],
+  Trailer: ["Curtainsider", "Box", "Flatbed", "Skeletal", "Tipper", "Tanker", "Refrigerated", "Low Loader"],
+  Plant: ["Excavator", "Forklift", "Telehandler", "Dumper", "Roller", "Generator", "Compressor"],
+  "Tail Lift": ["Column", "Cantilever", "Tuckaway", "Slider"],
+  _default: ["Other"],
+};
+
 
 type ColKey = "registration" | "fleet_number" | "asset_type" | "vehicle" | "year" | "mileage" | "mot_due" | "next_service" | "status";
 const ALL_COLUMNS: { key: ColKey; label: string }[] = [
@@ -286,6 +296,15 @@ export default function CustomerVehicles() {
                                 <Pencil className="w-4 h-4" />
                               </button>
                             </div>
+                          ) : k === "body_type" ? (
+                            <Select value={form.body_type || ""} onValueChange={(v) => setForm((f) => ({ ...f, body_type: v }))}>
+                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder={form.asset_type ? "Select body type" : "Select asset type first"} /></SelectTrigger>
+                              <SelectContent>
+                                {(BODY_TYPES_BY_ASSET[form.asset_type] || BODY_TYPES_BY_ASSET._default).map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
                           )}
