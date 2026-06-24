@@ -250,7 +250,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     setForm({
       position: r.position,
       tyre_code: r.tyre_code ?? "",
-      tread_depth: Number(r.tread_depth).toFixed(1),
+      tread_outer: r.tread_outer != null ? Number(r.tread_outer).toFixed(1) : "",
+      tread_centre: r.tread_centre != null ? Number(r.tread_centre).toFixed(1) : Number(r.tread_depth).toFixed(1),
+      tread_inner: r.tread_inner != null ? Number(r.tread_inner).toFixed(1) : "",
       pressure: r.pressure != null ? Number(r.pressure).toFixed(1) : "",
       pressure_unit: (r.pressure_unit ?? "psi").toLowerCase(),
       reading_date: r.reading_date,
