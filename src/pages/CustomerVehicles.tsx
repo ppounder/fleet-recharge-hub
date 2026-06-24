@@ -390,25 +390,24 @@ export default function CustomerVehicles() {
             </Button>
           </div>
         </div>
+        <VehicleStatusDialog
+          vehicle={selected ?? ({ id: "", registration: form.registration, status: form.status } as any)}
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
+          draft={creating}
+        />
         {selected && (
-          <>
-            <VehicleStatusDialog
-              vehicle={selected}
-              open={statusDialogOpen}
-              onOpenChange={setStatusDialogOpen}
-              onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
-            />
-            <MaintenanceMessageDialog
-              vehicleId={selected.id}
-              vehicleStatus={selected.status}
-              fleetId={(selected as any).fleet_id ?? null}
-              changedBy={profile?.full_name || ""}
-              open={msgDialogOpen}
-              onOpenChange={setMsgDialogOpen}
-              currentMessage={latestMessage}
-              onCurrentMessageChange={() => {}}
-            />
-          </>
+          <MaintenanceMessageDialog
+            vehicleId={selected.id}
+            vehicleStatus={selected.status}
+            fleetId={(selected as any).fleet_id ?? null}
+            changedBy={profile?.full_name || ""}
+            open={msgDialogOpen}
+            onOpenChange={setMsgDialogOpen}
+            currentMessage={latestMessage}
+            onCurrentMessageChange={() => {}}
+          />
         )}
       </AppLayout>
     );
