@@ -311,7 +311,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     </TableCell>
                     <TableCell>
                       {latest?.pressure != null
-                        ? `${Number(latest.pressure).toFixed(1)} ${latest.pressure_unit ?? ""}`.trim()
+                        ? `${Number(latest.pressure).toFixed(latest.pressure_unit === "bar" ? 1 : 0)} ${latest.pressure_unit ?? ""}`.trim()
                         : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
