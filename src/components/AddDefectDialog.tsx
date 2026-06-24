@@ -150,8 +150,10 @@ function DefectCard({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const MAX_PHOTOS = 5;
   const canAddPhoto = defect.photos.length < MAX_PHOTOS;
+
 
   function handlePhoto(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -241,14 +243,31 @@ function DefectCard({
           ref={cameraInputRef}
           onChange={(e) => { handlePhoto(e.target.files); e.currentTarget.value = ""; }}
         />
+        <CameraCaptureDialog
+          open={cameraOpen}
+          onOpenChange={setCameraOpen}
+          onCapture={(dataUrl) => {
+            if (defect.photos.length >= MAX_PHOTOS) return;
+            onChange({ ...defect, photos: [...defect.photos, dataUrl] });
+          }}
+        />
         <div className="flex gap-2">
-          <Button type="button" variant="outline" className="flex-1 gap-2" disabled={!canAddPhoto} onClick={() => cameraInputRef.current?.click()}>
+          <Button type="button" variant="outline" className="flex-1 gap-2" disabled={!canAddPhoto} onClick={() => {
+            const hasMedia = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+            const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            if (hasMedia && !isMobile) {
+              setCameraOpen(true);
+            } else {
+              cameraInputRef.current?.click();
+            }
+          }}>
             <Camera className="h-4 w-4" /> Take photo
           </Button>
           <Button type="button" variant="outline" className="flex-1 gap-2" disabled={!canAddPhoto} onClick={() => fileInputRef.current?.click()}>
             <Upload className="h-4 w-4" /> Choose file
           </Button>
         </div>
+
         {!canAddPhoto && <p className="text-xs text-muted-foreground">Maximum {MAX_PHOTOS} photos reached.</p>}
         {defect.photos.length > 0 && (
           <div className="flex gap-2 overflow-x-auto p-1.5 -m-1.5">
@@ -350,3 +369,92 @@ function DamageDiagram({
     </div>
   );
 }
+
+function CameraCaptureDialog({
+  open,
+  onOpenChange,
+  onCapture,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCapture: (dataUrl: string) => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [error, setError] = useState<string>("");
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setError("");
+    setReady(false);
+    (async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch(() => {});
+          setReady(true);
+        }
+      } catch (e: any) {
+        setError(e?.message || "Unable to access camera. Please allow camera permissions.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    };
+  }, [open]);
+
+  function capture() {
+    const video = videoRef.current;
+    if (!video) return;
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    if (!w || !h) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    onCapture(dataUrl);
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Take photo</DialogTitle>
+          <DialogDescription>Position the subject and capture an image.</DialogDescription>
+        </DialogHeader>
+        {error ? (
+          <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+        ) : (
+          <div className="overflow-hidden rounded-md bg-black">
+            <video ref={videoRef} playsInline muted className="h-auto w-full" />
+          </div>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" onClick={capture} disabled={!ready || !!error} className="gap-2">
+            <Camera className="h-4 w-4" /> Capture
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
