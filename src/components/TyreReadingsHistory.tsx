@@ -557,7 +557,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
       }),
   });
 
-  const startChangePosition = (t: TyreRecord) => {
+  const startChangePosition = (t: Tyre) => {
     setChangePosForm({
       ...initialChangePosForm,
       tyre_id: t.id,
