@@ -522,7 +522,9 @@ function VehiclesTable({
               <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
               Refresh data
             </Button>
-            <CreateVehicleDialog />
+            <Button size="sm" onClick={onAdd}>
+              <Plus className="w-4 h-4 mr-1" /> Add Asset
+            </Button>
             <ManageColumnsDialog
               visibleCols={visibleCols}
               columnOrder={columnOrder}
