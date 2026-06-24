@@ -90,6 +90,27 @@ function derivePositions(plan: string, assetType?: string): string[] {
   return out;
 }
 
+interface Tyre {
+  id: string;
+  vehicle_id: string;
+  position: string;
+  manufacturer: string;
+  tyre_size: string;
+  serial_number: string;
+  manufacture_date: string | null;
+  fitted_date: string;
+  disposed_at: string | null;
+}
+
+function dotToManufactureDate(serial: string): string | null {
+  const last4 = (serial || "").replace(/\s+/g, "").slice(-4);
+  if (!/^\d{4}$/.test(last4)) return null;
+  const ww = parseInt(last4.slice(0, 2), 10);
+  const yy = parseInt(last4.slice(2, 4), 10);
+  if (ww < 1 || ww > 53) return null;
+  return `Week ${String(ww).padStart(2, "0")} / 20${String(yy).padStart(2, "0")}`;
+}
+
 export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -171,6 +192,123 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     }
     return map;
   }, [readings]);
+
+  // ---------- Tyre details (fitted tyres) ----------
+  const { data: tyres = [], isLoading: tyresLoading } = useQuery({
+    queryKey: ["tyres", vehicleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tyres")
+        .select("*")
+        .eq("vehicle_id", vehicleId)
+        .is("disposed_at", null)
+        .order("position", { ascending: true });
+      if (error) throw error;
+      return (data || []) as Tyre[];
+    },
+    enabled: !!vehicleId,
+  });
+
+  const activeTyrePositions = useMemo(() => new Set(tyres.map((t) => t.position)), [tyres]);
+
+  const initialTyreForm = {
+    position: "",
+    manufacturer: "",
+    tyre_size: "",
+    serial_number: "",
+    fitted_date: new Date().toISOString().slice(0, 10),
+  };
+  const [tyreOpen, setTyreOpen] = useState(false);
+  const [tyreEditingId, setTyreEditingId] = useState<string | null>(null);
+  const [tyreForm, setTyreForm] = useState(initialTyreForm);
+  type TyreErrors = Partial<Record<keyof typeof initialTyreForm, string>>;
+  const [tyreErrors, setTyreErrors] = useState<TyreErrors>({});
+
+  const updateTyreField = <K extends keyof typeof initialTyreForm>(key: K, value: string) => {
+    setTyreForm((prev) => ({ ...prev, [key]: value }));
+    if (tyreErrors[key]) setTyreErrors((p) => ({ ...p, [key]: undefined }));
+  };
+
+  const resetTyreForm = () => {
+    setTyreForm(initialTyreForm);
+    setTyreEditingId(null);
+    setTyreErrors({});
+  };
+
+  const tyreSchema = z.object({
+    position: z.string().trim().min(1, "Position is required"),
+    manufacturer: z.string().trim().min(1, "Manufacturer is required"),
+    tyre_size: z.string().trim().min(1, "Tyre size is required"),
+    serial_number: z.string().trim().min(1, "Serial number is required"),
+    fitted_date: z.string().min(1, "Date is required").refine((v) => !Number.isNaN(Date.parse(v)), "Invalid date"),
+  });
+
+  const saveTyre = useMutation({
+    mutationFn: async (parsed: z.infer<typeof tyreSchema>) => {
+      const payload = {
+        vehicle_id: vehicleId,
+        position: parsed.position,
+        manufacturer: parsed.manufacturer,
+        tyre_size: parsed.tyre_size,
+        serial_number: parsed.serial_number,
+        manufacture_date: dotToManufactureDate(parsed.serial_number),
+        fitted_date: parsed.fitted_date,
+      };
+      if (tyreEditingId) {
+        const { error } = await supabase.from("tyres").update(payload).eq("id", tyreEditingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("tyres").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
+      setTyreOpen(false);
+      resetTyreForm();
+      toast({ title: tyreEditingId ? "Tyre updated" : "Tyre added" });
+    },
+    onError: (e: any) =>
+      toast({
+        title: "Failed to save tyre",
+        description: e.message?.includes("tyres_active_position_unique")
+          ? "This position already has an active tyre."
+          : e.message,
+        variant: "destructive",
+      }),
+  });
+
+  const handleSaveTyre = () => {
+    const result = tyreSchema.safeParse(tyreForm);
+    if (!result.success) {
+      const errs: TyreErrors = {};
+      for (const i of result.error.issues) {
+        const k = i.path[0] as keyof TyreErrors;
+        if (k && !errs[k]) errs[k] = i.message;
+      }
+      setTyreErrors(errs);
+      return;
+    }
+    saveTyre.mutate(result.data);
+  };
+
+  const startEditTyre = (t: Tyre) => {
+    setTyreEditingId(t.id);
+    setTyreForm({
+      position: t.position,
+      manufacturer: t.manufacturer,
+      tyre_size: t.tyre_size,
+      serial_number: t.serial_number,
+      fitted_date: t.fitted_date,
+    });
+    setTyreErrors({});
+    setTyreOpen(true);
+  };
+
+  const availableTyrePositions = useMemo(
+    () => positions.filter((p) => !activeTyrePositions.has(p) || p === tyreForm.position),
+    [positions, activeTyrePositions, tyreForm.position],
+  );
 
   const create = useMutation({
     mutationFn: async (parsed: z.infer<typeof readingSchema>) => {
@@ -292,9 +430,18 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     mutationFn: async (payload: { vehicle_id: string; position: string; disposed_at: string }) => {
       const { error } = await supabase.from("tyre_disposals").insert(payload);
       if (error) throw error;
+      // Mark the active tyre at that position as disposed so it's removed from the active view.
+      const { error: updErr } = await supabase
+        .from("tyres")
+        .update({ disposed_at: payload.disposed_at })
+        .eq("vehicle_id", payload.vehicle_id)
+        .eq("position", payload.position)
+        .is("disposed_at", null);
+      if (updErr) throw updErr;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyre_disposals", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
       setDisposeOpen(false);
       setDisposeForm(initialDisposeForm);
       setDisposeErrors({});
@@ -302,6 +449,12 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     },
     onError: (e: any) => toast({ title: "Failed to dispose tyre", description: e.message, variant: "destructive" }),
   });
+
+  const startDispose = (position?: string) => {
+    setDisposeForm({ ...initialDisposeForm, position: position ?? "" });
+    setDisposeErrors({});
+    setDisposeOpen(true);
+  };
 
   const handleDispose = () => {
     const errs: DisposeErrors = {};
@@ -319,27 +472,88 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Latest tread depth (mm) for each wheel position.
-        </p>
-        <div className="flex items-center gap-2">
+    <div className="space-y-8">
+      {/* ============ Tyre details section ============ */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold">Tyre details</h3>
+            <p className="text-sm text-muted-foreground">Fitted tyres per wheel position.</p>
+          </div>
           <Button
             size="sm"
-            variant="outline"
-            onClick={() => { setDisposeForm(initialDisposeForm); setDisposeErrors({}); setDisposeOpen(true); }}
-            disabled={!positions.length}
+            onClick={() => { resetTyreForm(); setTyreOpen(true); }}
+            disabled={!positions.length || availableTyrePositions.length === 0}
           >
-            <Wrench className="w-4 h-4 mr-1.5" />
-            Dispose tyre
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add tyre
           </Button>
+        </div>
+        <div className="rounded-md border bg-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Position</TableHead>
+                <TableHead>Manufacturer</TableHead>
+                <TableHead>Tyre size</TableHead>
+                <TableHead>Serial number</TableHead>
+                <TableHead>Manufacture date</TableHead>
+                <TableHead>Date fitted</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tyresLoading ? (
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">Loading…</TableCell></TableRow>
+              ) : tyres.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No tyres added yet.</TableCell></TableRow>
+              ) : (
+                tyres.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell>{t.position}</TableCell>
+                    <TableCell>{t.manufacturer}</TableCell>
+                    <TableCell>{t.tyre_size}</TableCell>
+                    <TableCell className="font-mono text-xs">{t.serial_number}</TableCell>
+                    <TableCell className="text-muted-foreground">{t.manufacture_date ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{format(parseISO(t.fitted_date), "dd MMM yyyy")}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => startDispose(t.position)}
+                          className="text-destructive hover:bg-destructive hover:text-white"
+                          aria-label="Dispose tyre"
+                        >
+                          <Wrench className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </section>
+
+      {/* ============ Tyre readings section ============ */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-base font-semibold">Tyre readings</h3>
+          <p className="text-sm text-muted-foreground">Latest tread depth (mm) for each wheel position.</p>
+        </div>
+        <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
             <Plus className="w-4 h-4 mr-1.5" />
             Add reading
           </Button>
         </div>
       </div>
+
 
       <div className="rounded-md border bg-card overflow-hidden">
         <Table>
@@ -635,7 +849,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                   <SelectValue placeholder="Select position" />
                 </SelectTrigger>
                 <SelectContent>
-                  {positions.map((p) => (
+                  {Array.from(activeTyrePositions).map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>
@@ -707,6 +921,133 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             <Button variant="outline" onClick={() => setDisposeOpen(false)}>Cancel</Button>
             <Button onClick={handleDispose} disabled={dispose.isPending}>
               {dispose.isPending ? "Saving…" : "Dispose"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============ Add / Edit Tyre dialog ============ */}
+      <Dialog
+        open={tyreOpen}
+        onOpenChange={(next) => {
+          setTyreOpen(next);
+          if (!next) resetTyreForm();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tyreEditingId ? "Edit tyre" : "Add tyre"}</DialogTitle>
+            <DialogDescription>Record the fitted tyre details for a wheel position.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="tyre_position">Position</Label>
+              <Select
+                value={tyreForm.position}
+                onValueChange={(v) => updateTyreField("position", v)}
+              >
+                <SelectTrigger
+                  id="tyre_position"
+                  aria-invalid={!!tyreErrors.position}
+                  className={cn(tyreErrors.position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTyrePositions.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {tyreErrors.position && <p className="text-xs text-destructive">{tyreErrors.position}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
+                <Input
+                  id="tyre_manufacturer"
+                  value={tyreForm.manufacturer}
+                  onChange={(e) => updateTyreField("manufacturer", e.target.value)}
+                  aria-invalid={!!tyreErrors.manufacturer}
+                  className={cn(tyreErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                />
+                {tyreErrors.manufacturer && <p className="text-xs text-destructive">{tyreErrors.manufacturer}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_size">Tyre size</Label>
+                <Input
+                  id="tyre_size"
+                  value={tyreForm.tyre_size}
+                  onChange={(e) => updateTyreField("tyre_size", e.target.value)}
+                  placeholder="e.g. 315/80R22.5"
+                  aria-invalid={!!tyreErrors.tyre_size}
+                  className={cn(tyreErrors.tyre_size && "border-destructive focus-visible:ring-destructive")}
+                />
+                {tyreErrors.tyre_size && <p className="text-xs text-destructive">{tyreErrors.tyre_size}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="tyre_serial">Serial number</Label>
+              <Input
+                id="tyre_serial"
+                value={tyreForm.serial_number}
+                onChange={(e) => updateTyreField("serial_number", e.target.value)}
+                placeholder="DOT code, e.g. XXXX XXXX 1223"
+                aria-invalid={!!tyreErrors.serial_number}
+                className={cn("font-mono", tyreErrors.serial_number && "border-destructive focus-visible:ring-destructive")}
+              />
+              {tyreErrors.serial_number && <p className="text-xs text-destructive">{tyreErrors.serial_number}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Manufacture date (tyre age)</Label>
+                <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
+                  {dotToManufactureDate(tyreForm.serial_number) ?? "—"}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_fitted_date">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="tyre_fitted_date"
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !tyreForm.fitted_date && "text-muted-foreground",
+                        tyreErrors.fitted_date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    >
+                      <span>
+                        {tyreForm.fitted_date
+                          ? format(parseISO(tyreForm.fitted_date), "dd MMM yyyy")
+                          : "Pick a date"}
+                      </span>
+                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={tyreForm.fitted_date ? parseISO(tyreForm.fitted_date) : undefined}
+                      onSelect={(d) => updateTyreField("fitted_date", d ? format(d, "yyyy-MM-dd") : "")}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {tyreErrors.fitted_date && <p className="text-xs text-destructive">{tyreErrors.fitted_date}</p>}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTyreOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveTyre} disabled={saveTyre.isPending}>
+              {saveTyre.isPending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
