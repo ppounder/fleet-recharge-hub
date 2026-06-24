@@ -276,7 +276,7 @@ export default function CustomerVehicles() {
                             </Select>
                           ) : k === "status" ? (
                             <div className="relative">
-                              <Input id={k} value={form[k] === "off-road" ? "Off Road" : form[k] === "on-road" ? "On Road" : ""} readOnly className="bg-card pr-9" placeholder="Set status" />
+                              <Input id={k} value={form[k] === "off-road" ? "Off Road" : form[k] === "on-road" ? "On Road" : ""} readOnly onClick={() => setStatusDialogOpen(true)} className="bg-card pr-9 cursor-pointer" placeholder="Set status" />
                               <button
                                 type="button"
                                 onClick={() => setStatusDialogOpen(true)}
