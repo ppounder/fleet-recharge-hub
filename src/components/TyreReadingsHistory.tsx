@@ -860,7 +860,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="dispose_position">Position</Label>
+              <Label htmlFor="dispose_position">Tyre position</Label>
               <Select
                 value={disposeForm.position}
                 onValueChange={(v) => {
@@ -888,7 +888,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="dispose_date">Date</Label>
+                <Label htmlFor="dispose_date">Disposal date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
