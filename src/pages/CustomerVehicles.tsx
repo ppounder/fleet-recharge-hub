@@ -293,9 +293,9 @@ export default function CustomerVehicles() {
 
               {selected && <CompanyDetails vehicle={selected} />}
 
-              {selected && (
-                <CollapsibleCard title="Notes">
-                  <div className="space-y-1.5">
+              <CollapsibleCard title="Notes">
+                <div className="space-y-1.5">
+                  {selected ? (
                     <div className="relative rounded-md border bg-card">
                       <button
                         type="button"
@@ -328,42 +328,50 @@ export default function CustomerVehicles() {
                         </ul>
                       )}
                     </div>
-                  </div>
-                </CollapsibleCard>
-              )}
+                  ) : (
+                    <div className="rounded-md border bg-card px-3 py-6 text-sm text-muted-foreground">
+                      Notes can be added once the asset is created.
+                    </div>
+                  )}
+                </div>
+              </CollapsibleCard>
 
             </TabsContent>
 
-            {selected && (
-              <TabsContent value="dates">
-                <CollapsibleCard title="Key Dates">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="year">Year</Label>
-                      <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="mot_due">MOT due</Label>
-                      <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="next_service">Next service</Label>
-                      <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="mileage">Mileage</Label>
-                      <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly className="bg-card" />
-                    </div>
+            <TabsContent value="dates">
+              <CollapsibleCard title="Key Dates">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="year">Year</Label>
+                    <Input id="year" inputMode="numeric" value={form.year} onChange={set("year")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_due">MOT due</Label>
+                    <Input id="mot_due" type="date" value={form.mot_due} onChange={set("mot_due")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_service">Next service</Label>
+                    <Input id="next_service" type="date" value={form.next_service} onChange={set("next_service")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mileage">Mileage</Label>
+                    <Input id="mileage" inputMode="numeric" value={form.mileage} onChange={set("mileage")} className="bg-card" />
+                  </div>
+                </div>
+              </CollapsibleCard>
+            </TabsContent>
+
+            <TabsContent value="defects">
+              {selected ? (
+                <DefectHistory vehicleId={selected.id} />
+              ) : (
+                <CollapsibleCard title="Defect History">
+                  <div className="rounded-md border bg-card px-3 py-6 text-sm text-muted-foreground">
+                    Defects can be recorded once the asset is created.
                   </div>
                 </CollapsibleCard>
-              </TabsContent>
-            )}
-
-            {selected && (
-              <TabsContent value="defects">
-                <DefectHistory vehicleId={selected.id} />
-              </TabsContent>
-            )}
+              )}
+            </TabsContent>
           </Tabs>
 
 
