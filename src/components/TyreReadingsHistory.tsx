@@ -840,6 +840,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                               disabled={remove.isPending}
                               className={cn("text-destructive hover:bg-destructive hover:text-white")}
                               aria-label="Delete latest reading"
+                              title="Delete"
+
                             >
                               {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
