@@ -91,7 +91,10 @@ const LOCKED_COLS: ColKey[] = ["registration"];
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const update = useUpdateVehicle();
+  const createVehicle = useCreateVehicle();
+  const { user } = useAuth();
   const [selected, setSelected] = useState<Vehicle | null>(null);
+  const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<ColKey>("registration");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -100,6 +103,7 @@ export default function CustomerVehicles() {
   const location = useLocation();
   useEffect(() => {
     setSelected(null);
+    setCreating(false);
   }, [location.key]);
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
