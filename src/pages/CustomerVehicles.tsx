@@ -1254,6 +1254,18 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
   return (
     <CollapsibleCard title="Defect History">
       <div className="space-y-6">
+        <div className="flex justify-end">
+          <Button onClick={() => setAddOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" /> Add defect
+          </Button>
+        </div>
+        <AddDefectDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          vehicleId={vehicleId}
+          vehicleLabel={vehicleLabel}
+        />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
           <div className="space-y-1.5">
             <Label htmlFor="defect-status">Status</Label>
