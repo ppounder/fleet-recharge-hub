@@ -142,27 +142,46 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   }, [readings]);
 
   const create = useMutation({
-    mutationFn: async () => {
-      const depth = parseFloat(form.tread_depth);
-      if (!form.position) throw new Error("Position is required");
-      if (Number.isNaN(depth)) throw new Error("Tread depth must be a number");
+    mutationFn: async (parsed: z.infer<typeof readingSchema>) => {
       const { error } = await supabase.from("tyre_readings").insert({
         vehicle_id: vehicleId,
-        position: form.position,
-        tyre_code: form.tyre_code || null,
-        tread_depth: depth,
-        reading_date: form.reading_date,
+        position: parsed.position,
+        tyre_code: form.tyre_code.trim() || null,
+        tread_depth: parseFloat(parsed.tread_depth),
+        reading_date: parsed.reading_date,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyre_readings", vehicleId] });
       setOpen(false);
-      setForm({ position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) });
+      setForm(initialForm);
+      setErrors({});
       toast({ title: "Tyre reading added" });
     },
     onError: (e: any) => toast({ title: "Failed to add reading", description: e.message, variant: "destructive" }),
   });
+
+  const handleSave = () => {
+    const result = readingSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: FormErrors = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as keyof FormErrors;
+        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+      }
+      setErrors(fieldErrors);
+      toast({
+        title: "Please fix the errors below",
+        description: "Some fields are invalid.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setErrors({});
+    create.mutate(result.data);
+  };
+
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
