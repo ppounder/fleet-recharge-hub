@@ -109,6 +109,14 @@ const blank: EditableFields = {
   rfl_renewal_method: "",
   rfl_renewal_term_months: "",
   rfl_supplier: "",
+  odometer_start_distance: "",
+  last_known_distance: "",
+  last_known_distance_unit: "",
+  last_known_distance_recorded_at: "",
+  distance_source: "",
+  average_monthly_distance: "",
+  life_distance: "",
+  estimated_distance: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
