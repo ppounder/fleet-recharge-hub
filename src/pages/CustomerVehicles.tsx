@@ -1034,7 +1034,7 @@ function VehiclesTable({
       case "asset_type": return <TableCell key={k}>{(v as any).asset_type || "—"}</TableCell>;
       case "vehicle": return <TableCell key={k} className="font-medium">{v.make} {v.model}</TableCell>;
       case "year": return <TableCell key={k}>{v.year ?? "—"}</TableCell>;
-      case "mileage": return <TableCell key={k} className="text-right tabular-nums">{v.mileage ? v.mileage.toLocaleString() : "—"}</TableCell>;
+      case "mileage": return <TableCell key={k} className="text-right tabular-nums">{v.mileage ? `${v.mileage.toLocaleString()} ${(v as any).last_known_distance_unit || "miles"}` : "—"}</TableCell>;
       case "mot_due": return <TableCell key={k}>{v.mot_due ? formatDate(v.mot_due) : "—"}</TableCell>;
       case "next_service": return <TableCell key={k}>{v.next_service ? formatDate(v.next_service) : "—"}</TableCell>;
       case "status": return <TableCell key={k}><StatusBadge status={v.status} /></TableCell>;
