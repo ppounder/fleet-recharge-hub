@@ -1490,12 +1490,30 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
                       <TableRow className="bg-muted/30 hover:bg-muted/30">
                         <TableCell />
                         <TableCell colSpan={visibleCols.length} className="py-3">
-                          <div className="space-y-1">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectification details</div>
-                            {hasDetails ? (
-                              <div className="text-sm whitespace-pre-wrap">{d.rectified_details}</div>
-                            ) : (
-                              <div className="text-sm text-muted-foreground italic">No rectification details recorded.</div>
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectification details</div>
+                              {hasDetails ? (
+                                <div className="text-sm whitespace-pre-wrap">{d.rectified_details}</div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground italic">No rectification details recorded.</div>
+                              )}
+                            </div>
+                            {(d.rectified_by || d.rectified_at) && (
+                              <div className="grid grid-cols-2 gap-4">
+                                {d.rectified_by && (
+                                  <div className="space-y-1">
+                                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectified by</div>
+                                    <div className="text-sm">{d.rectified_by}</div>
+                                  </div>
+                                )}
+                                {d.rectified_at && (
+                                  <div className="space-y-1">
+                                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectified date</div>
+                                    <div className="text-sm">{new Date(d.rectified_at).toLocaleDateString()}</div>
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         </TableCell>
