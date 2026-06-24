@@ -114,19 +114,20 @@ function TimeField({ id, value, onChange, disabled }: { id: string; value: strin
 }
 
 interface Props {
-  vehicle: Vehicle;
+  vehicle: Vehicle | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onStatusChanged?: (status: string) => void;
+  draft?: boolean;
 }
 
 const statusLabel = (s?: string | null) =>
   s === "off-road" ? "Current - Off Road" : "Current - On Road";
 
-export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChanged }: Props) {
+export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChanged, draft }: Props) {
   const { profile } = useAuth();
   const qc = useQueryClient();
-  const [offRoad, setOffRoad] = useState(vehicle.status === "off-road");
+  const [offRoad, setOffRoad] = useState(vehicle?.status === "off-road");
   const [reason, setReason] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -141,29 +142,35 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
   useEffect(() => {
     if (open) {
-      setOffRoad(vehicle.status === "off-road");
+      setOffRoad(vehicle?.status === "off-road");
       setChangedBy(profile?.full_name || "");
     }
-  }, [open, vehicle.status, profile?.full_name]);
+  }, [open, vehicle?.status, profile?.full_name]);
 
   const { data: history = [] } = useQuery({
-    queryKey: ["vehicle-status-history", vehicle.id],
+    queryKey: ["vehicle-status-history", vehicle?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicle_status_history")
         .select("*")
-        .eq("vehicle_id", vehicle.id)
+        .eq("vehicle_id", vehicle!.id)
         .order("changed_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: open,
+    enabled: open && !!vehicle?.id && !draft,
   });
 
+
   const handleSave = async () => {
+    const newStatus = offRoad ? "off-road" : "on-road";
+    if (draft || !vehicle?.id) {
+      onStatusChanged?.(newStatus);
+      onOpenChange(false);
+      return;
+    }
     setSaving(true);
     try {
-      const newStatus = offRoad ? "off-road" : "on-road";
       const changedAt = new Date(`${date}T${time || "00:00"}:00`).toISOString();
 
       const { error: histErr } = await supabase.from("vehicle_status_history").insert({
@@ -200,6 +207,7 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
     }
   };
 
+
   const lockedClass = "bg-muted";
 
   return (
@@ -212,10 +220,12 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-3">
-          <UKNumberPlate registration={vehicle.registration} />
-          <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
-        </div>
+        {vehicle && (
+          <div className="flex items-center gap-3">
+            {vehicle.registration && <UKNumberPlate registration={vehicle.registration} />}
+            <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 flex-1 min-h-0">
           {/* Left column */}
@@ -357,16 +367,18 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           </Button>
         </DialogFooter>
       </DialogContent>
-      <MaintenanceMessageDialog
-        vehicleId={vehicle.id}
-        vehicleStatus={vehicle.status}
-        fleetId={(vehicle as any).fleet_id ?? null}
-        changedBy={changedBy}
-        open={msgDialogOpen}
-        onOpenChange={setMsgDialogOpen}
-        currentMessage={message}
-        onCurrentMessageChange={setMessage}
-      />
+      {vehicle?.id && (
+        <MaintenanceMessageDialog
+          vehicleId={vehicle.id}
+          vehicleStatus={vehicle.status}
+          fleetId={(vehicle as any).fleet_id ?? null}
+          changedBy={changedBy}
+          open={msgDialogOpen}
+          onOpenChange={setMsgDialogOpen}
+          currentMessage={message}
+          onCurrentMessageChange={setMessage}
+        />
+      )}
     </Dialog>
   );
 }
