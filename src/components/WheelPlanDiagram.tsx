@@ -8,7 +8,7 @@ function parsePlan(plan: string, assetType?: string) {
   const isTractor = /Tractor/i.test(plan);
 
   let axles = 2;
-  let driven = 1; // number of driven axles from the rear
+  let driven = 1;
 
   if (isTrailer) {
     if (/Quad/i.test(plan)) axles = 4;
@@ -36,136 +36,111 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
   if (!plan) return null;
   const { axles, driven, isTrailer, isTractor } = parsePlan(plan, assetType);
 
-  // Layout
-  const wheelR = 14;
-  const axleSpacing = 56;
-  const margin = 28;
-  const chassisHeight = 36;
-  const width = margin * 2 + Math.max(1, axles) * axleSpacing + (isTractor ? 30 : 0);
-  const height = 120;
-  const chassisY = (height - chassisHeight) / 2;
+  // Top-down flattened view
+  const chassisWidth = 44;
+  const axleSpacing = 44;
+  const marginY = 24;
+  const wheelW = 10;
+  const wheelH = 20;
+  const axleBarThickness = 3;
+  const axleHalfLen = chassisWidth / 2 + 14; // from centerline to wheel inner edge
 
-  // Axle x positions: front axle near left, then evenly spaced
-  const axleXs: number[] = [];
-  const startX = margin + axleSpacing / 2;
-  for (let i = 0; i < axles; i++) {
-    axleXs.push(startX + i * axleSpacing);
-  }
+  const height = marginY * 2 + Math.max(1, axles) * axleSpacing;
+  const width = (axleHalfLen + wheelW + 8) * 2;
+  const cx = width / 2;
 
-  // For HGV/Van/Car: cab on left over front axle, body extends back
-  // For trailer: no cab, kingpin on left
-  // For tractor: short chassis, fifth wheel circle at rear
+  const axleYs: number[] = [];
+  const startY = marginY + axleSpacing / 2;
+  for (let i = 0; i < axles; i++) axleYs.push(startY + i * axleSpacing);
 
   const drivenSet = new Set<number>();
   if (!isTrailer) {
-    // mark last `driven` axles (rear) as driven
     for (let i = axles - driven; i < axles; i++) drivenSet.add(i);
   }
 
-  return (
-    <div className="rounded-md border bg-muted/30 p-4 flex flex-col items-center gap-2">
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="text-foreground">
-        {/* Ground */}
-        <line x1={0} y1={height - 8} x2={width} y2={height - 8} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="4 4" />
+  // Chassis extents
+  const chassisTop = isTrailer ? marginY - 8 : marginY - 4;
+  const chassisBottom = height - marginY + 4;
 
-        {/* Chassis */}
-        {isTrailer ? (
-          <>
-            {/* Kingpin tongue */}
-            <polygon
-              points={`${margin - 16},${chassisY + chassisHeight / 2} ${margin + 6},${chassisY + 4} ${margin + 6},${chassisY + chassisHeight - 4}`}
-              fill="hsl(var(--primary) / 0.15)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-            <rect
-              x={margin + 4}
-              y={chassisY}
-              width={width - margin - 4 - 8}
-              height={chassisHeight}
-              rx={4}
-              fill="hsl(var(--primary) / 0.15)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-          </>
-        ) : isTractor ? (
-          <>
-            {/* Cab */}
-            <rect
-              x={margin}
-              y={chassisY - 14}
-              width={axleSpacing + 10}
-              height={chassisHeight + 14}
-              rx={5}
-              fill="hsl(var(--primary) / 0.2)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-            {/* Chassis behind cab */}
-            <rect
-              x={margin + axleSpacing + 10}
-              y={chassisY + 6}
-              width={width - margin - axleSpacing - 10 - 8}
-              height={chassisHeight - 12}
-              fill="hsl(var(--primary) / 0.15)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-            {/* Fifth wheel */}
-            <circle
-              cx={axleXs[axleXs.length - 1] + 8}
-              cy={chassisY + chassisHeight / 2}
-              r={6}
-              fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-          </>
-        ) : (
-          <>
-            {/* Cab + body */}
-            <rect
-              x={margin}
-              y={chassisY - 14}
-              width={axleSpacing + 6}
-              height={chassisHeight + 14}
-              rx={5}
-              fill="hsl(var(--primary) / 0.2)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-            <rect
-              x={margin + axleSpacing + 6}
-              y={chassisY - 8}
-              width={width - margin - axleSpacing - 6 - 8}
-              height={chassisHeight + 8}
-              rx={4}
-              fill="hsl(var(--primary) / 0.15)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.5}
-            />
-          </>
+  return (
+    <div className="rounded-md border bg-muted/30 p-4 flex flex-col items-center gap-3">
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        className="text-foreground"
+      >
+        {/* Chassis (vertical bar, top-down) */}
+        <rect
+          x={cx - chassisWidth / 2}
+          y={chassisTop}
+          width={chassisWidth}
+          height={chassisBottom - chassisTop}
+          rx={3}
+          fill="hsl(var(--muted-foreground) / 0.7)"
+          stroke="hsl(var(--foreground))"
+          strokeWidth={1}
+        />
+
+        {/* Kingpin marker for trailer at top */}
+        {isTrailer && (
+          <circle
+            cx={cx}
+            cy={chassisTop + 6}
+            r={3}
+            fill="hsl(var(--background))"
+            stroke="hsl(var(--foreground))"
+            strokeWidth={1}
+          />
         )}
 
-        {/* Wheels */}
-        {axleXs.map((x, i) => {
+        {/* Cab indicator for tractor / vehicle at top */}
+        {!isTrailer && (
+          <rect
+            x={cx - chassisWidth / 2 + 4}
+            y={chassisTop + 4}
+            width={chassisWidth - 8}
+            height={6}
+            rx={1}
+            fill="hsl(var(--foreground) / 0.35)"
+          />
+        )}
+
+        {/* Axles + wheels */}
+        {axleYs.map((y, i) => {
           const isDriven = drivenSet.has(i);
+          const wheelFill = isDriven
+            ? "hsl(var(--primary))"
+            : "hsl(var(--muted-foreground) / 0.85)";
           return (
             <g key={i}>
-              <circle
-                cx={x}
-                cy={height - 8 - wheelR}
-                r={wheelR}
-                fill={isDriven ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.25)"}
-                stroke="hsl(var(--foreground))"
-                strokeWidth={1.5}
+              {/* Axle bar */}
+              <rect
+                x={cx - axleHalfLen}
+                y={y - axleBarThickness / 2}
+                width={axleHalfLen * 2}
+                height={axleBarThickness}
+                fill="hsl(var(--foreground) / 0.6)"
               />
-              <circle
-                cx={x}
-                cy={height - 8 - wheelR}
-                r={wheelR / 2.5}
-                fill="hsl(var(--background))"
+              {/* Left wheel */}
+              <rect
+                x={cx - axleHalfLen - wheelW}
+                y={y - wheelH / 2}
+                width={wheelW}
+                height={wheelH}
+                rx={2}
+                fill={wheelFill}
+                stroke="hsl(var(--foreground))"
+                strokeWidth={1}
+              />
+              {/* Right wheel */}
+              <rect
+                x={cx + axleHalfLen}
+                y={y - wheelH / 2}
+                width={wheelW}
+                height={wheelH}
+                rx={2}
+                fill={wheelFill}
                 stroke="hsl(var(--foreground))"
                 strokeWidth={1}
               />
@@ -175,9 +150,10 @@ export function WheelPlanDiagram({ plan, assetType }: WheelPlanDiagramProps) {
       </svg>
       <div className="text-xs text-muted-foreground flex items-center gap-4">
         <span>{plan}</span>
-        {!isTrailer && (
+        {!isTrailer && driven > 0 && (
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" /> Driven axle
+            <span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" />
+            Driven axle
           </span>
         )}
       </div>
