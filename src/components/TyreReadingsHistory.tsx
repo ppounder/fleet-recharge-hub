@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench } from "lucide-react";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -277,16 +277,68 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     ? positions
     : Array.from(new Set(readings.map((r) => r.position)));
 
+  // ----- Dispose tyre dialog state -----
+  const initialDisposeForm = {
+    position: "",
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+  };
+  const [disposeOpen, setDisposeOpen] = useState(false);
+  const [disposeForm, setDisposeForm] = useState(initialDisposeForm);
+  type DisposeErrors = Partial<Record<"position" | "date" | "time", string>>;
+  const [disposeErrors, setDisposeErrors] = useState<DisposeErrors>({});
+
+  const dispose = useMutation({
+    mutationFn: async (payload: { vehicle_id: string; position: string; disposed_at: string }) => {
+      const { error } = await supabase.from("tyre_disposals").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyre_disposals", vehicleId] });
+      setDisposeOpen(false);
+      setDisposeForm(initialDisposeForm);
+      setDisposeErrors({});
+      toast({ title: "Tyre disposed" });
+    },
+    onError: (e: any) => toast({ title: "Failed to dispose tyre", description: e.message, variant: "destructive" }),
+  });
+
+  const handleDispose = () => {
+    const errs: DisposeErrors = {};
+    if (!disposeForm.position) errs.position = "Position is required";
+    if (!disposeForm.date) errs.date = "Date is required";
+    if (!disposeForm.time) errs.time = "Time is required";
+    if (Object.keys(errs).length) {
+      setDisposeErrors(errs);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
+      return;
+    }
+    setDisposeErrors({});
+    const iso = new Date(`${disposeForm.date}T${disposeForm.time}`).toISOString();
+    dispose.mutate({ vehicle_id: vehicleId, position: disposeForm.position, disposed_at: iso });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Latest tread depth (mm) for each wheel position.
         </p>
-        <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Add reading
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { setDisposeForm(initialDisposeForm); setDisposeErrors({}); setDisposeOpen(true); }}
+            disabled={!positions.length}
+          >
+            <Wrench className="w-4 h-4 mr-1.5" />
+            Dispose tyre
+          </Button>
+          <Button size="sm" onClick={() => { setEditingId(null); setForm(initialForm); setErrors({}); setOpen(true); }} disabled={!positions.length}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add reading
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border bg-card overflow-hidden">
@@ -545,6 +597,116 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={create.isPending || update.isPending}>
               {(create.isPending || update.isPending) ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={disposeOpen}
+        onOpenChange={(next) => {
+          setDisposeOpen(next);
+          if (!next) {
+            setDisposeForm(initialDisposeForm);
+            setDisposeErrors({});
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Dispose tyre</DialogTitle>
+            <DialogDescription>Record that a tyre has been removed from a wheel position.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="dispose_position">Position</Label>
+              <Select
+                value={disposeForm.position}
+                onValueChange={(v) => {
+                  setDisposeForm((f) => ({ ...f, position: v }));
+                  if (disposeErrors.position) setDisposeErrors((e) => ({ ...e, position: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  id="dispose_position"
+                  aria-invalid={!!disposeErrors.position}
+                  className={cn(disposeErrors.position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {positions.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {disposeErrors.position && (
+                <p className="text-xs text-destructive">{disposeErrors.position}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="dispose_date">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="dispose_date"
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !disposeForm.date && "text-muted-foreground",
+                        disposeErrors.date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    >
+                      <span>
+                        {disposeForm.date
+                          ? format(parseISO(disposeForm.date), "dd MMM yyyy")
+                          : "Pick a date"}
+                      </span>
+                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={disposeForm.date ? parseISO(disposeForm.date) : undefined}
+                      onSelect={(d) =>
+                        setDisposeForm((f) => ({ ...f, date: d ? format(d, "yyyy-MM-dd") : "" }))
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {disposeErrors.date && (
+                  <p className="text-xs text-destructive">{disposeErrors.date}</p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="dispose_time">Time</Label>
+                <Input
+                  id="dispose_time"
+                  type="time"
+                  value={disposeForm.time}
+                  onChange={(e) => {
+                    setDisposeForm((f) => ({ ...f, time: e.target.value }));
+                    if (disposeErrors.time) setDisposeErrors((er) => ({ ...er, time: undefined }));
+                  }}
+                  aria-invalid={!!disposeErrors.time}
+                  className={cn(disposeErrors.time && "border-destructive focus-visible:ring-destructive")}
+                />
+                {disposeErrors.time && (
+                  <p className="text-xs text-destructive">{disposeErrors.time}</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisposeOpen(false)}>Cancel</Button>
+            <Button onClick={handleDispose} disabled={dispose.isPending}>
+              {dispose.isPending ? "Saving…" : "Dispose"}
             </Button>
           </DialogFooter>
         </DialogContent>
