@@ -19,6 +19,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
+import { CreateVehicleDialog } from "@/components/CreateVehicleDialog";
 import { UKNumberPlate } from "@/components/UKNumberPlate";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
