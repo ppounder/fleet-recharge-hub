@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -196,11 +197,7 @@ export default function CommercialTerms() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Start Date *</Label>
-                <Input
-                  type="date"
-                  value={newStartDate}
-                  onChange={(e) => setNewStartDate(e.target.value)}
-                />
+                <DatePicker value={newStartDate} onChange={setNewStartDate} />
               </div>
               <Button onClick={handleAdd} disabled={createTerm.isPending} className="h-10">
                 <Plus className="w-4 h-4 mr-1" /> Create

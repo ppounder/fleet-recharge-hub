@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
@@ -121,11 +122,11 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>MOT Due</Label>
-              <Input value={motDue} onChange={(e) => setMotDue(e.target.value)} type="date" />
+              <DatePicker value={motDue} onChange={setMotDue} />
             </div>
             <div className="space-y-2">
               <Label>Next Service</Label>
-              <Input value={nextService} onChange={(e) => setNextService(e.target.value)} type="date" />
+              <DatePicker value={nextService} onChange={setNextService} />
             </div>
           </div>
           <div className="space-y-2">
