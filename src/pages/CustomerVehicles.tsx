@@ -229,6 +229,7 @@ export default function CustomerVehicles() {
         asset_number: form.asset_number || null,
         asset_type: form.asset_type || null,
         body_type: form.body_type || null,
+        wheel_plan: form.wheel_plan || null,
         make: form.make,
         model: form.model,
         derivative: form.derivative || null,
