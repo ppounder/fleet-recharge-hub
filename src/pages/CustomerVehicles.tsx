@@ -258,7 +258,7 @@ export default function CustomerVehicles() {
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
-              <CollapsibleCard title="Vehicle Information">
+              <CollapsibleCard title="Vehicle / Asset Details">
                 <div className="space-y-5">
                   {rows.map((row, i) => (
                     <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
