@@ -179,7 +179,7 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
               onDelete={() => setDefects(defects.filter((x) => x.id !== d.id))}
             />
           ))}
-          <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank()])}>
+          <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank(defaultReporter)])}>
             <Plus className="h-4 w-4" /> Add another defect
           </Button>
           {warn && <Alert variant="destructive"><AlertDescription>{warn}</AlertDescription></Alert>}
