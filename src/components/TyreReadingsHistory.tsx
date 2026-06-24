@@ -423,23 +423,36 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="tread_depth">Tread depth (mm)</Label>
-                <Input
-                  id="tread_depth"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.tread_depth}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("tread_depth", v);
-                  }}
-                  aria-invalid={!!errors.tread_depth}
-                  aria-describedby={errors.tread_depth ? "tread_depth-error" : undefined}
-                  className={cn(errors.tread_depth && "border-destructive focus-visible:ring-destructive")}
-                />
-                {errors.tread_depth && (
-                  <p id="tread_depth-error" className="text-xs text-destructive">{errors.tread_depth}</p>
-                )}
+                <Label>Tread depth (mm)</Label>
+                <div className="space-y-2">
+                  {([
+                    { key: "tread_outer", label: "Outer" },
+                    { key: "tread_centre", label: "Centre" },
+                    { key: "tread_inner", label: "Inner" },
+                  ] as const).map(({ key, label }) => (
+                    <div key={key} className="grid grid-cols-[80px_1fr] items-center gap-2">
+                      <Label htmlFor={key} className="text-xs text-muted-foreground font-normal">{label}</Label>
+                      <div>
+                        <Input
+                          id={key}
+                          type="text"
+                          inputMode="decimal"
+                          value={form[key]}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "" || /^\d*\.?\d?$/.test(v)) updateField(key, v);
+                          }}
+                          aria-invalid={!!errors[key]}
+                          aria-describedby={errors[key] ? `${key}-error` : undefined}
+                          className={cn("h-8", errors[key] && "border-destructive focus-visible:ring-destructive")}
+                        />
+                        {errors[key] && (
+                          <p id={`${key}-error`} className="text-xs text-destructive mt-1">{errors[key]}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pressure">Pressure</Label>
