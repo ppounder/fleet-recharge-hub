@@ -97,7 +97,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const [editingId, setEditingId] = useState<string | null>(null);
   const initialForm = { position: "", tyre_code: "", tread_outer: "", tread_centre: "", tread_inner: "", pressure: "", pressure_unit: "psi", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
-  type FormErrors = Partial<Record<"position" | "tread_outer" | "tread_centre" | "tread_inner" | "pressure" | "reading_date", string>>;
+  type FormErrors = Partial<Record<"position" | "tyre_code" | "tread_outer" | "tread_centre" | "tread_inner" | "pressure" | "reading_date", string>>;
   const [errors, setErrors] = useState<FormErrors>({});
 
   const treadOptional = z
