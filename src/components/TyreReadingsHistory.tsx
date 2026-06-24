@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench, ArrowLeftRight } from "lucide-react";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -499,6 +500,101 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
     dispose.mutate({ vehicle_id: vehicleId, position: disposeForm.position, disposed_at: iso });
   };
 
+  // ----- Change tyre position dialog state -----
+  const initialChangePosForm = {
+    tyre_id: "",
+    from_position: "",
+    to_position: "",
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+    notes: "",
+  };
+  const [changePosOpen, setChangePosOpen] = useState(false);
+  const [changePosForm, setChangePosForm] = useState(initialChangePosForm);
+  type ChangePosErrors = Partial<Record<"to_position" | "date" | "time", string>>;
+  const [changePosErrors, setChangePosErrors] = useState<ChangePosErrors>({});
+
+  const changePosition = useMutation({
+    mutationFn: async (payload: {
+      tyre_id: string;
+      vehicle_id: string;
+      from_position: string;
+      to_position: string;
+      changed_at: string;
+      notes: string | null;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: histErr } = await supabase.from("tyre_position_changes").insert({
+        tyre_id: payload.tyre_id,
+        vehicle_id: payload.vehicle_id,
+        from_position: payload.from_position,
+        to_position: payload.to_position,
+        changed_at: payload.changed_at,
+        notes: payload.notes,
+        created_by: user?.id ?? null,
+      });
+      if (histErr) throw histErr;
+      const { error: updErr } = await supabase
+        .from("tyres")
+        .update({ position: payload.to_position })
+        .eq("id", payload.tyre_id);
+      if (updErr) throw updErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["tyre_position_changes", vehicleId] });
+      setChangePosOpen(false);
+      setChangePosForm(initialChangePosForm);
+      setChangePosErrors({});
+      toast({ title: "Tyre position changed" });
+    },
+    onError: (e: any) =>
+      toast({
+        title: "Failed to change tyre position",
+        description: e.message?.includes("tyres_active_position_unique")
+          ? "That position already has an active tyre."
+          : e.message,
+        variant: "destructive",
+      }),
+  });
+
+  const startChangePosition = (t: Tyre) => {
+    setChangePosForm({
+      ...initialChangePosForm,
+      tyre_id: t.id,
+      from_position: t.position,
+    });
+    setChangePosErrors({});
+    setChangePosOpen(true);
+  };
+
+  const handleChangePosition = () => {
+    const errs: ChangePosErrors = {};
+    if (!changePosForm.to_position) errs.to_position = "New position is required";
+    if (changePosForm.to_position === changePosForm.from_position) errs.to_position = "Choose a different position";
+    if (!changePosForm.date) errs.date = "Date is required";
+    if (!changePosForm.time) errs.time = "Time is required";
+    if (Object.keys(errs).length) {
+      setChangePosErrors(errs);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
+      return;
+    }
+    const iso = new Date(`${changePosForm.date}T${changePosForm.time}`).toISOString();
+    changePosition.mutate({
+      tyre_id: changePosForm.tyre_id,
+      vehicle_id: vehicleId,
+      from_position: changePosForm.from_position,
+      to_position: changePosForm.to_position,
+      changed_at: iso,
+      notes: changePosForm.notes.trim() || null,
+    });
+  };
+
+  const availableChangeTargets = useMemo(
+    () => positions.filter((p) => p !== changePosForm.from_position && !activeTyrePositions.has(p)),
+    [positions, activeTyrePositions, changePosForm.from_position],
+  );
+
   return (
     <div className="space-y-8">
       {section !== "readings" && (<>
@@ -554,6 +650,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                             <>
                               <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre">
                                 <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => startChangePosition(t)}
+                                aria-label="Change tyre position"
+                                title="Change tyre position"
+                              >
+                                <ArrowLeftRight className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="icon"
@@ -969,6 +1074,123 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
             <Button variant="outline" onClick={() => setDisposeOpen(false)}>Cancel</Button>
             <Button onClick={handleDispose} disabled={dispose.isPending}>
               {dispose.isPending ? "Saving…" : "Dispose"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============ Change tyre position dialog ============ */}
+      <Dialog
+        open={changePosOpen}
+        onOpenChange={(next) => {
+          setChangePosOpen(next);
+          if (!next) {
+            setChangePosForm(initialChangePosForm);
+            setChangePosErrors({});
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change tyre position</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Current position</Label>
+              <Input value={changePosForm.from_position} disabled />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="change_to_position">New position</Label>
+              <Select
+                value={changePosForm.to_position || undefined}
+                onValueChange={(v) => {
+                  setChangePosForm((f) => ({ ...f, to_position: v }));
+                  if (changePosErrors.to_position) setChangePosErrors((e) => ({ ...e, to_position: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  id="change_to_position"
+                  aria-invalid={!!changePosErrors.to_position}
+                  className={cn(changePosErrors.to_position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder={availableChangeTargets.length ? "Select position" : "No empty positions"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableChangeTargets.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {changePosErrors.to_position && (
+                <p className="text-xs text-destructive">{changePosErrors.to_position}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="change_date">Position date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="change_date"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !changePosForm.date && "text-muted-foreground",
+                        changePosErrors.date && "border-destructive",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {changePosForm.date ? format(parseISO(changePosForm.date), "dd MMM yyyy") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={changePosForm.date ? parseISO(changePosForm.date) : undefined}
+                      onSelect={(d) => {
+                        setChangePosForm((f) => ({ ...f, date: d ? format(d, "yyyy-MM-dd") : "" }));
+                        if (changePosErrors.date) setChangePosErrors((e) => ({ ...e, date: undefined }));
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {changePosErrors.date && <p className="text-xs text-destructive">{changePosErrors.date}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="change_time">Time</Label>
+                <Input
+                  id="change_time"
+                  type="time"
+                  value={changePosForm.time}
+                  onChange={(e) => {
+                    setChangePosForm((f) => ({ ...f, time: e.target.value }));
+                    if (changePosErrors.time) setChangePosErrors((er) => ({ ...er, time: undefined }));
+                  }}
+                  aria-invalid={!!changePosErrors.time}
+                  className={cn(changePosErrors.time && "border-destructive focus-visible:ring-destructive")}
+                />
+                {changePosErrors.time && <p className="text-xs text-destructive">{changePosErrors.time}</p>}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="change_notes">Notes (optional)</Label>
+              <Textarea
+                id="change_notes"
+                rows={2}
+                value={changePosForm.notes}
+                onChange={(e) => setChangePosForm((f) => ({ ...f, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setChangePosOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleChangePosition}
+              disabled={changePosition.isPending || availableChangeTargets.length === 0}
+            >
+              {changePosition.isPending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
