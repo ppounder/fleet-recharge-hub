@@ -109,6 +109,15 @@ function toForm(v: Vehicle): EditableFields {
     mileage: v.mileage != null ? String(v.mileage) : "",
     registered_date: (v as any).registered_date || "",
     date_in_service: (v as any).date_in_service || "",
+    last_service_date: (v as any).last_service_date || "",
+    next_service_date: (v as any).next_service_date || "",
+    last_inspection_date: (v as any).last_inspection_date || "",
+    next_inspection_date: (v as any).next_inspection_date || "",
+    mot_issued_date: (v as any).mot_issued_date || "",
+    mot_expiry_date: (v as any).mot_expiry_date || "",
+    loler_expiry_date: (v as any).loler_expiry_date || "",
+    tacho_2yr_expiry_date: (v as any).tacho_2yr_expiry_date || "",
+    tacho_6yr_expiry_date: (v as any).tacho_6yr_expiry_date || "",
   };
 }
 
