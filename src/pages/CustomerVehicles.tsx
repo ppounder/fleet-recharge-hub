@@ -50,6 +50,15 @@ type EditableFields = {
   mileage: string;
   registered_date: string;
   date_in_service: string;
+  last_service_date: string;
+  next_service_date: string;
+  last_inspection_date: string;
+  next_inspection_date: string;
+  mot_issued_date: string;
+  mot_expiry_date: string;
+  loler_expiry_date: string;
+  tacho_2yr_expiry_date: string;
+  tacho_6yr_expiry_date: string;
 };
 
 const blank: EditableFields = {
@@ -70,6 +79,15 @@ const blank: EditableFields = {
   mileage: "",
   registered_date: "",
   date_in_service: "",
+  last_service_date: "",
+  next_service_date: "",
+  last_inspection_date: "",
+  next_inspection_date: "",
+  mot_issued_date: "",
+  mot_expiry_date: "",
+  loler_expiry_date: "",
+  tacho_2yr_expiry_date: "",
+  tacho_6yr_expiry_date: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
@@ -91,6 +109,15 @@ function toForm(v: Vehicle): EditableFields {
     mileage: v.mileage != null ? String(v.mileage) : "",
     registered_date: (v as any).registered_date || "",
     date_in_service: (v as any).date_in_service || "",
+    last_service_date: (v as any).last_service_date || "",
+    next_service_date: (v as any).next_service_date || "",
+    last_inspection_date: (v as any).last_inspection_date || "",
+    next_inspection_date: (v as any).next_inspection_date || "",
+    mot_issued_date: (v as any).mot_issued_date || "",
+    mot_expiry_date: (v as any).mot_expiry_date || "",
+    loler_expiry_date: (v as any).loler_expiry_date || "",
+    tacho_2yr_expiry_date: (v as any).tacho_2yr_expiry_date || "",
+    tacho_6yr_expiry_date: (v as any).tacho_6yr_expiry_date || "",
   };
 }
 
@@ -218,6 +245,15 @@ export default function CustomerVehicles() {
           mileage: form.mileage ? Number(form.mileage) : null,
           registered_date: form.registered_date || null,
           date_in_service: form.date_in_service || null,
+          last_service_date: form.last_service_date || null,
+          next_service_date: form.next_service_date || null,
+          last_inspection_date: form.last_inspection_date || null,
+          next_inspection_date: form.next_inspection_date || null,
+          mot_issued_date: form.mot_issued_date || null,
+          mot_expiry_date: form.mot_expiry_date || null,
+          loler_expiry_date: form.loler_expiry_date || null,
+          tacho_2yr_expiry_date: form.tacho_2yr_expiry_date || null,
+          tacho_6yr_expiry_date: form.tacho_6yr_expiry_date || null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
@@ -250,6 +286,15 @@ export default function CustomerVehicles() {
         mileage: form.mileage ? Number(form.mileage) : null,
         registered_date: form.registered_date || null,
         date_in_service: form.date_in_service || null,
+        last_service_date: form.last_service_date || null,
+        next_service_date: form.next_service_date || null,
+        last_inspection_date: form.last_inspection_date || null,
+        next_inspection_date: form.next_inspection_date || null,
+        mot_issued_date: form.mot_issued_date || null,
+        mot_expiry_date: form.mot_expiry_date || null,
+        loler_expiry_date: form.loler_expiry_date || null,
+        tacho_2yr_expiry_date: form.tacho_2yr_expiry_date || null,
+        tacho_6yr_expiry_date: form.tacho_6yr_expiry_date || null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
@@ -276,6 +321,15 @@ export default function CustomerVehicles() {
       mileage: "Mileage",
       registered_date: "Registered date",
       date_in_service: "Date in service",
+      last_service_date: "Last service date",
+      next_service_date: "Next service date",
+      last_inspection_date: "Last inspection date",
+      next_inspection_date: "Next inspection date",
+      mot_issued_date: "MOT issued date",
+      mot_expiry_date: "MOT expiry date",
+      loler_expiry_date: "LOLER expiry date",
+      tacho_2yr_expiry_date: "2yr Tacho expiry date",
+      tacho_6yr_expiry_date: "6yr Tacho expiry date",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
@@ -424,7 +478,7 @@ export default function CustomerVehicles() {
 
             </TabsContent>
 
-            <TabsContent value="dates">
+            <TabsContent value="dates" className="space-y-4">
               <CollapsibleCard title="Key Dates">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                   <div className="space-y-1.5">
@@ -434,6 +488,46 @@ export default function CustomerVehicles() {
                   <div className="space-y-1.5">
                     <Label htmlFor="date_in_service">Date in service</Label>
                     <Input id="date_in_service" type="date" value={form.date_in_service} onChange={set("date_in_service")} className="bg-card" />
+                  </div>
+                </div>
+              </CollapsibleCard>
+              <CollapsibleCard title="SMR">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="last_service_date">Last service date</Label>
+                    <Input id="last_service_date" type="date" value={form.last_service_date} onChange={set("last_service_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_service_date">Next service date</Label>
+                    <Input id="next_service_date" type="date" value={form.next_service_date} onChange={set("next_service_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="last_inspection_date">Last inspection date</Label>
+                    <Input id="last_inspection_date" type="date" value={form.last_inspection_date} onChange={set("last_inspection_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_inspection_date">Next inspection date</Label>
+                    <Input id="next_inspection_date" type="date" value={form.next_inspection_date} onChange={set("next_inspection_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_issued_date">MOT issued date</Label>
+                    <Input id="mot_issued_date" type="date" value={form.mot_issued_date} onChange={set("mot_issued_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_expiry_date">MOT expiry date</Label>
+                    <Input id="mot_expiry_date" type="date" value={form.mot_expiry_date} onChange={set("mot_expiry_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="loler_expiry_date">LOLER expiry date</Label>
+                    <Input id="loler_expiry_date" type="date" value={form.loler_expiry_date} onChange={set("loler_expiry_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tacho_2yr_expiry_date">2yr Tacho expiry date</Label>
+                    <Input id="tacho_2yr_expiry_date" type="date" value={form.tacho_2yr_expiry_date} onChange={set("tacho_2yr_expiry_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tacho_6yr_expiry_date">6yr Tacho expiry date</Label>
+                    <Input id="tacho_6yr_expiry_date" type="date" value={form.tacho_6yr_expiry_date} onChange={set("tacho_6yr_expiry_date")} className="bg-card" />
                   </div>
                 </div>
               </CollapsibleCard>
