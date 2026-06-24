@@ -48,6 +48,8 @@ type EditableFields = {
   mot_due: string;
   next_service: string;
   mileage: string;
+  registered_date: string;
+  date_in_service: string;
 };
 
 const blank: EditableFields = {
