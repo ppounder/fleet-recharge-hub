@@ -328,6 +328,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         onOpenChange={(next) => {
           setOpen(next);
           if (!next) {
+            setEditingId(null);
             setForm(initialForm);
             setErrors({});
           }
@@ -335,7 +336,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add tyre reading</DialogTitle>
+            <DialogTitle>{editingId ? "Edit tyre reading" : "Add tyre reading"}</DialogTitle>
             <DialogDescription>Record the latest tread depth for a wheel position.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
