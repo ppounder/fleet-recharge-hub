@@ -420,6 +420,7 @@ export default function CustomerVehicles() {
             columnOrder={columnOrder}
             setColumnOrder={setColumnOrder}
             onRowClick={setSelected}
+            onAdd={() => setCreating(true)}
           />
         )}
       </div>
