@@ -601,6 +601,116 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={disposeOpen}
+        onOpenChange={(next) => {
+          setDisposeOpen(next);
+          if (!next) {
+            setDisposeForm(initialDisposeForm);
+            setDisposeErrors({});
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Dispose tyre</DialogTitle>
+            <DialogDescription>Record that a tyre has been removed from a wheel position.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="dispose_position">Position</Label>
+              <Select
+                value={disposeForm.position}
+                onValueChange={(v) => {
+                  setDisposeForm((f) => ({ ...f, position: v }));
+                  if (disposeErrors.position) setDisposeErrors((e) => ({ ...e, position: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  id="dispose_position"
+                  aria-invalid={!!disposeErrors.position}
+                  className={cn(disposeErrors.position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {positions.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {disposeErrors.position && (
+                <p className="text-xs text-destructive">{disposeErrors.position}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="dispose_date">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="dispose_date"
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !disposeForm.date && "text-muted-foreground",
+                        disposeErrors.date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    >
+                      <span>
+                        {disposeForm.date
+                          ? format(parseISO(disposeForm.date), "dd MMM yyyy")
+                          : "Pick a date"}
+                      </span>
+                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={disposeForm.date ? parseISO(disposeForm.date) : undefined}
+                      onSelect={(d) =>
+                        setDisposeForm((f) => ({ ...f, date: d ? format(d, "yyyy-MM-dd") : "" }))
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {disposeErrors.date && (
+                  <p className="text-xs text-destructive">{disposeErrors.date}</p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="dispose_time">Time</Label>
+                <Input
+                  id="dispose_time"
+                  type="time"
+                  value={disposeForm.time}
+                  onChange={(e) => {
+                    setDisposeForm((f) => ({ ...f, time: e.target.value }));
+                    if (disposeErrors.time) setDisposeErrors((er) => ({ ...er, time: undefined }));
+                  }}
+                  aria-invalid={!!disposeErrors.time}
+                  className={cn(disposeErrors.time && "border-destructive focus-visible:ring-destructive")}
+                />
+                {disposeErrors.time && (
+                  <p className="text-xs text-destructive">{disposeErrors.time}</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisposeOpen(false)}>Cancel</Button>
+            <Button onClick={handleDispose} disabled={dispose.isPending}>
+              {dispose.isPending ? "Saving…" : "Dispose"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
