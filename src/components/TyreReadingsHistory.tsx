@@ -28,6 +28,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface TyreReadingsHistoryProps {
@@ -451,6 +461,13 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
     time: new Date().toTimeString().slice(0, 5),
   };
   const [disposeOpen, setDisposeOpen] = useState(false);
+  const [confirm, setConfirm] = useState<{ open: boolean; message: string; onConfirm: () => void }>({
+    open: false,
+    message: "",
+    onConfirm: () => {},
+  });
+  const askConfirm = (message: string, onConfirm: () => void) =>
+    setConfirm({ open: true, message, onConfirm });
   const [disposeForm, setDisposeForm] = useState(initialDisposeForm);
   type DisposeErrors = Partial<Record<"position" | "date" | "time", string>>;
   const [disposeErrors, setDisposeErrors] = useState<DisposeErrors>({});
@@ -706,7 +723,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => startDispose(t.position)}
+                                onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))}
                                 className="text-destructive hover:bg-destructive hover:text-white"
                                 aria-label="Dispose tyre"
                               >
@@ -813,7 +830,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => remove.mutate(latest.id)}
+                            onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))}
                             disabled={remove.isPending}
                             className={cn("text-destructive hover:bg-destructive hover:text-white")}
                             aria-label="Delete latest reading"
@@ -1407,6 +1424,26 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirm.open} onOpenChange={(o) => setConfirm((c) => ({ ...c, open: o }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm delete</AlertDialogTitle>
+            <AlertDialogDescription>{confirm.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                confirm.onConfirm();
+                setConfirm((c) => ({ ...c, open: false }));
+              }}
+            >
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
