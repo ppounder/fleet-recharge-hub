@@ -220,10 +220,12 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-3">
-          <UKNumberPlate registration={vehicle.registration} />
-          <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
-        </div>
+        {vehicle && (
+          <div className="flex items-center gap-3">
+            {vehicle.registration && <UKNumberPlate registration={vehicle.registration} />}
+            <span className="text-sm font-medium">{statusLabel(vehicle.status)}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 flex-1 min-h-0">
           {/* Left column */}
