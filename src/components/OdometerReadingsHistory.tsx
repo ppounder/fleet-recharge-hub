@@ -111,7 +111,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
       } else {
         const { error } = await supabase.from("odometer_readings" as any).insert({
           ...payload,
-          created_by: profile?.id ?? null,
+          created_by: user?.id ?? null,
         });
         if (error) throw error;
       }
