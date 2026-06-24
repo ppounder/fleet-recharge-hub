@@ -328,6 +328,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       fitted_date: t.fitted_date,
     });
     setTyreErrors({});
+    setManufacturerIsOther(!!t.manufacturer && !TYRE_MANUFACTURERS.includes(t.manufacturer));
     setTyreOpen(true);
   };
 
