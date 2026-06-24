@@ -438,8 +438,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={create.isPending}>
-              {create.isPending ? "Saving…" : "Save"}
+            <Button onClick={handleSave} disabled={create.isPending || update.isPending}>
+              {(create.isPending || update.isPending) ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
