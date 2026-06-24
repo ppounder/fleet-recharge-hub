@@ -131,12 +131,41 @@ export default function CustomerVehicles() {
 
   useEffect(() => {
     if (selected) setForm(toForm(selected));
-  }, [selected]);
+    else if (creating) setForm(blank);
+  }, [selected, creating]);
 
   const set = (k: keyof EditableFields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleSave = async () => {
+    if (creating) {
+      if (!form.registration.trim() || !form.make.trim() || !form.model.trim()) {
+        toast({ title: "Missing required fields", description: "Registration, Make and Model are required", variant: "destructive" });
+        return;
+      }
+      try {
+        const created = await createVehicle.mutateAsync({
+          registration: form.registration.toUpperCase(),
+          make: form.make,
+          model: form.model,
+          status: form.status || "on-road",
+          vin: form.vin || null,
+          fleet_number: form.fleet_number || null,
+          asset_number: form.asset_number || null,
+          asset_type: form.asset_type || null,
+          body_type: form.body_type || null,
+          derivative: form.derivative || null,
+          fleet_manager_id: user?.id ?? null,
+          fleet_id: profile?.fleet_id ?? null,
+        } as any);
+        toast({ title: "Asset created", description: created.registration });
+        setCreating(false);
+        setSelected(created as Vehicle);
+      } catch (e: any) {
+        toast({ title: "Create failed", description: e.message, variant: "destructive" });
+      }
+      return;
+    }
     if (!selected) return;
     try {
       await update.mutateAsync({
@@ -158,7 +187,7 @@ export default function CustomerVehicles() {
     }
   };
 
-  if (selected) {
+  if (selected || creating) {
     const labels: Record<keyof EditableFields, string> = {
       status: "Status",
       vin: "VIN",
