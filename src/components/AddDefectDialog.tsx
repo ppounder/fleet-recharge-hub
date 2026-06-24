@@ -210,7 +210,7 @@ function DefectCard({
   defect: Defect;
   index: number;
   canDelete: boolean;
-  errors: { type?: string; description?: string; rectifiedDetails?: string };
+  errors: { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string };
   onChange: (d: Defect) => void;
   onDelete: () => void;
 }) {
