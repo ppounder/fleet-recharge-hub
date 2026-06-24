@@ -1048,6 +1048,7 @@ export type Database = {
           description: string | null
           id: string
           job_id: string | null
+          rectified_details: string | null
           reported_at: string
           reported_by: string | null
           severity: string
@@ -1061,6 +1062,7 @@ export type Database = {
           description?: string | null
           id?: string
           job_id?: string | null
+          rectified_details?: string | null
           reported_at?: string
           reported_by?: string | null
           severity?: string
@@ -1074,6 +1076,7 @@ export type Database = {
           description?: string | null
           id?: string
           job_id?: string | null
+          rectified_details?: string | null
           reported_at?: string
           reported_by?: string | null
           severity?: string
