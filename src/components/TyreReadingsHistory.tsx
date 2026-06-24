@@ -108,6 +108,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
 
   const readingSchema = z.object({
     position: z.string().trim().min(1, { message: "Position is required" }),
+    tyre_code: z.string().trim().min(1, { message: "Tyre condition is required" }),
     tread_outer: treadOptional,
     tread_centre: z
       .string()
