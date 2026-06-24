@@ -1208,7 +1208,7 @@ type SortKey = "reported_at" | "severity" | "status" | "title" | "job";
 type SortDir = "asc" | "desc";
 
 const severityRank: Record<string, number> = { safety: 3, "non-safety": 2, advisory: 1 };
-const statusRank: Record<string, number> = { open: 1, "in-progress": 2, resolved: 3, cancelled: 4 };
+const statusRank: Record<string, number> = { open: 1, "in-progress": 2, rectified: 3, cancelled: 4 };
 
 const severityVariant = (s: string) =>
   s === "safety" ? "destructive" : s === "non-safety" ? "default" : "secondary";
@@ -1615,7 +1615,7 @@ function EditDefectDialog({
                 <SelectContent>
                   <SelectItem value="open">Open</SelectItem>
                   <SelectItem value="in-progress">In progress</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="rectified">Rectified</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
