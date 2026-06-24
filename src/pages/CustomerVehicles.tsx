@@ -1214,13 +1214,15 @@ const severityVariant = (s: string) =>
 const statusVariant = (s: string) =>
   s === "open" ? "destructive" : s === "in-progress" ? "default" : "secondary";
 
-function DefectHistory({ vehicleId }: { vehicleId: string }) {
+function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicleLabel?: string }) {
   const { data: defects = [], isLoading } = useVehicleDefects(vehicleId);
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<DefectStatus | "all">("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("reported_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [addOpen, setAddOpen] = useState(false);
+
 
   const rows = useMemo(() => {
     let list = [...defects];
