@@ -299,7 +299,7 @@ export default function CustomerVehicles() {
                 </div>
               </CollapsibleCard>
 
-              {selected && <CompanyDetails vehicle={selected} />}
+              <CompanyDetails vehicle={selected} />
 
               <CollapsibleCard title="Notes">
                 <div className="space-y-1.5">
