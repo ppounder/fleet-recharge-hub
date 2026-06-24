@@ -992,9 +992,25 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
                 <Select
-                  value={tyreForm.manufacturer}
-                  onValueChange={(v) => updateTyreField("manufacturer", v)}
+                  value={
+                    manufacturerIsOther
+                      ? OTHER_MANUFACTURER
+                      : TYRE_MANUFACTURERS.includes(tyreForm.manufacturer)
+                        ? tyreForm.manufacturer
+                        : ""
+                  }
+                  onValueChange={(v) => {
+                    if (v === OTHER_MANUFACTURER) {
+                      setManufacturerIsOther(true);
+                      updateTyreField("manufacturer", "");
+                    } else {
+                      setManufacturerIsOther(false);
+                      updateTyreField("manufacturer", v);
+                    }
+                  }}
                 >
                   <SelectTrigger
                     id="tyre_manufacturer"
@@ -1007,8 +1023,19 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     {TYRE_MANUFACTURERS.map((m) => (
                       <SelectItem key={m} value={m}>{m}</SelectItem>
                     ))}
+                    <SelectItem value={OTHER_MANUFACTURER}>{OTHER_MANUFACTURER}</SelectItem>
                   </SelectContent>
                 </Select>
+                {manufacturerIsOther && (
+                  <Input
+                    autoFocus
+                    placeholder="Enter manufacturer"
+                    value={tyreForm.manufacturer}
+                    onChange={(e) => updateTyreField("manufacturer", e.target.value)}
+                    aria-invalid={!!tyreErrors.manufacturer}
+                    className={cn(tyreErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                  />
+                )}
                 {tyreErrors.manufacturer && <p className="text-xs text-destructive">{tyreErrors.manufacturer}</p>}
               </div>
               <div className="space-y-1.5">
