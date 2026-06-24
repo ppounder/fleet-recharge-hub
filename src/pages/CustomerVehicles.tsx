@@ -50,6 +50,15 @@ type EditableFields = {
   mileage: string;
   registered_date: string;
   date_in_service: string;
+  last_service_date: string;
+  next_service_date: string;
+  last_inspection_date: string;
+  next_inspection_date: string;
+  mot_issued_date: string;
+  mot_expiry_date: string;
+  loler_expiry_date: string;
+  tacho_2yr_expiry_date: string;
+  tacho_6yr_expiry_date: string;
 };
 
 const blank: EditableFields = {
