@@ -1115,17 +1115,24 @@ export type Database = {
         Row: {
           asset_number: string | null
           asset_type: string | null
+          average_monthly_distance: number | null
           body_type: string | null
           created_at: string
           customer_id: string | null
           date_in_service: string | null
           derivative: string | null
+          distance_source: string | null
+          estimated_distance: number | null
           fleet_id: string | null
           fleet_manager_id: string | null
           fleet_number: string | null
           id: string
           last_inspection_date: string | null
+          last_known_distance: number | null
+          last_known_distance_recorded_at: string | null
+          last_known_distance_unit: string | null
           last_service_date: string | null
+          life_distance: number | null
           loler_expiry_date: string | null
           make: string
           mileage: number | null
@@ -1136,6 +1143,7 @@ export type Database = {
           next_inspection_date: string | null
           next_service: string | null
           next_service_date: string | null
+          odometer_start_distance: number | null
           registered_date: string | null
           registration: string
           rfl_expiry_date: string | null
@@ -1154,17 +1162,24 @@ export type Database = {
         Insert: {
           asset_number?: string | null
           asset_type?: string | null
+          average_monthly_distance?: number | null
           body_type?: string | null
           created_at?: string
           customer_id?: string | null
           date_in_service?: string | null
           derivative?: string | null
+          distance_source?: string | null
+          estimated_distance?: number | null
           fleet_id?: string | null
           fleet_manager_id?: string | null
           fleet_number?: string | null
           id?: string
           last_inspection_date?: string | null
+          last_known_distance?: number | null
+          last_known_distance_recorded_at?: string | null
+          last_known_distance_unit?: string | null
           last_service_date?: string | null
+          life_distance?: number | null
           loler_expiry_date?: string | null
           make: string
           mileage?: number | null
@@ -1175,6 +1190,7 @@ export type Database = {
           next_inspection_date?: string | null
           next_service?: string | null
           next_service_date?: string | null
+          odometer_start_distance?: number | null
           registered_date?: string | null
           registration: string
           rfl_expiry_date?: string | null
@@ -1193,17 +1209,24 @@ export type Database = {
         Update: {
           asset_number?: string | null
           asset_type?: string | null
+          average_monthly_distance?: number | null
           body_type?: string | null
           created_at?: string
           customer_id?: string | null
           date_in_service?: string | null
           derivative?: string | null
+          distance_source?: string | null
+          estimated_distance?: number | null
           fleet_id?: string | null
           fleet_manager_id?: string | null
           fleet_number?: string | null
           id?: string
           last_inspection_date?: string | null
+          last_known_distance?: number | null
+          last_known_distance_recorded_at?: string | null
+          last_known_distance_unit?: string | null
           last_service_date?: string | null
+          life_distance?: number | null
           loler_expiry_date?: string | null
           make?: string
           mileage?: number | null
@@ -1214,6 +1237,7 @@ export type Database = {
           next_inspection_date?: string | null
           next_service?: string | null
           next_service_date?: string | null
+          odometer_start_distance?: number | null
           registered_date?: string | null
           registration?: string
           rfl_expiry_date?: string | null
