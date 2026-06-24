@@ -492,7 +492,7 @@ export default function CustomerVehicles() {
                 </div>
               </CollapsibleCard>
               <CollapsibleCard title="SMR">
-                <div className="grid grid-cols-1 sm:grid-cols-6 gap-x-8 gap-y-5 [&>div:nth-child(-n+6)]:sm:col-span-3 [&>div:nth-child(n+7)]:sm:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-5 [&>div:nth-child(3)]:sm:col-start-1 [&>div:nth-child(5)]:sm:col-start-1 [&>div:nth-child(7)]:sm:col-start-1">
                   <div className="space-y-1.5">
                     <Label htmlFor="last_service_date">Last service date</Label>
                     <Input id="last_service_date" type="date" value={form.last_service_date} onChange={set("last_service_date")} className="bg-card" />
