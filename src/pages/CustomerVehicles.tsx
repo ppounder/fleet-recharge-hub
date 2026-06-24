@@ -1459,28 +1459,30 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
                   <Fragment key={d.id}>
                     <TableRow>
                       <TableCell className="w-[40px] p-0 text-center">
-                        {hasDetails ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            aria-label={isOpen ? "Hide rectification details" : "Show rectification details"}
-                            title={isOpen ? "Hide rectification details" : "Show rectification details"}
-                            onClick={(e) => { e.stopPropagation(); toggleExpand(d.id); }}
-                          >
-                            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          </Button>
-                        ) : null}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          aria-label={isOpen ? "Hide rectification details" : "Show rectification details"}
+                          title={isOpen ? "Hide rectification details" : "Show rectification details"}
+                          onClick={(e) => { e.stopPropagation(); toggleExpand(d.id); }}
+                        >
+                          {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </Button>
                       </TableCell>
                       {orderedColumns.filter((c) => isVisible(c.key)).map((c) => renderCell(c.key, d))}
                     </TableRow>
-                    {isOpen && hasDetails && (
+                    {isOpen && (
                       <TableRow className="bg-muted/30 hover:bg-muted/30">
                         <TableCell />
                         <TableCell colSpan={visibleCols.length} className="py-3">
                           <div className="space-y-1">
                             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectification details</div>
-                            <div className="text-sm whitespace-pre-wrap">{d.rectified_details}</div>
+                            {hasDetails ? (
+                              <div className="text-sm whitespace-pre-wrap">{d.rectified_details}</div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground italic">No rectification details recorded.</div>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
