@@ -112,28 +112,28 @@ function dotToManufactureDate(serial: string): string | null {
 }
 
 const TYRE_MANUFACTURERS = [
+  "Avon",
+  "BFGoodrich",
   "Bridgestone",
   "Continental",
-  "Michelin",
-  "Goodyear",
-  "Pirelli",
-  "Dunlop",
-  "Hankook",
-  "Yokohama",
-  "Firestone",
-  "Kumho",
-  "Toyo",
-  "Falken",
-  "BFGoodrich",
-  "Nokian",
-  "General Tire",
   "Cooper",
+  "Dunlop",
+  "Falken",
+  "Firestone",
+  "General Tire",
+  "Goodyear",
+  "Hankook",
+  "Kumho",
   "Maxxis",
+  "Michelin",
   "Nexen",
-  "Avon",
+  "Nokian",
+  "Pirelli",
+  "Toyo",
   "Vredestein",
-  "Other",
+  "Yokohama",
 ];
+const OTHER_MANUFACTURER = "Other";
 
 export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
