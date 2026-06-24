@@ -1428,6 +1428,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]" />
                 {orderedColumns.filter((c) => isVisible(c.key)).map((c) => (
                   <SortHeader key={c.key} k={c.key}>{c.label}</SortHeader>
                 ))}
@@ -1436,21 +1437,52 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={visibleCols.length} className="py-10 text-center">
+                  <TableCell colSpan={visibleCols.length + 1} className="py-10 text-center">
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground inline-block" />
                   </TableCell>
                 </TableRow>
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={visibleCols.length} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={visibleCols.length + 1} className="py-10 text-center text-sm text-muted-foreground">
                     No defects match the current filters.
                   </TableCell>
                 </TableRow>
-              ) : rows.map((d) => (
-                <TableRow key={d.id}>
-                  {orderedColumns.filter((c) => isVisible(c.key)).map((c) => renderCell(c.key, d))}
-                </TableRow>
-              ))}
+              ) : rows.map((d) => {
+                const hasDetails = !!(d.rectified_details && d.rectified_details.trim());
+                const isOpen = expanded.has(d.id);
+                return (
+                  <Fragment key={d.id}>
+                    <TableRow>
+                      <TableCell className="w-[40px] p-0 text-center">
+                        {hasDetails ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            aria-label={isOpen ? "Hide rectification details" : "Show rectification details"}
+                            title={isOpen ? "Hide rectification details" : "Show rectification details"}
+                            onClick={(e) => { e.stopPropagation(); toggleExpand(d.id); }}
+                          >
+                            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                          </Button>
+                        ) : null}
+                      </TableCell>
+                      {orderedColumns.filter((c) => isVisible(c.key)).map((c) => renderCell(c.key, d))}
+                    </TableRow>
+                    {isOpen && hasDetails && (
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableCell />
+                        <TableCell colSpan={visibleCols.length} className="py-3">
+                          <div className="space-y-1">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectification details</div>
+                            <div className="text-sm whitespace-pre-wrap">{d.rectified_details}</div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
