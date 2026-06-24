@@ -738,6 +738,47 @@ export type Database = {
           },
         ]
       }
+      tyre_readings: {
+        Row: {
+          created_at: string
+          id: string
+          position: string
+          reading_date: string
+          tread_depth: number
+          tyre_code: string | null
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position: string
+          reading_date?: string
+          tread_depth: number
+          tyre_code?: string | null
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: string
+          reading_date?: string
+          tread_depth?: number
+          tyre_code?: string | null
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tyre_readings_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
