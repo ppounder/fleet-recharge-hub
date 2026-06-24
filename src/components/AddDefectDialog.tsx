@@ -223,7 +223,7 @@ function DefectCard({
               id={`defect-${defect.id}-type`}
               aria-invalid={!!errors.type}
               aria-describedby={errors.type ? typeErrId : undefined}
-              className={cn("w-full bg-card", errors.type && "border-destructive focus-visible:ring-destructive")}
+              className={cn("w-full", errors.type && "border-destructive focus-visible:ring-destructive")}
             >
               <SelectValue placeholder="Select defect type…" />
             </SelectTrigger>
