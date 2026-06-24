@@ -355,6 +355,20 @@ export default function CustomerVehicles() {
         rfl_renewal_method: form.rfl_renewal_method || null,
         rfl_renewal_term_months: form.rfl_renewal_term_months ? Number(form.rfl_renewal_term_months) : null,
         rfl_supplier: form.rfl_supplier || null,
+        odometer_start_distance: form.odometer_start_distance ? Number(form.odometer_start_distance) : null,
+        last_known_distance: form.last_known_distance ? Number(form.last_known_distance) : null,
+        last_known_distance_unit: form.last_known_distance_unit || null,
+        last_known_distance_recorded_at: (() => {
+          const prev = (selected as any).last_known_distance;
+          const next = form.last_known_distance ? Number(form.last_known_distance) : null;
+          if (next == null) return null;
+          if (prev !== next) return new Date().toISOString();
+          return (selected as any).last_known_distance_recorded_at || new Date().toISOString();
+        })(),
+        distance_source: form.distance_source || null,
+        average_monthly_distance: form.average_monthly_distance ? Number(form.average_monthly_distance) : null,
+        life_distance: form.life_distance ? Number(form.life_distance) : null,
+        estimated_distance: form.estimated_distance ? Number(form.estimated_distance) : null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
