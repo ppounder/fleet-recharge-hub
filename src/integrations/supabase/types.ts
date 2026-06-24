@@ -746,7 +746,10 @@ export type Database = {
           pressure: number | null
           pressure_unit: string | null
           reading_date: string
+          tread_centre: number | null
           tread_depth: number
+          tread_inner: number | null
+          tread_outer: number | null
           tyre_code: string | null
           updated_at: string
           vehicle_id: string
@@ -758,7 +761,10 @@ export type Database = {
           pressure?: number | null
           pressure_unit?: string | null
           reading_date?: string
+          tread_centre?: number | null
           tread_depth: number
+          tread_inner?: number | null
+          tread_outer?: number | null
           tyre_code?: string | null
           updated_at?: string
           vehicle_id: string
@@ -770,7 +776,10 @@ export type Database = {
           pressure?: number | null
           pressure_unit?: string | null
           reading_date?: string
+          tread_centre?: number | null
           tread_depth?: number
+          tread_inner?: number | null
+          tread_outer?: number | null
           tyre_code?: string | null
           updated_at?: string
           vehicle_id?: string
