@@ -489,21 +489,7 @@ function VehiclesTable({
                 </TableRow>
               ) : filtered.map((v) => (
                 <TableRow key={v.id} onClick={() => onRowClick(v)} className="cursor-pointer">
-                  {isVisible("registration") && (
-                    <TableCell><UKNumberPlate registration={v.registration} /></TableCell>
-                  )}
-                  {isVisible("fleet_number") && <TableCell>{(v as any).fleet_number || "—"}</TableCell>}
-                  {isVisible("asset_type") && <TableCell>{(v as any).asset_type || "—"}</TableCell>}
-                  {isVisible("vehicle") && (
-                    <TableCell className="font-medium">{v.make} {v.model}</TableCell>
-                  )}
-                  {isVisible("year") && <TableCell>{v.year ?? "—"}</TableCell>}
-                  {isVisible("mileage") && (
-                    <TableCell className="text-right tabular-nums">{v.mileage ? v.mileage.toLocaleString() : "—"}</TableCell>
-                  )}
-                  {isVisible("mot_due") && <TableCell>{v.mot_due ? formatDate(v.mot_due) : "—"}</TableCell>}
-                  {isVisible("next_service") && <TableCell>{v.next_service ? formatDate(v.next_service) : "—"}</TableCell>}
-                  {isVisible("status") && <TableCell><StatusBadge status={v.status} /></TableCell>}
+                  {orderedColumns.filter((c) => isVisible(c.key)).map((c) => renderCell(c.key, v))}
                 </TableRow>
               ))}
             </TableBody>
@@ -513,6 +499,105 @@ function VehiclesTable({
     </Card>
   );
 }
+
+function ManageColumnsDialog({
+  visibleCols, columnOrder, onApply,
+}: {
+  visibleCols: ColKey[];
+  columnOrder: ColKey[];
+  onApply: (order: ColKey[], visible: ColKey[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftOrder, setDraftOrder] = useState<ColKey[]>(columnOrder);
+  const [draftVisible, setDraftVisible] = useState<ColKey[]>(visibleCols);
+  const [dragKey, setDragKey] = useState<ColKey | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setDraftOrder(columnOrder);
+      setDraftVisible(visibleCols);
+    }
+  }, [open, columnOrder, visibleCols]);
+
+  const toggle = (k: ColKey, checked: boolean) => {
+    if (LOCKED_COLS.includes(k)) return;
+    if (checked) setDraftVisible([...draftVisible, k]);
+    else setDraftVisible(draftVisible.filter((c) => c !== k));
+  };
+
+  const handleDrop = (target: ColKey) => {
+    if (!dragKey || dragKey === target) return;
+    const next = draftOrder.filter((k) => k !== dragKey);
+    const idx = next.indexOf(target);
+    next.splice(idx, 0, dragKey);
+    setDraftOrder(next);
+    setDragKey(null);
+  };
+
+  const handleReset = () => {
+    setDraftOrder(DEFAULT_ORDER);
+    setDraftVisible(DEFAULT_VISIBLE);
+  };
+
+  const handleApply = () => {
+    onApply(draftOrder, draftVisible);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
+        <Columns3 className="w-4 h-4" />
+        Manage columns
+      </Button>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Manage columns</DialogTitle>
+          <DialogDescription>
+            Select the columns you most want to see. Drag the items into the order you want them shown in the table.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="rounded-md border divide-y max-h-[60vh] overflow-y-auto">
+          {draftOrder.map((k) => {
+            const col = ALL_COLUMNS.find((c) => c.key === k)!;
+            const locked = LOCKED_COLS.includes(k);
+            const checked = draftVisible.includes(k);
+            return (
+              <div
+                key={k}
+                draggable
+                onDragStart={() => setDragKey(k)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(k)}
+                onDragEnd={() => setDragKey(null)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-muted/50 cursor-grab active:cursor-grabbing",
+                  dragKey === k && "opacity-50"
+                )}
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-sm font-medium">{col.label}</span>
+                <Checkbox
+                  checked={checked}
+                  disabled={locked}
+                  onCheckedChange={(v) => toggle(k, !!v)}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={handleReset}>Reset</Button>
+          <Button onClick={handleApply}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 
 
 
