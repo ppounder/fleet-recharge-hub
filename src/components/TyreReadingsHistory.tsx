@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -18,6 +20,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
@@ -83,7 +86,35 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) });
+  const initialForm = { position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) };
+  const [form, setForm] = useState(initialForm);
+  type FormErrors = Partial<Record<"position" | "tread_depth" | "reading_date", string>>;
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const readingSchema = z.object({
+    position: z.string().trim().min(1, { message: "Position is required" }),
+    tread_depth: z
+      .string()
+      .trim()
+      .min(1, { message: "Tread depth is required" })
+      .refine((v) => /^\d+(\.\d)?$/.test(v), { message: "Enter a number with up to 1 decimal" })
+      .refine((v) => {
+        const n = parseFloat(v);
+        return n >= 0 && n <= 30;
+      }, { message: "Tread depth must be between 0 and 30 mm" }),
+    reading_date: z
+      .string()
+      .min(1, { message: "Reading date is required" })
+      .refine((v) => !Number.isNaN(Date.parse(v)), { message: "Enter a valid date" }),
+  });
+
+  const updateField = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
+  };
+
 
   const positions = useMemo(() => derivePositions(wheelPlan, assetType), [wheelPlan, assetType]);
 
@@ -112,27 +143,46 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   }, [readings]);
 
   const create = useMutation({
-    mutationFn: async () => {
-      const depth = parseFloat(form.tread_depth);
-      if (!form.position) throw new Error("Position is required");
-      if (Number.isNaN(depth)) throw new Error("Tread depth must be a number");
+    mutationFn: async (parsed: z.infer<typeof readingSchema>) => {
       const { error } = await supabase.from("tyre_readings").insert({
         vehicle_id: vehicleId,
-        position: form.position,
-        tyre_code: form.tyre_code || null,
-        tread_depth: depth,
-        reading_date: form.reading_date,
+        position: parsed.position,
+        tyre_code: form.tyre_code.trim() || null,
+        tread_depth: parseFloat(parsed.tread_depth),
+        reading_date: parsed.reading_date,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyre_readings", vehicleId] });
       setOpen(false);
-      setForm({ position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) });
+      setForm(initialForm);
+      setErrors({});
       toast({ title: "Tyre reading added" });
     },
     onError: (e: any) => toast({ title: "Failed to add reading", description: e.message, variant: "destructive" }),
   });
+
+  const handleSave = () => {
+    const result = readingSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: FormErrors = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as keyof FormErrors;
+        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+      }
+      setErrors(fieldErrors);
+      toast({
+        title: "Please fix the errors below",
+        description: "Some fields are invalid.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setErrors({});
+    create.mutate(result.data);
+  };
+
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
@@ -220,50 +270,97 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         </Table>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) {
+            setForm(initialForm);
+            setErrors({});
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add tyre reading</DialogTitle>
+            <DialogDescription>Record the latest tread depth for a wheel position.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Position</Label>
-              <Select value={form.position} onValueChange={(v) => setForm((f) => ({ ...f, position: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+              <Label htmlFor="position">Position</Label>
+              <Select
+                value={form.position}
+                onValueChange={(v) => updateField("position", v)}
+              >
+                <SelectTrigger
+                  id="position"
+                  aria-invalid={!!errors.position}
+                  aria-describedby={errors.position ? "position-error" : undefined}
+                  className={cn(errors.position && "border-destructive focus-visible:ring-destructive")}
+                >
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
                 <SelectContent>
                   {positions.map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {errors.position && (
+                <p id="position-error" className="text-xs text-destructive">{errors.position}</p>
+              )}
             </div>
+
             <div className="space-y-1.5">
-              <Label>Tyre code (optional)</Label>
-              <Input value={form.tyre_code} onChange={(e) => setForm((f) => ({ ...f, tyre_code: e.target.value }))} placeholder="e.g. YG65FFX.OSF1O-1" />
+              <Label htmlFor="tyre_code">Tyre code (optional)</Label>
+              <Input
+                id="tyre_code"
+                value={form.tyre_code}
+                onChange={(e) => setForm((f) => ({ ...f, tyre_code: e.target.value }))}
+                placeholder="e.g. YG65FFX.OSF1O-1"
+              />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Tread depth (mm)</Label>
+                <Label htmlFor="tread_depth">Tread depth (mm)</Label>
                 <Input
+                  id="tread_depth"
                   type="text"
                   inputMode="decimal"
                   value={form.tread_depth}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d?$/.test(v)) setForm((f) => ({ ...f, tread_depth: v }));
+                    if (v === "" || /^\d*\.?\d?$/.test(v)) updateField("tread_depth", v);
                   }}
-                  placeholder=""
+                  aria-invalid={!!errors.tread_depth}
+                  aria-describedby={errors.tread_depth ? "tread_depth-error" : undefined}
+                  className={cn(errors.tread_depth && "border-destructive focus-visible:ring-destructive")}
                 />
+                {errors.tread_depth && (
+                  <p id="tread_depth-error" className="text-xs text-destructive">{errors.tread_depth}</p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <Label>Reading date</Label>
-                <Input type="date" value={form.reading_date} onChange={(e) => setForm((f) => ({ ...f, reading_date: e.target.value }))} />
+                <Label htmlFor="reading_date">Reading date</Label>
+                <Input
+                  id="reading_date"
+                  type="date"
+                  value={form.reading_date}
+                  onChange={(e) => updateField("reading_date", e.target.value)}
+                  aria-invalid={!!errors.reading_date}
+                  aria-describedby={errors.reading_date ? "reading_date-error" : undefined}
+                  className={cn(errors.reading_date && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.reading_date && (
+                  <p id="reading_date-error" className="text-xs text-destructive">{errors.reading_date}</p>
+                )}
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={() => create.mutate()} disabled={create.isPending}>
+            <Button onClick={handleSave} disabled={create.isPending}>
               {create.isPending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
