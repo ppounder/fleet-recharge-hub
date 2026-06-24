@@ -211,6 +211,10 @@ export default function CustomerVehicles() {
       make: "Make",
       model: "Model",
       derivative: "Derivative",
+      year: "Year",
+      mot_due: "MOT due",
+      next_service: "Next service",
+      mileage: "Mileage",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
