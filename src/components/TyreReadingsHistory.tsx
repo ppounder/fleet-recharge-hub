@@ -493,7 +493,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Position</TableHead>
+                <TableHead>Tyre position</TableHead>
                 <TableHead>Manufacturer</TableHead>
                 <TableHead>Tyre size</TableHead>
                 <TableHead>Serial number</TableHead>
