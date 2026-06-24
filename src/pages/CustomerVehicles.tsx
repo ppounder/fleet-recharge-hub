@@ -1448,14 +1448,14 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
         </div>
       </div>
 
-      <EditDefectDialog
-        defect={editDefect}
+      <AddDefectDialog
+        open={!!editDefect}
         onOpenChange={(o) => { if (!o) setEditDefect(null); }}
-        onSaved={() => {
-          queryClient.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
-          setEditDefect(null);
-        }}
+        vehicleId={vehicleId}
+        vehicleLabel={vehicleLabel}
+        editDefect={editDefect}
       />
+
 
       <AlertDialog open={!!deleteDefect} onOpenChange={(o) => { if (!o) setDeleteDefect(null); }}>
         <AlertDialogContent>
