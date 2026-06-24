@@ -727,33 +727,26 @@ export default function CustomerVehicles() {
                         <Input
                           id="last_known_distance"
                           type="text"
-                          inputMode="numeric"
-                          value={form.last_known_distance}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, last_known_distance: v }));
-                          }}
-                          className="bg-card"
+                          value={latestOdoReading?.reading != null ? String(latestOdoReading.reading) : ""}
+                          readOnly
+                          tabIndex={-1}
+                          className="bg-muted cursor-not-allowed"
                         />
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="last_known_distance_unit">Unit</Label>
-                        <Select
-                          value={form.last_known_distance_unit || "__none__"}
-                          onValueChange={(v) => setForm((f) => ({ ...f, last_known_distance_unit: v === "__none__" ? "" : v }))}
-                        >
-                          <SelectTrigger id="last_known_distance_unit" className="bg-card"><SelectValue placeholder="Unit" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">—</SelectItem>
-                            <SelectItem value="Miles">Miles</SelectItem>
-                            <SelectItem value="Kms">Kms</SelectItem>
-                            <SelectItem value="Hours">Hours</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Input
+                          id="last_known_distance_unit"
+                          type="text"
+                          value={latestOdoReading?.unit ?? ""}
+                          readOnly
+                          tabIndex={-1}
+                          className="bg-muted cursor-not-allowed"
+                        />
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Reading taken: {form.last_known_distance_recorded_at ? format(parseISO(form.last_known_distance_recorded_at), "dd MMM yyyy HH:mm") : "—"}
+                      Reading taken: {latestOdoReading?.recorded_at ? format(parseISO(latestOdoReading.recorded_at), "dd MMM yyyy HH:mm") : "—"}
                     </p>
                   </div>
                   <div className="space-y-1.5">
