@@ -382,7 +382,7 @@ export default function CustomerVehicles() {
 }
 
 function VehiclesTable({
-  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, onRowClick,
+  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, columnOrder, setColumnOrder, onRowClick,
 }: {
   vehicles: Vehicle[];
   search: string;
@@ -392,13 +392,15 @@ function VehiclesTable({
   setSort: (k: ColKey) => void;
   visibleCols: ColKey[];
   setVisibleCols: (c: ColKey[]) => void;
+  columnOrder: ColKey[];
+  setColumnOrder: (c: ColKey[]) => void;
   onRowClick: (v: Vehicle) => void;
 }) {
   const isVisible = (k: ColKey) => visibleCols.includes(k);
-  const toggleCol = (k: ColKey, checked: boolean) => {
-    if (checked) setVisibleCols([...visibleCols, k]);
-    else setVisibleCols(visibleCols.filter((c) => c !== k));
-  };
+  const orderedColumns = useMemo(
+    () => columnOrder.map((k) => ALL_COLUMNS.find((c) => c.key === k)!).filter(Boolean),
+    [columnOrder]
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -433,6 +435,20 @@ function VehiclesTable({
     </TableHead>
   );
 
+  const renderCell = (k: ColKey, v: Vehicle) => {
+    switch (k) {
+      case "registration": return <TableCell key={k}><UKNumberPlate registration={v.registration} /></TableCell>;
+      case "fleet_number": return <TableCell key={k}>{(v as any).fleet_number || "—"}</TableCell>;
+      case "asset_type": return <TableCell key={k}>{(v as any).asset_type || "—"}</TableCell>;
+      case "vehicle": return <TableCell key={k} className="font-medium">{v.make} {v.model}</TableCell>;
+      case "year": return <TableCell key={k}>{v.year ?? "—"}</TableCell>;
+      case "mileage": return <TableCell key={k} className="text-right tabular-nums">{v.mileage ? v.mileage.toLocaleString() : "—"}</TableCell>;
+      case "mot_due": return <TableCell key={k}>{v.mot_due ? formatDate(v.mot_due) : "—"}</TableCell>;
+      case "next_service": return <TableCell key={k}>{v.next_service ? formatDate(v.next_service) : "—"}</TableCell>;
+      case "status": return <TableCell key={k}><StatusBadge status={v.status} /></TableCell>;
+    }
+  };
+
   return (
     <Card>
       <CardContent className="p-4 space-y-4">
@@ -446,35 +462,18 @@ function VehiclesTable({
               className="pl-8 bg-card"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Columns3 className="w-4 h-4" />
-                Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {ALL_COLUMNS.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key}
-                  checked={isVisible(c.key)}
-                  onCheckedChange={(v) => toggleCol(c.key, !!v)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ManageColumnsDialog
+            visibleCols={visibleCols}
+            columnOrder={columnOrder}
+            onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+          />
         </div>
 
         <div className="rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                {ALL_COLUMNS.filter((c) => isVisible(c.key)).map((c) => (
+                {orderedColumns.filter((c) => isVisible(c.key)).map((c) => (
                   <SortHeader key={c.key} k={c.key} className={c.key === "mileage" ? "text-right" : ""}>
                     {c.label}
                   </SortHeader>
