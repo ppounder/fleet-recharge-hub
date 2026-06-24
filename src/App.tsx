@@ -63,6 +63,7 @@ const AppRoutes = () => (
     <Route path="/settings/work-codes" element={<ProtectedRoute><WorkCodesSettings /></ProtectedRoute>} />
     <Route path="/settings/vat-bands" element={<ProtectedRoute><VatBandsSettings /></ProtectedRoute>} />
     <Route path="/settings/parts" element={<ProtectedRoute><PartsSettings /></ProtectedRoute>} />
+    <Route path="/settings/integrations" element={<ProtectedRoute><IntegrationsSettings /></ProtectedRoute>} />
      <Route path="/vehicles" element={<ProtectedRoute><CustomerVehicles /></ProtectedRoute>} />
      <Route path="/active-work" element={<ProtectedRoute><CustomerActiveWork /></ProtectedRoute>} />
      <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
