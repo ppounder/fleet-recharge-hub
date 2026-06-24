@@ -1933,6 +1933,22 @@ function DefectMediaDialog({
                   <div className="text-sm whitespace-pre-wrap">{defect.rectified_details}</div>
                 </div>
               )}
+              {(defect.rectified_by || defect.rectified_at) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {defect.rectified_by && (
+                    <div className="space-y-1">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectified by</div>
+                      <div className="text-sm">{defect.rectified_by}</div>
+                    </div>
+                  )}
+                  {defect.rectified_at && (
+                    <div className="space-y-1">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rectified date</div>
+                      <div className="text-sm">{new Date(defect.rectified_at).toLocaleDateString()}</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           {photos.length > 0 && (
