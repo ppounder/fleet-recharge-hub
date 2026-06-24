@@ -1138,6 +1138,11 @@ export type Database = {
           next_service_date: string | null
           registered_date: string | null
           registration: string
+          rfl_expiry_date: string | null
+          rfl_renewal_method: string | null
+          rfl_renewal_term_months: number | null
+          rfl_supplier: string | null
+          rfl_type: string | null
           status: string
           tacho_2yr_expiry_date: string | null
           tacho_6yr_expiry_date: string | null
@@ -1172,6 +1177,11 @@ export type Database = {
           next_service_date?: string | null
           registered_date?: string | null
           registration: string
+          rfl_expiry_date?: string | null
+          rfl_renewal_method?: string | null
+          rfl_renewal_term_months?: number | null
+          rfl_supplier?: string | null
+          rfl_type?: string | null
           status?: string
           tacho_2yr_expiry_date?: string | null
           tacho_6yr_expiry_date?: string | null
@@ -1206,6 +1216,11 @@ export type Database = {
           next_service_date?: string | null
           registered_date?: string | null
           registration?: string
+          rfl_expiry_date?: string | null
+          rfl_renewal_method?: string | null
+          rfl_renewal_term_months?: number | null
+          rfl_supplier?: string | null
+          rfl_type?: string | null
           status?: string
           tacho_2yr_expiry_date?: string | null
           tacho_6yr_expiry_date?: string | null

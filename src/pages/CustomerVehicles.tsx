@@ -11,7 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Calendar as CalendarIcon, Car, Check, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO } from "date-fns";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -59,6 +61,11 @@ type EditableFields = {
   loler_expiry_date: string;
   tacho_2yr_expiry_date: string;
   tacho_6yr_expiry_date: string;
+  rfl_type: string;
+  rfl_expiry_date: string;
+  rfl_renewal_method: string;
+  rfl_renewal_term_months: string;
+  rfl_supplier: string;
 };
 
 const blank: EditableFields = {
@@ -88,6 +95,11 @@ const blank: EditableFields = {
   loler_expiry_date: "",
   tacho_2yr_expiry_date: "",
   tacho_6yr_expiry_date: "",
+  rfl_type: "",
+  rfl_expiry_date: "",
+  rfl_renewal_method: "",
+  rfl_renewal_term_months: "",
+  rfl_supplier: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
@@ -118,6 +130,11 @@ function toForm(v: Vehicle): EditableFields {
     loler_expiry_date: (v as any).loler_expiry_date || "",
     tacho_2yr_expiry_date: (v as any).tacho_2yr_expiry_date || "",
     tacho_6yr_expiry_date: (v as any).tacho_6yr_expiry_date || "",
+    rfl_type: (v as any).rfl_type || "",
+    rfl_expiry_date: (v as any).rfl_expiry_date || "",
+    rfl_renewal_method: (v as any).rfl_renewal_method || "",
+    rfl_renewal_term_months: (v as any).rfl_renewal_term_months != null ? String((v as any).rfl_renewal_term_months) : "",
+    rfl_supplier: (v as any).rfl_supplier || "",
   };
 }
 
@@ -254,6 +271,11 @@ export default function CustomerVehicles() {
           loler_expiry_date: form.loler_expiry_date || null,
           tacho_2yr_expiry_date: form.tacho_2yr_expiry_date || null,
           tacho_6yr_expiry_date: form.tacho_6yr_expiry_date || null,
+          rfl_type: form.rfl_type || null,
+          rfl_expiry_date: form.rfl_expiry_date || null,
+          rfl_renewal_method: form.rfl_renewal_method || null,
+          rfl_renewal_term_months: form.rfl_renewal_term_months ? Number(form.rfl_renewal_term_months) : null,
+          rfl_supplier: form.rfl_supplier || null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
@@ -295,6 +317,11 @@ export default function CustomerVehicles() {
         loler_expiry_date: form.loler_expiry_date || null,
         tacho_2yr_expiry_date: form.tacho_2yr_expiry_date || null,
         tacho_6yr_expiry_date: form.tacho_6yr_expiry_date || null,
+        rfl_type: form.rfl_type || null,
+        rfl_expiry_date: form.rfl_expiry_date || null,
+        rfl_renewal_method: form.rfl_renewal_method || null,
+        rfl_renewal_term_months: form.rfl_renewal_term_months ? Number(form.rfl_renewal_term_months) : null,
+        rfl_supplier: form.rfl_supplier || null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
@@ -330,6 +357,11 @@ export default function CustomerVehicles() {
       loler_expiry_date: "LOLER expiry date",
       tacho_2yr_expiry_date: "2yr Tacho expiry date",
       tacho_6yr_expiry_date: "6yr Tacho expiry date",
+      rfl_type: "RFL type",
+      rfl_expiry_date: "RFL expiry date",
+      rfl_renewal_method: "Renewal method",
+      rfl_renewal_term_months: "Renewal term (months)",
+      rfl_supplier: "RFL supplier",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
@@ -531,7 +563,97 @@ export default function CustomerVehicles() {
                   </div>
                 </div>
               </CollapsibleCard>
+              <CollapsibleCard title="Road Fund Licence">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_type">RFL type</Label>
+                    <Select value={form.rfl_type || "__none__"} onValueChange={(v) => setForm((f) => ({ ...f, rfl_type: v === "__none__" ? "" : v }))}>
+                      <SelectTrigger id="rfl_type" className="bg-card"><SelectValue placeholder="Select RFL type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="PLG">PLG (Private Light Goods)</SelectItem>
+                        <SelectItem value="PHGV">PHGV (Private HGV)</SelectItem>
+                        <SelectItem value="HGV">HGV</SelectItem>
+                        <SelectItem value="LGV">LGV</SelectItem>
+                        <SelectItem value="PSV">PSV (Public Service Vehicle)</SelectItem>
+                        <SelectItem value="Motorcycle">Motorcycle</SelectItem>
+                        <SelectItem value="Agricultural">Agricultural</SelectItem>
+                        <SelectItem value="Special Vehicle">Special Vehicle</SelectItem>
+                        <SelectItem value="Electric">Electric</SelectItem>
+                        <SelectItem value="Historic">Historic</SelectItem>
+                        <SelectItem value="Exempt">Exempt</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_expiry_date">RFL expiry date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button id="rfl_expiry_date" variant="outline" className={cn("w-full justify-start text-left font-normal bg-card", !form.rfl_expiry_date && "text-muted-foreground")}>
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {form.rfl_expiry_date ? format(parseISO(form.rfl_expiry_date), "dd MMM yyyy") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={form.rfl_expiry_date ? parseISO(form.rfl_expiry_date) : undefined}
+                          onSelect={(d) => setForm((f) => ({ ...f, rfl_expiry_date: d ? format(d, "yyyy-MM-dd") : "" }))}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_renewal_method">Renewal method</Label>
+                    <Select value={form.rfl_renewal_method || "__none__"} onValueChange={(v) => setForm((f) => ({ ...f, rfl_renewal_method: v === "__none__" ? "" : v }))}>
+                      <SelectTrigger id="rfl_renewal_method" className="bg-card"><SelectValue placeholder="Select renewal method" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Auto">Auto</SelectItem>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="Manual">Manual</SelectItem>
+                        <SelectItem value="DVLA Electronic">DVLA Electronic</SelectItem>
+                        <SelectItem value="DVLA eRFL">DVLA eRFL</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_renewal_term_months">Renewal term (months)</Label>
+                    <Input
+                      id="rfl_renewal_term_months"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.rfl_renewal_term_months}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v)) setForm((f) => ({ ...f, rfl_renewal_term_months: v }));
+                      }}
+                      className="bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rfl_supplier">RFL supplier</Label>
+                    <Select value={form.rfl_supplier || "__none__"} onValueChange={(v) => setForm((f) => ({ ...f, rfl_supplier: v === "__none__" ? "" : v }))}>
+                      <SelectTrigger id="rfl_supplier" className="bg-card"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="DVLA">DVLA</SelectItem>
+                        <SelectItem value="Post Office">Post Office</SelectItem>
+                        <SelectItem value="Lex Autolease">Lex Autolease</SelectItem>
+                        <SelectItem value="Arval">Arval</SelectItem>
+                        <SelectItem value="Alphabet">Alphabet</SelectItem>
+                        <SelectItem value="LeasePlan">LeasePlan</SelectItem>
+                        <SelectItem value="Hitachi Capital">Hitachi Capital</SelectItem>
+                        <SelectItem value="Zenith">Zenith</SelectItem>
+                        <SelectItem value="Ogilvie Fleet">Ogilvie Fleet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CollapsibleCard>
             </TabsContent>
+
 
             {WHEEL_PLAN_ASSET_TYPES.has(form.asset_type) && (
               <TabsContent value="tyres" className="space-y-4">
