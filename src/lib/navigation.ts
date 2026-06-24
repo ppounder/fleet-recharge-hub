@@ -78,5 +78,13 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Recharges", href: "/recharges", icon: CreditCard },
     { label: "Invoices", href: "/invoicing", icon: FileText },
     { label: "History", href: "/history", icon: ClipboardList },
+    {
+      label: "Settings",
+      href: "/settings",
+      icon: Settings,
+      children: [
+        { label: "Integrations", href: "/settings/integrations", icon: Plug },
+      ],
+    },
   ],
 };
