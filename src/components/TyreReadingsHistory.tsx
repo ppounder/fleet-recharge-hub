@@ -667,7 +667,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                                 className="text-destructive hover:bg-destructive hover:text-white"
                                 aria-label="Dispose tyre"
                               >
-                                <Wrench className="h-4 w-4" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </>
                           ) : (
