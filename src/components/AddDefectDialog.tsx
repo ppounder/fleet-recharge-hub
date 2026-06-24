@@ -72,22 +72,56 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
   const { user, profile } = useAuth();
   const qc = useQueryClient();
   const defaultReporter = profile?.full_name || user?.email || "";
+  const isEdit = !!editDefect;
   const [defects, setDefects] = useState<Defect[]>([blank(defaultReporter)]);
   const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string }>>({});
   const [warn, setWarn] = useState("");
 
   useEffect(() => {
     if (open) {
-      setDefects([blank(defaultReporter)]);
+      if (editDefect) {
+        setDefects([{
+          id: editDefect.id,
+          type: editDefect.title,
+          description: editDefect.description ?? "",
+          severity: editDefect.severity,
+          rectified: editDefect.status === "rectified",
+          rectifiedDetails: "",
+          photos: [],
+          reportedAt: editDefect.reported_at ? editDefect.reported_at.slice(0, 10) : todayISO(),
+          reportedBy: editDefect.reported_by ?? defaultReporter,
+        }]);
+      } else {
+        setDefects([blank(defaultReporter)]);
+      }
       setErrors({});
       setWarn("");
     }
-  }, [open, defaultReporter]);
+  }, [open, defaultReporter, editDefect]);
 
   const validDefects = defects.filter((d) => d.type.trim());
 
   const save = useMutation({
     mutationFn: async () => {
+      if (isEdit && editDefect) {
+        const d = defects[0];
+        const nextStatus = d.rectified
+          ? "rectified"
+          : (editDefect.status === "rectified" ? "open" : editDefect.status);
+        const { error } = await supabase
+          .from("vehicle_defects" as any)
+          .update({
+            title: d.type,
+            description: d.description || null,
+            severity: d.severity,
+            status: nextStatus,
+            reported_by: d.reportedBy || null,
+            reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : editDefect.reported_at,
+          })
+          .eq("id", editDefect.id);
+        if (error) throw error;
+        return;
+      }
       const rows = validDefects
         .filter((d) => !d.rectified)
         .map((d) => ({
@@ -107,7 +141,7 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
-      toast({ title: "Defect reported" });
+      toast({ title: isEdit ? "Defect updated" : "Defect reported" });
       onOpenChange(false);
     },
     onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
