@@ -306,6 +306,11 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     <TableCell>
                       {latest ? `${Number(latest.tread_depth).toFixed(1)} mm` : <span className="text-muted-foreground">—</span>}
                     </TableCell>
+                    <TableCell>
+                      {latest?.pressure != null
+                        ? `${Number(latest.pressure).toFixed(1)} ${latest.pressure_unit ?? ""}`.trim()
+                        : <span className="text-muted-foreground">—</span>}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {latest ? format(parseISO(latest.reading_date), "dd MMM yyyy") : "—"}
                     </TableCell>
