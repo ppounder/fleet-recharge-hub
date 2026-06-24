@@ -174,12 +174,14 @@ function DefectCard({
   defect,
   index,
   canDelete,
+  errors,
   onChange,
   onDelete,
 }: {
   defect: Defect;
   index: number;
   canDelete: boolean;
+  errors: { type?: string; description?: string; rectifiedDetails?: string };
   onChange: (d: Defect) => void;
   onDelete: () => void;
 }) {
@@ -189,6 +191,8 @@ function DefectCard({
   const MAX_PHOTOS = 5;
   const canAddPhoto = defect.photos.length < MAX_PHOTOS;
 
+  const typeErrId = `defect-${defect.id}-type-error`;
+  const rectErrId = `defect-${defect.id}-rectified-error`;
 
   function handlePhoto(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -211,11 +215,16 @@ function DefectCard({
           </button>
         )}
       </div>
-      <div className="space-y-3">
-        <div>
-          <Label>Type</Label>
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor={`defect-${defect.id}-type`}>Type</Label>
           <Select value={PRESETS.includes(defect.type) ? defect.type : ""} onValueChange={(v) => onChange({ ...defect, type: v })}>
-            <SelectTrigger className="mt-1.5 w-full bg-card">
+            <SelectTrigger
+              id={`defect-${defect.id}-type`}
+              aria-invalid={!!errors.type}
+              aria-describedby={errors.type ? typeErrId : undefined}
+              className={cn("w-full bg-card", errors.type && "border-destructive focus-visible:ring-destructive")}
+            >
               <SelectValue placeholder="Select defect type…" />
             </SelectTrigger>
             <SelectContent>
@@ -225,22 +234,32 @@ function DefectCard({
             </SelectContent>
           </Select>
           <Input
-            className="mt-2"
             value={defect.type}
             onChange={(e) => onChange({ ...defect, type: e.target.value })}
             placeholder="Or type defect…"
+            aria-invalid={!!errors.type}
+            aria-describedby={errors.type ? typeErrId : undefined}
+            className={cn(errors.type && "border-destructive focus-visible:ring-destructive")}
+          />
+          {errors.type && (
+            <p id={typeErrId} className="text-xs text-destructive">{errors.type}</p>
+          )}
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`defect-${defect.id}-description`}>Description</Label>
+          <Textarea
+            id={`defect-${defect.id}-description`}
+            rows={2}
+            value={defect.description}
+            onChange={(e) => onChange({ ...defect, description: e.target.value })}
           />
         </div>
-        <div>
-          <Label>Description</Label>
-          <Textarea rows={2} value={defect.description} onChange={(e) => onChange({ ...defect, description: e.target.value })} />
-        </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Severity</Label>
           <RadioGroup
             value={defect.severity}
             onValueChange={(v) => onChange({ ...defect, severity: v as Severity })}
-            className="mt-1.5 flex gap-2"
+            className="flex gap-2"
           >
             <label className="flex flex-1 items-center gap-2 rounded-md border bg-card p-2 text-sm cursor-pointer">
               <RadioGroupItem value="safety" /> Safety
@@ -264,15 +283,21 @@ function DefectCard({
           Rectified
         </label>
         {defect.rectified && (
-          <div>
-            <Label>Rectified details</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
             <Textarea
+              id={`defect-${defect.id}-rectified`}
               rows={2}
-              className="mt-1.5"
               value={defect.rectifiedDetails ?? ""}
               onChange={(e) => onChange({ ...defect, rectifiedDetails: e.target.value })}
               placeholder="Describe how the defect was rectified…"
+              aria-invalid={!!errors.rectifiedDetails}
+              aria-describedby={errors.rectifiedDetails ? rectErrId : undefined}
+              className={cn(errors.rectifiedDetails && "border-destructive focus-visible:ring-destructive")}
             />
+            {errors.rectifiedDetails && (
+              <p id={rectErrId} className="text-xs text-destructive">{errors.rectifiedDetails}</p>
+            )}
           </div>
         )}
         <input
