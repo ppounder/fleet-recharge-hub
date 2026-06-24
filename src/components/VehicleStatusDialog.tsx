@@ -114,19 +114,20 @@ function TimeField({ id, value, onChange, disabled }: { id: string; value: strin
 }
 
 interface Props {
-  vehicle: Vehicle;
+  vehicle: Vehicle | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onStatusChanged?: (status: string) => void;
+  draft?: boolean;
 }
 
 const statusLabel = (s?: string | null) =>
   s === "off-road" ? "Current - Off Road" : "Current - On Road";
 
-export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChanged }: Props) {
+export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChanged, draft }: Props) {
   const { profile } = useAuth();
   const qc = useQueryClient();
-  const [offRoad, setOffRoad] = useState(vehicle.status === "off-road");
+  const [offRoad, setOffRoad] = useState(vehicle?.status === "off-road");
   const [reason, setReason] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -141,24 +142,25 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
 
   useEffect(() => {
     if (open) {
-      setOffRoad(vehicle.status === "off-road");
+      setOffRoad(vehicle?.status === "off-road");
       setChangedBy(profile?.full_name || "");
     }
-  }, [open, vehicle.status, profile?.full_name]);
+  }, [open, vehicle?.status, profile?.full_name]);
 
   const { data: history = [] } = useQuery({
-    queryKey: ["vehicle-status-history", vehicle.id],
+    queryKey: ["vehicle-status-history", vehicle?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicle_status_history")
         .select("*")
-        .eq("vehicle_id", vehicle.id)
+        .eq("vehicle_id", vehicle!.id)
         .order("changed_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: open,
+    enabled: open && !!vehicle?.id && !draft,
   });
+
 
   const handleSave = async () => {
     setSaving(true);
