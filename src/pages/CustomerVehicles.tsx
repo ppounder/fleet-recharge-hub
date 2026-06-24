@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,6 +73,10 @@ export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const update = useUpdateVehicle();
   const [selected, setSelected] = useState<Vehicle | null>(null);
+  const location = useLocation();
+  useEffect(() => {
+    setSelected(null);
+  }, [location.key]);
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [msgDialogOpen, setMsgDialogOpen] = useState(false);
