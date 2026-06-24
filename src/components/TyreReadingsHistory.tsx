@@ -727,6 +727,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                                 onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))}
                                 className="text-destructive hover:bg-destructive hover:text-white"
                                 aria-label="Dispose tyre"
+                                title="Delete"
+
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
