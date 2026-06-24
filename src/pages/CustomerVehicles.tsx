@@ -196,6 +196,10 @@ export default function CustomerVehicles() {
         make: form.make,
         model: form.model,
         derivative: form.derivative || null,
+        year: form.year ? Number(form.year) : null,
+        mot_due: form.mot_due || null,
+        next_service: form.next_service || null,
+        mileage: form.mileage ? Number(form.mileage) : null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
