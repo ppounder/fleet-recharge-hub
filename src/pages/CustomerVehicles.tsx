@@ -83,6 +83,8 @@ const ALL_COLUMNS: { key: ColKey; label: string }[] = [
   { key: "status", label: "Status" },
 ];
 const DEFAULT_VISIBLE: ColKey[] = ["registration", "fleet_number", "asset_type", "vehicle", "mileage", "mot_due", "status"];
+const DEFAULT_ORDER: ColKey[] = ALL_COLUMNS.map((c) => c.key);
+const LOCKED_COLS: ColKey[] = ["registration"];
 
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
@@ -92,6 +94,7 @@ export default function CustomerVehicles() {
   const [sortKey, setSortKey] = useState<ColKey>("registration");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
   const location = useLocation();
   useEffect(() => {
     setSelected(null);
