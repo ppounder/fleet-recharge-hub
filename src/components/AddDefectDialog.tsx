@@ -198,9 +198,9 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add defect</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit defect" : "Add defect"}</DialogTitle>
           <DialogDescription>
-            {vehicleLabel ? `For ${vehicleLabel}` : "Record one or more defects for this asset."}
+            {vehicleLabel ? `For ${vehicleLabel}` : (isEdit ? "Update the details for this defect." : "Record one or more defects for this asset.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,15 +210,17 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel, e
               key={d.id}
               defect={d}
               index={i}
-              canDelete={defects.length > 1}
+              canDelete={!isEdit && defects.length > 1}
               errors={errors[d.id] ?? {}}
               onChange={(nd) => updateDefect(d.id, nd)}
               onDelete={() => setDefects(defects.filter((x) => x.id !== d.id))}
             />
           ))}
-          <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank(defaultReporter)])}>
-            <Plus className="h-4 w-4" /> Add another defect
-          </Button>
+          {!isEdit && (
+            <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank(defaultReporter)])}>
+              <Plus className="h-4 w-4" /> Add another defect
+            </Button>
+          )}
           {warn && <Alert variant="destructive"><AlertDescription>{warn}</AlertDescription></Alert>}
         </div>
 
