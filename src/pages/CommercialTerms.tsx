@@ -197,11 +197,7 @@ export default function CommercialTerms() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Start Date *</Label>
-                <Input
-                  type="date"
-                  value={newStartDate}
-                  onChange={(e) => setNewStartDate(e.target.value)}
-                />
+                <DatePicker value={newStartDate} onChange={setNewStartDate} />
               </div>
               <Button onClick={handleAdd} disabled={createTerm.isPending} className="h-10">
                 <Plus className="w-4 h-4 mr-1" /> Create
