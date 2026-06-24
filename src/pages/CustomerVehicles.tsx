@@ -32,7 +32,7 @@ import { TyreReadingsHistory } from "@/components/TyreReadingsHistory";
 import { OdometerReadingsHistory } from "@/components/OdometerReadingsHistory";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isDateExpired, cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -1037,8 +1037,8 @@ function VehiclesTable({
       case "vehicle": return <TableCell key={k} className="font-medium">{v.make} {v.model}</TableCell>;
       case "year": return <TableCell key={k}>{v.year ?? "—"}</TableCell>;
       case "mileage": return <TableCell key={k} className="text-right tabular-nums">{v.mileage ? `${v.mileage.toLocaleString()} ${(v as any).last_known_distance_unit || "miles"}` : "—"}</TableCell>;
-      case "mot_due": return <TableCell key={k}>{v.mot_due ? formatDate(v.mot_due) : "—"}</TableCell>;
-      case "next_service": return <TableCell key={k}>{v.next_service ? formatDate(v.next_service) : "—"}</TableCell>;
+      case "mot_due": return <TableCell key={k} className={cn(isDateExpired(v.mot_due) && "text-destructive font-semibold")}>{v.mot_due ? formatDate(v.mot_due) : "—"}</TableCell>;
+      case "next_service": return <TableCell key={k} className={cn(isDateExpired(v.next_service) && "text-destructive font-semibold")}>{v.next_service ? formatDate(v.next_service) : "—"}</TableCell>;
       case "status": return <TableCell key={k}><StatusBadge status={v.status} /></TableCell>;
     }
   };
