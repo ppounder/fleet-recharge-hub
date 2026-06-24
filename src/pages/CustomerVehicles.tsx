@@ -286,6 +286,15 @@ export default function CustomerVehicles() {
         mileage: form.mileage ? Number(form.mileage) : null,
         registered_date: form.registered_date || null,
         date_in_service: form.date_in_service || null,
+        last_service_date: form.last_service_date || null,
+        next_service_date: form.next_service_date || null,
+        last_inspection_date: form.last_inspection_date || null,
+        next_inspection_date: form.next_inspection_date || null,
+        mot_issued_date: form.mot_issued_date || null,
+        mot_expiry_date: form.mot_expiry_date || null,
+        loler_expiry_date: form.loler_expiry_date || null,
+        tacho_2yr_expiry_date: form.tacho_2yr_expiry_date || null,
+        tacho_6yr_expiry_date: form.tacho_6yr_expiry_date || null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
