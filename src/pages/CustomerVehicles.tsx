@@ -478,7 +478,7 @@ export default function CustomerVehicles() {
 
             </TabsContent>
 
-            <TabsContent value="dates">
+            <TabsContent value="dates" className="space-y-4">
               <CollapsibleCard title="Key Dates">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                   <div className="space-y-1.5">
@@ -488,6 +488,46 @@ export default function CustomerVehicles() {
                   <div className="space-y-1.5">
                     <Label htmlFor="date_in_service">Date in service</Label>
                     <Input id="date_in_service" type="date" value={form.date_in_service} onChange={set("date_in_service")} className="bg-card" />
+                  </div>
+                </div>
+              </CollapsibleCard>
+              <CollapsibleCard title="SMR">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="last_service_date">Last service date</Label>
+                    <Input id="last_service_date" type="date" value={form.last_service_date} onChange={set("last_service_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_service_date">Next service date</Label>
+                    <Input id="next_service_date" type="date" value={form.next_service_date} onChange={set("next_service_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="last_inspection_date">Last inspection date</Label>
+                    <Input id="last_inspection_date" type="date" value={form.last_inspection_date} onChange={set("last_inspection_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="next_inspection_date">Next inspection date</Label>
+                    <Input id="next_inspection_date" type="date" value={form.next_inspection_date} onChange={set("next_inspection_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_issued_date">MOT issued date</Label>
+                    <Input id="mot_issued_date" type="date" value={form.mot_issued_date} onChange={set("mot_issued_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="mot_expiry_date">MOT expiry date</Label>
+                    <Input id="mot_expiry_date" type="date" value={form.mot_expiry_date} onChange={set("mot_expiry_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="loler_expiry_date">LOLER expiry date</Label>
+                    <Input id="loler_expiry_date" type="date" value={form.loler_expiry_date} onChange={set("loler_expiry_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tacho_2yr_expiry_date">2yr Tacho expiry date</Label>
+                    <Input id="tacho_2yr_expiry_date" type="date" value={form.tacho_2yr_expiry_date} onChange={set("tacho_2yr_expiry_date")} className="bg-card" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tacho_6yr_expiry_date">6yr Tacho expiry date</Label>
+                    <Input id="tacho_6yr_expiry_date" type="date" value={form.tacho_6yr_expiry_date} onChange={set("tacho_6yr_expiry_date")} className="bg-card" />
                   </div>
                 </div>
               </CollapsibleCard>
