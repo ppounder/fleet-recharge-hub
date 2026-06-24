@@ -1202,7 +1202,7 @@ function ManageColumnsDialog({
 
 
 
-type SortKey = "reported_at" | "severity" | "status" | "title";
+type SortKey = "reported_at" | "severity" | "status" | "title" | "job";
 type SortDir = "asc" | "desc";
 
 const severityRank: Record<string, number> = { safety: 3, "non-safety": 2, advisory: 1 };
@@ -1214,51 +1214,158 @@ const severityVariant = (s: string) =>
 const statusVariant = (s: string) =>
   s === "open" ? "destructive" : s === "in-progress" ? "default" : "secondary";
 
+type DefectColKey = "reported_at" | "title" | "severity" | "status" | "job";
+const DEFECT_COLUMNS: { key: DefectColKey; label: string }[] = [
+  { key: "reported_at", label: "Reported" },
+  { key: "title", label: "Defect" },
+  { key: "severity", label: "Severity" },
+  { key: "status", label: "Status" },
+  { key: "job", label: "Work Order" },
+];
+const DEFECT_LOCKED: DefectColKey[] = ["reported_at", "title"];
+const DEFECT_DEFAULT_ORDER: DefectColKey[] = ["reported_at", "title", "severity", "status", "job"];
+const DEFECT_DEFAULT_VISIBLE: DefectColKey[] = ["reported_at", "title", "severity", "status", "job"];
+
 function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicleLabel?: string }) {
   const { data: defects = [], isLoading } = useVehicleDefects(vehicleId);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<DefectStatus | "all">("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("reported_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [addOpen, setAddOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [visibleCols, setVisibleCols] = useState<DefectColKey[]>(DEFECT_DEFAULT_VISIBLE);
+  const [columnOrder, setColumnOrder] = useState<DefectColKey[]>(DEFECT_DEFAULT_ORDER);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
+    setRefreshing(false);
+  };
 
   const rows = useMemo(() => {
     let list = [...defects];
     if (statusFilter !== "all") list = list.filter((d) => d.status === statusFilter);
     if (severityFilter !== "all") list = list.filter((d) => d.severity === severityFilter);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter((d) =>
+        [d.title, d.description, d.severity, d.status, d.job?.job_number]
+          .filter(Boolean)
+          .some((f) => String(f).toLowerCase().includes(q))
+      );
+    }
     list.sort((a, b) => {
       let cmp = 0;
       if (sortKey === "reported_at") cmp = new Date(a.reported_at).getTime() - new Date(b.reported_at).getTime();
       else if (sortKey === "severity") cmp = (severityRank[a.severity] ?? 0) - (severityRank[b.severity] ?? 0);
       else if (sortKey === "status") cmp = (statusRank[a.status] ?? 0) - (statusRank[b.status] ?? 0);
+      else if (sortKey === "job") cmp = (a.job?.job_number ?? "").localeCompare(b.job?.job_number ?? "");
       else cmp = a.title.localeCompare(b.title);
       return sortDir === "asc" ? cmp : -cmp;
     });
     return list;
-  }, [defects, statusFilter, severityFilter, sortKey, sortDir]);
+  }, [defects, statusFilter, severityFilter, sortKey, sortDir, search]);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir(sortDir === "asc" ? "desc" : "asc");
     else { setSortKey(k); setSortDir(k === "reported_at" ? "desc" : "asc"); }
   };
 
-  const SortBtn = ({ k, children }: { k: SortKey; children: React.ReactNode }) => (
-    <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1 hover:text-foreground">
-      {children}
-      <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
-    </button>
+  const isVisible = (k: DefectColKey) => visibleCols.includes(k);
+  const orderedColumns = useMemo(
+    () => columnOrder.map((k) => DEFECT_COLUMNS.find((c) => c.key === k)!).filter(Boolean),
+    [columnOrder]
   );
+
+  const SortHeader = ({ k, children }: { k: DefectColKey; children: React.ReactNode }) => (
+    <TableHead>
+      <button onClick={() => toggleSort(k as SortKey)} className="inline-flex items-center gap-1 hover:text-foreground">
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
+      </button>
+    </TableHead>
+  );
+
+  const renderCell = (k: DefectColKey, d: VehicleDefect) => {
+    switch (k) {
+      case "reported_at":
+        return (
+          <TableCell key={k} className="text-sm text-muted-foreground whitespace-nowrap">
+            {formatDate(d.reported_at)}
+          </TableCell>
+        );
+      case "title":
+        return (
+          <TableCell key={k}>
+            <div className="font-medium">{d.title}</div>
+            {d.description && (
+              <div className="text-xs text-muted-foreground line-clamp-1">{d.description}</div>
+            )}
+          </TableCell>
+        );
+      case "severity":
+        return (
+          <TableCell key={k}>
+            <Badge variant={severityVariant(d.severity) as any} className="capitalize">{d.severity.replace("-", " ")}</Badge>
+          </TableCell>
+        );
+      case "status":
+        return (
+          <TableCell key={k}>
+            <Badge variant={statusVariant(d.status) as any} className="capitalize">{d.status.replace("-", " ")}</Badge>
+          </TableCell>
+        );
+      case "job":
+        return (
+          <TableCell key={k}>
+            {d.job ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${d.job!.id}`); }}
+                className="text-primary hover:underline text-sm font-medium"
+              >
+                {d.job.job_number}
+              </button>
+            ) : (
+              <span className="text-xs text-muted-foreground">—</span>
+            )}
+          </TableCell>
+        );
+    }
+  };
 
   return (
     <CollapsibleCard title="Defect History">
-      <div className="space-y-6">
-        <div className="flex justify-end">
-          <Button onClick={() => setAddOpen(true)} className="gap-2">
-            <Plus className="w-4 h-4" /> Add defect
-          </Button>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search defects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 bg-card"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+              Refresh data
+            </Button>
+            <Button size="sm" onClick={() => setAddOpen(true)} className="gap-2">
+              <Plus className="w-4 h-4" /> Add defect
+            </Button>
+            <DefectColumnsDialog
+              visibleCols={visibleCols}
+              columnOrder={columnOrder}
+              onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+            />
+          </div>
         </div>
+
         <AddDefectDialog
           open={addOpen}
           onOpenChange={setAddOpen}
@@ -1294,64 +1401,138 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="py-10 text-center text-sm text-muted-foreground">
-            No defects match the current filters.
-          </div>
-        ) : (
+        <div className="rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead><SortBtn k="reported_at">Reported</SortBtn></TableHead>
-                <TableHead><SortBtn k="title">Defect</SortBtn></TableHead>
-                <TableHead><SortBtn k="severity">Severity</SortBtn></TableHead>
-                <TableHead><SortBtn k="status">Status</SortBtn></TableHead>
-                <TableHead>Work Order</TableHead>
+                {orderedColumns.filter((c) => isVisible(c.key)).map((c) => (
+                  <SortHeader key={c.key} k={c.key}>{c.label}</SortHeader>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((d) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={visibleCols.length} className="py-10 text-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground inline-block" />
+                  </TableCell>
+                </TableRow>
+              ) : rows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={visibleCols.length} className="py-10 text-center text-sm text-muted-foreground">
+                    No defects match the current filters.
+                  </TableCell>
+                </TableRow>
+              ) : rows.map((d) => (
                 <TableRow key={d.id}>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                    {formatDate(d.reported_at)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">{d.title}</div>
-                    {d.description && (
-                      <div className="text-xs text-muted-foreground line-clamp-1">{d.description}</div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={severityVariant(d.severity) as any} className="capitalize">{d.severity.replace("-", " ")}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant(d.status) as any} className="capitalize">{d.status.replace("-", " ")}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {d.job ? (
-                      <button
-                        onClick={() => navigate(`/jobs/${d.job!.id}`)}
-                        className="text-primary hover:underline text-sm font-medium"
-                      >
-                        {d.job.job_number}
-                      </button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
+                  {orderedColumns.filter((c) => isVisible(c.key)).map((c) => renderCell(c.key, d))}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        )}
+        </div>
       </div>
     </CollapsibleCard>
   );
 }
+
+function DefectColumnsDialog({
+  visibleCols, columnOrder, onApply,
+}: {
+  visibleCols: DefectColKey[];
+  columnOrder: DefectColKey[];
+  onApply: (order: DefectColKey[], visible: DefectColKey[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftOrder, setDraftOrder] = useState<DefectColKey[]>(columnOrder);
+  const [draftVisible, setDraftVisible] = useState<DefectColKey[]>(visibleCols);
+  const [dragKey, setDragKey] = useState<DefectColKey | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setDraftOrder(columnOrder);
+      setDraftVisible(visibleCols);
+    }
+  }, [open, columnOrder, visibleCols]);
+
+  const toggle = (k: DefectColKey, checked: boolean) => {
+    if (DEFECT_LOCKED.includes(k)) return;
+    if (checked) setDraftVisible([...draftVisible, k]);
+    else setDraftVisible(draftVisible.filter((c) => c !== k));
+  };
+
+  const handleDrop = (target: DefectColKey) => {
+    if (!dragKey || dragKey === target) return;
+    const next = draftOrder.filter((k) => k !== dragKey);
+    const idx = next.indexOf(target);
+    next.splice(idx, 0, dragKey);
+    setDraftOrder(next);
+    setDragKey(null);
+  };
+
+  const handleReset = () => {
+    setDraftOrder(DEFECT_DEFAULT_ORDER);
+    setDraftVisible(DEFECT_DEFAULT_VISIBLE);
+  };
+
+  const handleApply = () => {
+    onApply(draftOrder, draftVisible);
+    setOpen(false);
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
+        <Columns3 className="w-4 h-4" />
+        Manage columns
+      </Button>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Manage columns</SheetTitle>
+          <SheetDescription>
+            Select the columns you most want to see. Drag the items into the order you want them shown in the table.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="rounded-md border divide-y flex-1 overflow-y-auto mt-4">
+          {draftOrder.map((k) => {
+            const col = DEFECT_COLUMNS.find((c) => c.key === k)!;
+            const locked = DEFECT_LOCKED.includes(k);
+            const checked = draftVisible.includes(k);
+            return (
+              <div
+                key={k}
+                draggable
+                onDragStart={() => setDragKey(k)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(k)}
+                onDragEnd={() => setDragKey(null)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-muted/50 cursor-grab active:cursor-grabbing",
+                  dragKey === k && "opacity-50"
+                )}
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-sm font-medium">{col.label}</span>
+                <Checkbox
+                  checked={checked}
+                  disabled={locked}
+                  onCheckedChange={(v) => toggle(k, !!v)}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <SheetFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={handleReset}>Reset</Button>
+          <Button onClick={handleApply}>Save</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 
 function SearchableSelect({
   value,
