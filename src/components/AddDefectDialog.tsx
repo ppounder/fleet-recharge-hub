@@ -222,6 +222,8 @@ function DefectCard({
 
   const typeErrId = `defect-${defect.id}-type-error`;
   const rectErrId = `defect-${defect.id}-rectified-error`;
+  const dateErrId = `defect-${defect.id}-date-error`;
+  const reporterErrId = `defect-${defect.id}-reporter-error`;
 
   function handlePhoto(files: FileList | null) {
     if (!files || files.length === 0) return;
