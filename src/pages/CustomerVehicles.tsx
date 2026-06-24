@@ -1308,7 +1308,7 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
 
   const SortHeader = ({ k, children }: { k: DefectColKey; children: React.ReactNode }) => {
     if (k === "actions") {
-      return <TableHead>{children}</TableHead>;
+      return <TableHead className="text-right">{children}</TableHead>;
     }
     return (
       <TableHead>
@@ -1367,8 +1367,8 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
       case "actions": {
         const hasMedia = (d.photos?.length ?? 0) > 0 || (d.damage_marks?.length ?? 0) > 0;
         return (
-          <TableCell key={k} className="w-[130px]">
-            <div className="flex items-center gap-1">
+          <TableCell key={k} className="w-[130px] text-right">
+            <div className="flex items-center justify-end gap-1">
               {hasMedia && (
                 <Button
                   variant="ghost"
