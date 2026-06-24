@@ -269,6 +269,11 @@ export default function CustomerVehicles() {
           loler_expiry_date: form.loler_expiry_date || null,
           tacho_2yr_expiry_date: form.tacho_2yr_expiry_date || null,
           tacho_6yr_expiry_date: form.tacho_6yr_expiry_date || null,
+          rfl_type: form.rfl_type || null,
+          rfl_expiry_date: form.rfl_expiry_date || null,
+          rfl_renewal_method: form.rfl_renewal_method || null,
+          rfl_renewal_term_months: form.rfl_renewal_term_months ? Number(form.rfl_renewal_term_months) : null,
+          rfl_supplier: form.rfl_supplier || null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
