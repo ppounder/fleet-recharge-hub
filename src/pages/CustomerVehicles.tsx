@@ -318,61 +318,69 @@ export default function CustomerVehicles() {
 
             </TabsContent>
 
-            <TabsContent value="dates">
-              <CollapsibleCard title="Key Dates">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="year">Year</Label>
-                    <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
+            {selected && (
+              <TabsContent value="dates">
+                <CollapsibleCard title="Key Dates">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="year">Year</Label>
+                      <Input id="year" value={selected.year ?? ""} readOnly className="bg-card" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mot_due">MOT due</Label>
+                      <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="next_service">Next service</Label>
+                      <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mileage">Mileage</Label>
+                      <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly className="bg-card" />
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="mot_due">MOT due</Label>
-                    <Input id="mot_due" type="date" value={selected.mot_due ?? ""} readOnly className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="next_service">Next service</Label>
-                    <Input id="next_service" type="date" value={selected.next_service ?? ""} readOnly className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="mileage">Mileage</Label>
-                    <Input id="mileage" value={selected.mileage ? `${selected.mileage.toLocaleString()} mi` : ""} readOnly className="bg-card" />
-                  </div>
-                </div>
-              </CollapsibleCard>
-            </TabsContent>
+                </CollapsibleCard>
+              </TabsContent>
+            )}
 
-            <TabsContent value="defects">
-              <DefectHistory vehicleId={selected.id} />
-            </TabsContent>
+            {selected && (
+              <TabsContent value="defects">
+                <DefectHistory vehicleId={selected.id} />
+              </TabsContent>
+            )}
           </Tabs>
 
 
           <div className="sticky bottom-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-t flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setSelected(null)} disabled={update.isPending}>
+            <Button variant="outline" onClick={() => { setSelected(null); setCreating(false); }} disabled={update.isPending || createVehicle.isPending}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={update.isPending}>
-              {update.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Save
+            <Button onClick={handleSave} disabled={update.isPending || createVehicle.isPending}>
+              {(update.isPending || createVehicle.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {creating ? "Create Asset" : "Save"}
             </Button>
           </div>
         </div>
-        <VehicleStatusDialog
-          vehicle={selected}
-          open={statusDialogOpen}
-          onOpenChange={setStatusDialogOpen}
-          onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
-        />
-        <MaintenanceMessageDialog
-          vehicleId={selected.id}
-          vehicleStatus={selected.status}
-          fleetId={(selected as any).fleet_id ?? null}
-          changedBy={profile?.full_name || ""}
-          open={msgDialogOpen}
-          onOpenChange={setMsgDialogOpen}
-          currentMessage={latestMessage}
-          onCurrentMessageChange={() => {}}
-        />
+        {selected && (
+          <>
+            <VehicleStatusDialog
+              vehicle={selected}
+              open={statusDialogOpen}
+              onOpenChange={setStatusDialogOpen}
+              onStatusChanged={(s) => setForm((f) => ({ ...f, status: s }))}
+            />
+            <MaintenanceMessageDialog
+              vehicleId={selected.id}
+              vehicleStatus={selected.status}
+              fleetId={(selected as any).fleet_id ?? null}
+              changedBy={profile?.full_name || ""}
+              open={msgDialogOpen}
+              onOpenChange={setMsgDialogOpen}
+              currentMessage={latestMessage}
+              onCurrentMessageChange={() => {}}
+            />
+          </>
+        )}
       </AppLayout>
     );
   }
