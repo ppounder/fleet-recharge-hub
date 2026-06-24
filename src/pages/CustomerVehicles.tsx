@@ -65,9 +65,12 @@ const blank: EditableFields = {
   model: "",
   derivative: "",
   year: "",
+  year: "",
   mot_due: "",
   next_service: "",
   mileage: "",
+  registered_date: "",
+  date_in_service: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
