@@ -111,6 +111,30 @@ function dotToManufactureDate(serial: string): string | null {
   return `Week ${String(ww).padStart(2, "0")} / 20${String(yy).padStart(2, "0")}`;
 }
 
+const TYRE_MANUFACTURERS = [
+  "Bridgestone",
+  "Continental",
+  "Michelin",
+  "Goodyear",
+  "Pirelli",
+  "Dunlop",
+  "Hankook",
+  "Yokohama",
+  "Firestone",
+  "Kumho",
+  "Toyo",
+  "Falken",
+  "BFGoodrich",
+  "Nokian",
+  "General Tire",
+  "Cooper",
+  "Maxxis",
+  "Nexen",
+  "Avon",
+  "Vredestein",
+  "Other",
+];
+
 export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreReadingsHistoryProps) {
   const qc = useQueryClient();
   const { toast } = useToast();
