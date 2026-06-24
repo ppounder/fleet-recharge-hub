@@ -457,13 +457,24 @@ export default function CustomerVehicles() {
                 </CollapsibleCard>
 
                 {selected && form.wheel_plan && (
-                  <CollapsibleCard title="Tyre Reading History">
-                    <TyreReadingsHistory
-                      vehicleId={selected.id}
-                      wheelPlan={form.wheel_plan}
-                      assetType={form.asset_type}
-                    />
-                  </CollapsibleCard>
+                  <>
+                    <CollapsibleCard title="Tyre details">
+                      <TyreReadingsHistory
+                        vehicleId={selected.id}
+                        wheelPlan={form.wheel_plan}
+                        assetType={form.asset_type}
+                        section="details"
+                      />
+                    </CollapsibleCard>
+                    <CollapsibleCard title="Tyre Reading History">
+                      <TyreReadingsHistory
+                        vehicleId={selected.id}
+                        wheelPlan={form.wheel_plan}
+                        assetType={form.asset_type}
+                        section="readings"
+                      />
+                    </CollapsibleCard>
+                  </>
                 )}
               </TabsContent>
             )}
