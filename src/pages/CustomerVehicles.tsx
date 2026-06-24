@@ -876,7 +876,8 @@ export default function CustomerVehicles() {
 
             <TabsContent value="defects">
               {selected ? (
-                <DefectHistory vehicleId={selected.id} />
+                <DefectHistory vehicleId={selected.id} vehicleLabel={selected.registration || selected.fleet_number || undefined} />
+
               ) : (
                 <CollapsibleCard title="Defect History">
                   <div className="rounded-md border bg-card px-3 py-6 text-sm text-muted-foreground">
