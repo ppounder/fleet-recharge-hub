@@ -247,6 +247,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const [tyreForm, setTyreForm] = useState(initialTyreForm);
   type TyreErrors = Partial<Record<keyof typeof initialTyreForm, string>>;
   const [tyreErrors, setTyreErrors] = useState<TyreErrors>({});
+  const [manufacturerIsOther, setManufacturerIsOther] = useState(false);
 
   const updateTyreField = <K extends keyof typeof initialTyreForm>(key: K, value: string) => {
     setTyreForm((prev) => ({ ...prev, [key]: value }));
@@ -257,6 +258,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     setTyreForm(initialTyreForm);
     setTyreEditingId(null);
     setTyreErrors({});
+    setManufacturerIsOther(false);
   };
 
   const tyreSchema = z.object({
