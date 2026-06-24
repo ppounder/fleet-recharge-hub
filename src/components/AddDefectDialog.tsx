@@ -68,23 +68,23 @@ interface Props {
 export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }: Props) {
   const { user, profile } = useAuth();
   const qc = useQueryClient();
-  const [defects, setDefects] = useState<Defect[]>([blank()]);
-  const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string }>>({});
+  const defaultReporter = profile?.full_name || user?.email || "";
+  const [defects, setDefects] = useState<Defect[]>([blank(defaultReporter)]);
+  const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string }>>({});
   const [warn, setWarn] = useState("");
 
   useEffect(() => {
     if (open) {
-      setDefects([blank()]);
+      setDefects([blank(defaultReporter)]);
       setErrors({});
       setWarn("");
     }
-  }, [open]);
+  }, [open, defaultReporter]);
 
   const validDefects = defects.filter((d) => d.type.trim());
 
   const save = useMutation({
     mutationFn: async () => {
-      const reportedBy = profile?.full_name || user?.email || null;
       const rows = validDefects
         .filter((d) => !d.rectified)
         .map((d) => ({
@@ -93,9 +93,10 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
           description: d.description || null,
           severity: d.severity,
           status: "open",
-          reported_by: reportedBy,
-          reported_at: new Date().toISOString(),
+          reported_by: d.reportedBy || null,
+          reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : new Date().toISOString(),
         }));
+
       if (rows.length > 0) {
         const { error } = await supabase.from("vehicle_defects" as any).insert(rows);
         if (error) throw error;
