@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench } from "lucide-react";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
