@@ -41,6 +41,10 @@ type EditableFields = {
   make: string;
   model: string;
   derivative: string;
+  year: string;
+  mot_due: string;
+  next_service: string;
+  mileage: string;
 };
 
 const blank: EditableFields = {
@@ -54,6 +58,10 @@ const blank: EditableFields = {
   make: "",
   model: "",
   derivative: "",
+  year: "",
+  mot_due: "",
+  next_service: "",
+  mileage: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
@@ -68,6 +76,10 @@ function toForm(v: Vehicle): EditableFields {
     make: v.make || "",
     model: v.model || "",
     derivative: (v as any).derivative || "",
+    year: v.year != null ? String(v.year) : "",
+    mot_due: v.mot_due || "",
+    next_service: v.next_service || "",
+    mileage: v.mileage != null ? String(v.mileage) : "",
   };
 }
 
