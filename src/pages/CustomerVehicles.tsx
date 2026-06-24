@@ -303,6 +303,15 @@ export default function CustomerVehicles() {
       mileage: "Mileage",
       registered_date: "Registered date",
       date_in_service: "Date in service",
+      last_service_date: "Last service date",
+      next_service_date: "Next service date",
+      last_inspection_date: "Last inspection date",
+      next_inspection_date: "Next inspection date",
+      mot_issued_date: "MOT issued date",
+      mot_expiry_date: "MOT expiry date",
+      loler_expiry_date: "LOLER expiry date",
+      tacho_2yr_expiry_date: "2yr Tacho expiry date",
+      tacho_6yr_expiry_date: "6yr Tacho expiry date",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
