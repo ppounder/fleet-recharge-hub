@@ -252,7 +252,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     const v = e.target.value;
                     if (v === "" || /^\d*\.?\d*$/.test(v)) setForm((f) => ({ ...f, tread_depth: v }));
                   }}
-                  placeholder="8.00"
+                  placeholder=""
                 />
               </div>
               <div className="space-y-1.5">
