@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,6 +89,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const initialForm = { position: "", tyre_code: "", tread_depth: "", reading_date: new Date().toISOString().slice(0, 10) };
   const [form, setForm] = useState(initialForm);
   type FormErrors = Partial<Record<"position" | "tread_depth" | "reading_date", string>>;
@@ -159,11 +160,33 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tyre_readings", vehicleId] });
       setOpen(false);
+      setEditingId(null);
       setForm(initialForm);
       setErrors({});
       toast({ title: "Tyre reading added" });
     },
     onError: (e: any) => toast({ title: "Failed to add reading", description: e.message, variant: "destructive" }),
+  });
+
+  const update = useMutation({
+    mutationFn: async ({ id, parsed }: { id: string; parsed: z.infer<typeof readingSchema> }) => {
+      const { error } = await supabase.from("tyre_readings").update({
+        position: parsed.position,
+        tyre_code: form.tyre_code.trim() || null,
+        tread_depth: parseFloat(parsed.tread_depth),
+        reading_date: parsed.reading_date,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyre_readings", vehicleId] });
+      setOpen(false);
+      setEditingId(null);
+      setForm(initialForm);
+      setErrors({});
+      toast({ title: "Tyre reading updated" });
+    },
+    onError: (e: any) => toast({ title: "Failed to update reading", description: e.message, variant: "destructive" }),
   });
 
   const handleSave = () => {
@@ -183,8 +206,22 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       return;
     }
     setErrors({});
-    create.mutate(result.data);
+    if (editingId) update.mutate({ id: editingId, parsed: result.data });
+    else create.mutate(result.data);
   };
+
+  const startEdit = (r: TyreReading) => {
+    setEditingId(r.id);
+    setForm({
+      position: r.position,
+      tyre_code: r.tyre_code ?? "",
+      tread_depth: Number(r.tread_depth).toFixed(1),
+      reading_date: r.reading_date,
+    });
+    setErrors({});
+    setOpen(true);
+  };
+
 
 
   const remove = useMutation({
@@ -219,7 +256,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
               <TableHead>Description</TableHead>
               <TableHead className="w-40">Latest Tread Depth</TableHead>
               <TableHead className="w-32">Date taken</TableHead>
-              <TableHead className="w-12" />
+              <TableHead className="w-24 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -255,14 +292,27 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                     </TableCell>
                     <TableCell>
                       {latest && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => remove.mutate(latest.id)}
-                          aria-label="Delete latest reading"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => startEdit(latest)}
+                            disabled={remove.isPending}
+                            aria-label="Edit latest reading"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => remove.mutate(latest.id)}
+                            disabled={remove.isPending}
+                            className={cn("text-destructive hover:bg-destructive hover:text-white")}
+                            aria-label="Delete latest reading"
+                          >
+                            {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>
@@ -278,6 +328,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
         onOpenChange={(next) => {
           setOpen(next);
           if (!next) {
+            setEditingId(null);
             setForm(initialForm);
             setErrors({});
           }
@@ -285,7 +336,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add tyre reading</DialogTitle>
+            <DialogTitle>{editingId ? "Edit tyre reading" : "Add tyre reading"}</DialogTitle>
             <DialogDescription>Record the latest tread depth for a wheel position.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -387,8 +438,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={create.isPending}>
-              {create.isPending ? "Saving…" : "Save"}
+            <Button onClick={handleSave} disabled={create.isPending || update.isPending}>
+              {(create.isPending || update.isPending) ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
