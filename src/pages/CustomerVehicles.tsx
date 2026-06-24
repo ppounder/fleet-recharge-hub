@@ -429,7 +429,7 @@ export default function CustomerVehicles() {
 }
 
 function VehiclesTable({
-  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, columnOrder, setColumnOrder, onRowClick,
+  vehicles, search, setSearch, sortKey, sortDir, setSort, visibleCols, setVisibleCols, columnOrder, setColumnOrder, onRowClick, onAdd,
 }: {
   vehicles: Vehicle[];
   search: string;
@@ -442,6 +442,7 @@ function VehiclesTable({
   columnOrder: ColKey[];
   setColumnOrder: (c: ColKey[]) => void;
   onRowClick: (v: Vehicle) => void;
+  onAdd: () => void;
 }) {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
