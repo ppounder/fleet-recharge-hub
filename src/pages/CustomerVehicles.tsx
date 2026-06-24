@@ -99,7 +99,7 @@ const BODY_TYPES_BY_ASSET: Record<string, string[]> = {
 
 const WHEEL_PLANS_BY_ASSET: Record<string, string[]> = {
   Car: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x4)"],
-  Van: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x4)"],
+  Van: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x2T) Twin Rear Wheels", "2-Axle Rigid Body (4x4)"],
   HGV: [
     "2-Axle Rigid (4x2)",
     "3-Axle Rigid (6x2)",
