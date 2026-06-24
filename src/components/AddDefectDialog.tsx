@@ -16,6 +16,8 @@ import { toast } from "@/hooks/use-toast";
 
 type Severity = "safety" | "non-safety" | "advisory";
 
+type DamageMark = { x: number; y: number };
+
 type Defect = {
   id: string;
   type: string;
@@ -23,6 +25,7 @@ type Defect = {
   severity: Severity;
   rectified: boolean;
   photos: string[];
+  damageMarks?: DamageMark[];
 };
 
 const PRESETS = ["Bulb out", "Damage", "Leaking", "Worn", "Cracked", "Missing", "Other"];
