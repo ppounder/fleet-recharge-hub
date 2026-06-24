@@ -111,12 +111,12 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
     pressure: z
       .string()
       .trim()
+      .min(1, { message: "Pressure is required" })
       .refine(
-        (v) => v === "" || (form.pressure_unit === "bar" ? /^\d+(\.\d)?$/.test(v) : /^\d+$/.test(v)),
+        (v) => form.pressure_unit === "bar" ? /^\d+(\.\d)?$/.test(v) : /^\d+$/.test(v),
         { message: form.pressure_unit === "bar" ? "Enter a number with up to 1 decimal" : "Enter a whole number" }
       )
       .refine((v) => {
-        if (v === "") return true;
         const n = parseFloat(v);
         return form.pressure_unit === "bar" ? n >= 0 && n <= 20 : n >= 0 && n <= 200;
       }, { message: form.pressure_unit === "bar" ? "Pressure must be between 0 and 20 bar" : "Pressure must be between 0 and 200 psi" }),
