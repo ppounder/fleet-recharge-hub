@@ -38,6 +38,7 @@ type EditableFields = {
   asset_number: string;
   asset_type: string;
   body_type: string;
+  wheel_plan: string;
   make: string;
   model: string;
   derivative: string;
@@ -55,6 +56,7 @@ const blank: EditableFields = {
   asset_number: "",
   asset_type: "",
   body_type: "",
+  wheel_plan: "",
   make: "",
   model: "",
   derivative: "",
@@ -73,6 +75,7 @@ function toForm(v: Vehicle): EditableFields {
     asset_number: (v as any).asset_number || "",
     asset_type: (v as any).asset_type || "",
     body_type: (v as any).body_type || "",
+    wheel_plan: (v as any).wheel_plan || "",
     make: v.make || "",
     model: v.model || "",
     derivative: (v as any).derivative || "",
@@ -92,6 +95,29 @@ const BODY_TYPES_BY_ASSET: Record<string, string[]> = {
   "Tail Lift": ["Column", "Cantilever", "Tuckaway", "Slider"],
   _default: ["Other"],
 };
+
+const WHEEL_PLANS_BY_ASSET: Record<string, string[]> = {
+  Car: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x4)"],
+  Van: ["2-Axle Rigid Body (4x2)", "2-Axle Rigid Body (4x4)"],
+  HGV: [
+    "2-Axle Rigid (4x2)",
+    "3-Axle Rigid (6x2)",
+    "3-Axle Rigid (6x4)",
+    "4-Axle Rigid (8x2)",
+    "4-Axle Rigid (8x4)",
+    "2-Axle Tractor (4x2)",
+    "3-Axle Tractor (6x2)",
+    "3-Axle Tractor (6x4)",
+  ],
+  Trailer: [
+    "Single Axle",
+    "Twin Axle",
+    "Tri Axle",
+    "Quad Axle",
+  ],
+};
+const WHEEL_PLAN_ASSET_TYPES = new Set(["Car", "Van", "HGV", "Trailer"]);
+
 
 
 type ColKey = "registration" | "fleet_number" | "asset_type" | "vehicle" | "year" | "mileage" | "mot_due" | "next_service" | "status";
