@@ -28,6 +28,8 @@ type Defect = {
   rectifiedDetails?: string;
   photos: string[];
   damageMarks?: DamageMark[];
+  reportedAt: string;
+  reportedBy: string;
 };
 
 const PRESETS = ["Bulb out", "Damage", "Leaking", "Worn", "Cracked", "Missing", "Other"];
@@ -36,8 +38,24 @@ function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-function blank(): Defect {
-  return { id: uid(), type: "", description: "", severity: "non-safety", rectified: false, rectifiedDetails: "", photos: [] };
+function todayISO() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function blank(reportedBy = ""): Defect {
+  return {
+    id: uid(),
+    type: "",
+    description: "",
+    severity: "non-safety",
+    rectified: false,
+    rectifiedDetails: "",
+    photos: [],
+    reportedAt: todayISO(),
+    reportedBy,
+  };
 }
 
 interface Props {
@@ -50,23 +68,23 @@ interface Props {
 export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }: Props) {
   const { user, profile } = useAuth();
   const qc = useQueryClient();
-  const [defects, setDefects] = useState<Defect[]>([blank()]);
-  const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string }>>({});
+  const defaultReporter = profile?.full_name || user?.email || "";
+  const [defects, setDefects] = useState<Defect[]>([blank(defaultReporter)]);
+  const [errors, setErrors] = useState<Record<string, { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string }>>({});
   const [warn, setWarn] = useState("");
 
   useEffect(() => {
     if (open) {
-      setDefects([blank()]);
+      setDefects([blank(defaultReporter)]);
       setErrors({});
       setWarn("");
     }
-  }, [open]);
+  }, [open, defaultReporter]);
 
   const validDefects = defects.filter((d) => d.type.trim());
 
   const save = useMutation({
     mutationFn: async () => {
-      const reportedBy = profile?.full_name || user?.email || null;
       const rows = validDefects
         .filter((d) => !d.rectified)
         .map((d) => ({
@@ -75,9 +93,10 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
           description: d.description || null,
           severity: d.severity,
           status: "open",
-          reported_by: reportedBy,
-          reported_at: new Date().toISOString(),
+          reported_by: d.reportedBy || null,
+          reported_at: d.reportedAt ? new Date(d.reportedAt).toISOString() : new Date().toISOString(),
         }));
+
       if (rows.length > 0) {
         const { error } = await supabase.from("vehicle_defects" as any).insert(rows);
         if (error) throw error;
@@ -92,10 +111,11 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
   });
 
   function handleSave() {
-    const nextErrors: Record<string, { type?: string; description?: string; rectifiedDetails?: string }> = {};
+    type DefectErr = { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string };
+    const nextErrors: Record<string, DefectErr> = {};
     let hasError = false;
     defects.forEach((d) => {
-      const e: { type?: string; description?: string; rectifiedDetails?: string } = {};
+      const e: DefectErr = {};
       if (!d.type.trim()) {
         e.type = "Defect type is required";
         hasError = true;
@@ -104,8 +124,17 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
         e.rectifiedDetails = "Rectified details are required";
         hasError = true;
       }
-      if (e.type || e.description || e.rectifiedDetails) nextErrors[d.id] = e;
+      if (!d.reportedAt) {
+        e.reportedAt = "Date reported is required";
+        hasError = true;
+      }
+      if (!d.reportedBy.trim()) {
+        e.reportedBy = "Reported by is required";
+        hasError = true;
+      }
+      if (e.type || e.description || e.rectifiedDetails || e.reportedAt || e.reportedBy) nextErrors[d.id] = e;
     });
+
     setErrors(nextErrors);
     if (hasError) {
       setWarn("Please fix the highlighted fields.");
@@ -150,7 +179,7 @@ export function AddDefectDialog({ open, onOpenChange, vehicleId, vehicleLabel }:
               onDelete={() => setDefects(defects.filter((x) => x.id !== d.id))}
             />
           ))}
-          <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank()])}>
+          <Button variant="outline" className="w-full gap-2" onClick={() => setDefects([...defects, blank(defaultReporter)])}>
             <Plus className="h-4 w-4" /> Add another defect
           </Button>
           {warn && <Alert variant="destructive"><AlertDescription>{warn}</AlertDescription></Alert>}
@@ -181,7 +210,7 @@ function DefectCard({
   defect: Defect;
   index: number;
   canDelete: boolean;
-  errors: { type?: string; description?: string; rectifiedDetails?: string };
+  errors: { type?: string; description?: string; rectifiedDetails?: string; reportedAt?: string; reportedBy?: string };
   onChange: (d: Defect) => void;
   onDelete: () => void;
 }) {
@@ -193,6 +222,8 @@ function DefectCard({
 
   const typeErrId = `defect-${defect.id}-type-error`;
   const rectErrId = `defect-${defect.id}-rectified-error`;
+  const dateErrId = `defect-${defect.id}-date-error`;
+  const reporterErrId = `defect-${defect.id}-reporter-error`;
 
   function handlePhoto(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -216,8 +247,39 @@ function DefectCard({
         )}
       </div>
       <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor={`defect-${defect.id}-date`}>Date reported</Label>
+            <Input
+              id={`defect-${defect.id}-date`}
+              type="date"
+              value={defect.reportedAt}
+              onChange={(e) => onChange({ ...defect, reportedAt: e.target.value })}
+              aria-invalid={!!errors.reportedAt}
+              aria-describedby={errors.reportedAt ? dateErrId : undefined}
+              className={cn(errors.reportedAt && "border-destructive focus-visible:ring-destructive")}
+            />
+            {errors.reportedAt && (
+              <p id={dateErrId} className="text-xs text-destructive">{errors.reportedAt}</p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`defect-${defect.id}-reporter`}>Reported by</Label>
+            <Input
+              id={`defect-${defect.id}-reporter`}
+              value={defect.reportedBy}
+              onChange={(e) => onChange({ ...defect, reportedBy: e.target.value })}
+              aria-invalid={!!errors.reportedBy}
+              aria-describedby={errors.reportedBy ? reporterErrId : undefined}
+              className={cn(errors.reportedBy && "border-destructive focus-visible:ring-destructive")}
+            />
+            {errors.reportedBy && (
+              <p id={reporterErrId} className="text-xs text-destructive">{errors.reportedBy}</p>
+            )}
+          </div>
+        </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`defect-${defect.id}-type`}>Type</Label>
+          <Label htmlFor={`defect-${defect.id}-type`}>Defect type</Label>
           <Select value={PRESETS.includes(defect.type) ? defect.type : ""} onValueChange={(v) => onChange({ ...defect, type: v })}>
             <SelectTrigger
               id={`defect-${defect.id}-type`}
