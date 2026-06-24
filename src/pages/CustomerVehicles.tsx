@@ -93,6 +93,11 @@ const blank: EditableFields = {
   loler_expiry_date: "",
   tacho_2yr_expiry_date: "",
   tacho_6yr_expiry_date: "",
+  rfl_type: "",
+  rfl_expiry_date: "",
+  rfl_renewal_method: "",
+  rfl_renewal_term_months: "",
+  rfl_supplier: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
