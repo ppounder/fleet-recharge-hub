@@ -444,8 +444,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType }: TyreRea
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PSI">PSI</SelectItem>
-                      <SelectItem value="Bar">Bar</SelectItem>
+                      <SelectItem value="psi">psi</SelectItem>
+                      <SelectItem value="bar">bar</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
