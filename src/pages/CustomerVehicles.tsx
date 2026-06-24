@@ -1360,18 +1360,20 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
                 variant="ghost"
                 size="icon"
                 aria-label="Edit defect"
+                title="Edit"
                 onClick={(e) => { e.stopPropagation(); setEditDefect(d); }}
               >
-                <Pencil className="w-4 h-4" />
+                <Pencil className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="Delete defect"
-                className="text-muted-foreground hover:text-destructive"
+                title="Delete"
+                className="text-destructive hover:bg-destructive hover:text-white"
                 onClick={(e) => { e.stopPropagation(); setDeleteDefect(d); }}
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </TableCell>
