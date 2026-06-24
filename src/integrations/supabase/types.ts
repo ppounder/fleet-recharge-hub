@@ -1118,6 +1118,7 @@ export type Database = {
           body_type: string | null
           created_at: string
           customer_id: string | null
+          date_in_service: string | null
           derivative: string | null
           fleet_id: string | null
           fleet_manager_id: string | null
@@ -1128,6 +1129,7 @@ export type Database = {
           model: string
           mot_due: string | null
           next_service: string | null
+          registered_date: string | null
           registration: string
           status: string
           updated_at: string
@@ -1141,6 +1143,7 @@ export type Database = {
           body_type?: string | null
           created_at?: string
           customer_id?: string | null
+          date_in_service?: string | null
           derivative?: string | null
           fleet_id?: string | null
           fleet_manager_id?: string | null
@@ -1151,6 +1154,7 @@ export type Database = {
           model: string
           mot_due?: string | null
           next_service?: string | null
+          registered_date?: string | null
           registration: string
           status?: string
           updated_at?: string
@@ -1164,6 +1168,7 @@ export type Database = {
           body_type?: string | null
           created_at?: string
           customer_id?: string | null
+          date_in_service?: string | null
           derivative?: string | null
           fleet_id?: string | null
           fleet_manager_id?: string | null
@@ -1174,6 +1179,7 @@ export type Database = {
           model?: string
           mot_due?: string | null
           next_service?: string | null
+          registered_date?: string | null
           registration?: string
           status?: string
           updated_at?: string

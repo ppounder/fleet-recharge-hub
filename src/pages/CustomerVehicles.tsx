@@ -48,6 +48,8 @@ type EditableFields = {
   mot_due: string;
   next_service: string;
   mileage: string;
+  registered_date: string;
+  date_in_service: string;
 };
 
 const blank: EditableFields = {
@@ -66,6 +68,8 @@ const blank: EditableFields = {
   mot_due: "",
   next_service: "",
   mileage: "",
+  registered_date: "",
+  date_in_service: "",
 };
 
 function toForm(v: Vehicle): EditableFields {
@@ -85,6 +89,8 @@ function toForm(v: Vehicle): EditableFields {
     mot_due: v.mot_due || "",
     next_service: v.next_service || "",
     mileage: v.mileage != null ? String(v.mileage) : "",
+    registered_date: (v as any).registered_date || "",
+    date_in_service: (v as any).date_in_service || "",
   };
 }
 
@@ -210,6 +216,8 @@ export default function CustomerVehicles() {
           mot_due: form.mot_due || null,
           next_service: form.next_service || null,
           mileage: form.mileage ? Number(form.mileage) : null,
+          registered_date: form.registered_date || null,
+          date_in_service: form.date_in_service || null,
           fleet_manager_id: user?.id ?? null,
           fleet_id: profile?.fleet_id ?? null,
         } as any);
@@ -240,6 +248,8 @@ export default function CustomerVehicles() {
         mot_due: form.mot_due || null,
         next_service: form.next_service || null,
         mileage: form.mileage ? Number(form.mileage) : null,
+        registered_date: form.registered_date || null,
+        date_in_service: form.date_in_service || null,
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
@@ -264,6 +274,8 @@ export default function CustomerVehicles() {
       mot_due: "MOT due",
       next_service: "Next service",
       mileage: "Mileage",
+      registered_date: "Registered date",
+      date_in_service: "Date in service",
     };
     const rows: (keyof EditableFields)[][] = [
       ["status", "vin"],
@@ -416,20 +428,12 @@ export default function CustomerVehicles() {
               <CollapsibleCard title="Key Dates">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
                   <div className="space-y-1.5">
-                    <Label htmlFor="year">Year</Label>
-                    <Input id="year" inputMode="numeric" value={form.year} onChange={set("year")} className="bg-card" />
+                    <Label htmlFor="registered_date">Registered date</Label>
+                    <Input id="registered_date" type="date" value={form.registered_date} onChange={set("registered_date")} className="bg-card" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="mot_due">MOT due</Label>
-                    <Input id="mot_due" type="date" value={form.mot_due} onChange={set("mot_due")} className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="next_service">Next service</Label>
-                    <Input id="next_service" type="date" value={form.next_service} onChange={set("next_service")} className="bg-card" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="mileage">Mileage</Label>
-                    <Input id="mileage" inputMode="numeric" value={form.mileage} onChange={set("mileage")} className="bg-card" />
+                    <Label htmlFor="date_in_service">Date in service</Label>
+                    <Input id="date_in_service" type="date" value={form.date_in_service} onChange={set("date_in_service")} className="bg-card" />
                   </div>
                 </div>
               </CollapsibleCard>
