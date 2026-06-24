@@ -586,7 +586,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
           </Table>
         </div>
       </section>
+      </>)}
 
+      {section !== "details" && (<>
       {/* ============ Tyre readings section ============ */}
       <div className="flex items-center justify-between">
         <div>
