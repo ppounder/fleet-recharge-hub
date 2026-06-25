@@ -143,6 +143,14 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
 
   const handleSave = () => {
     if (!validate()) return;
+    // Check previous reading (exclude the one being edited)
+    const prev = readings
+      .filter((r) => !editing || r.id !== editing.id)
+      .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())[0];
+    if (prev && Number(reading) < prev.reading) {
+      setConfirmLower(true);
+      return;
+    }
     save.mutate();
   };
 
