@@ -94,12 +94,15 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
 
   const handleSave = async () => {
     const e: Record<string, string> = {};
+    if (!customerId) e.customer = "Customer is required";
+    if (!vehicleId) e.vehicle = "Vehicle is required";
     if (!date) e.date = "Required";
     if (multipleDays && !endDate) e.endDate = "Required";
     if (!allDay && (!startTime || !endTime)) e.time = "Required";
     if (!allDay && !multipleDays && startTime >= endTime) e.time = "End must be after start";
     setErrors(e);
     if (Object.keys(e).length) return;
+
 
     const endYmd = multipleDays ? endDate : date;
     const starts = allDay ? new Date(`${date}T00:00:00`) : new Date(`${date}T${startTime}:00`);
