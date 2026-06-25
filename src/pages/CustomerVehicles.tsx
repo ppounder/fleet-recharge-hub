@@ -936,12 +936,14 @@ export default function CustomerVehicles() {
             return d <= in30 && d >= now;
           }).length;
           const tiles = [
+            { label: "All assets / vehicles", value: vehicles.length, desc: "Total assets and vehicles", accent: false },
             { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", accent: true },
             { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", accent: false },
             { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", accent: false },
           ];
           return (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
               {tiles.map((t) => (
                 <div
                   key={t.label}
