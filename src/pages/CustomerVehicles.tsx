@@ -762,10 +762,8 @@ export default function CustomerVehicles() {
                       tabIndex={-1}
                       className="bg-muted cursor-not-allowed"
                     />
-
-                      </SelectContent>
-                    </Select>
                   </div>
+
                   <div className="space-y-1.5">
                     <Label htmlFor="average_monthly_distance">Average monthly distance</Label>
                     <Input
