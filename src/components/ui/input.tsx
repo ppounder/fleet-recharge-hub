@@ -3,20 +3,29 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, onClick, ...props }, ref) => {
+    const isPickerType = type === "time" || type === "date" || type === "datetime-local" || type === "month" || type === "week";
     return (
       <input
         type={type}
         className={cn(
           "flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          isPickerType && "cursor-pointer",
           className,
         )}
         ref={ref}
+        onClick={(e) => {
+          if (isPickerType && !e.currentTarget.disabled) {
+            try { (e.currentTarget as HTMLInputElement & { showPicker?: () => void }).showPicker?.(); } catch { /* noop */ }
+          }
+          onClick?.(e);
+        }}
         {...props}
       />
     );
   },
 );
+
 Input.displayName = "Input";
 
 export { Input };
