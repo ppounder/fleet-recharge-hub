@@ -131,10 +131,12 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["odometer_readings", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["vehicle-latest-odo-reading", vehicleId] });
       toast({ title: editing ? "Reading updated" : "Reading added" });
       setDialogOpen(false);
       resetForm();
     },
+
     onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
   });
 
@@ -150,9 +152,11 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["odometer_readings", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["vehicle-latest-odo-reading", vehicleId] });
       toast({ title: "Reading deleted" });
       setDeleting(null);
     },
+
     onError: (e: any) => toast({ title: "Delete failed", description: e.message, variant: "destructive" }),
   });
 
