@@ -1543,6 +1543,158 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={replaceOpen}
+        onOpenChange={(next) => {
+          setReplaceOpen(next);
+          if (!next) {
+            setReplaceForm(initialReplaceForm);
+            setReplaceErrors({});
+            setReplaceManufacturerIsOther(false);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Replace tyre</DialogTitle>
+            <DialogDescription>
+              Dispose of the existing tyre at <span className="font-medium text-foreground">{replaceForm.position || "—"}</span> and fit a new tyre at the same position.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-md border bg-muted/30 p-3 space-y-3">
+              <p className="text-sm font-medium">Dispose existing tyre</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_disp_date">Disposal date</Label>
+                  <DatePicker
+                    id="replace_disp_date"
+                    value={replaceForm.date}
+                    onChange={(v) => updateReplaceField("date", v)}
+                    className={cn(replaceErrors.date && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.date && <p className="text-xs text-destructive">{replaceErrors.date}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_disp_time">Time</Label>
+                  <Input
+                    id="replace_disp_time"
+                    type="time"
+                    value={replaceForm.time}
+                    onChange={(e) => updateReplaceField("time", e.target.value)}
+                    aria-invalid={!!replaceErrors.time}
+                    className={cn(replaceErrors.time && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.time && <p className="text-xs text-destructive">{replaceErrors.time}</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-medium">New tyre details</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_manufacturer">Manufacturer</Label>
+                  <Select
+                    value={
+                      replaceManufacturerIsOther
+                        ? OTHER_MANUFACTURER
+                        : TYRE_MANUFACTURERS.includes(replaceForm.manufacturer)
+                          ? replaceForm.manufacturer
+                          : ""
+                    }
+                    onValueChange={(v) => {
+                      if (v === OTHER_MANUFACTURER) {
+                        setReplaceManufacturerIsOther(true);
+                        updateReplaceField("manufacturer", "");
+                      } else {
+                        setReplaceManufacturerIsOther(false);
+                        updateReplaceField("manufacturer", v);
+                      }
+                    }}
+                  >
+                    <SelectTrigger
+                      id="replace_manufacturer"
+                      aria-invalid={!!replaceErrors.manufacturer}
+                      className={cn(replaceErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                    >
+                      <SelectValue placeholder="Select manufacturer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TYRE_MANUFACTURERS.map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                      <SelectItem value={OTHER_MANUFACTURER}>{OTHER_MANUFACTURER}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {replaceManufacturerIsOther && (
+                    <Input
+                      autoFocus
+                      placeholder="Enter manufacturer"
+                      value={replaceForm.manufacturer}
+                      onChange={(e) => updateReplaceField("manufacturer", e.target.value)}
+                      aria-invalid={!!replaceErrors.manufacturer}
+                      className={cn(replaceErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                    />
+                  )}
+                  {replaceErrors.manufacturer && <p className="text-xs text-destructive">{replaceErrors.manufacturer}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_tyre_size">Tyre size</Label>
+                  <Input
+                    id="replace_tyre_size"
+                    value={replaceForm.tyre_size}
+                    onChange={(e) => updateReplaceField("tyre_size", e.target.value)}
+                    placeholder="e.g. 315/80R22.5"
+                    aria-invalid={!!replaceErrors.tyre_size}
+                    className={cn(replaceErrors.tyre_size && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.tyre_size && <p className="text-xs text-destructive">{replaceErrors.tyre_size}</p>}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="replace_serial">Serial number</Label>
+                <Input
+                  id="replace_serial"
+                  value={replaceForm.serial_number}
+                  onChange={(e) => updateReplaceField("serial_number", e.target.value)}
+                  placeholder="DOT code, e.g. XXXX XXXX 1223"
+                  aria-invalid={!!replaceErrors.serial_number}
+                  className={cn(replaceErrors.serial_number && "border-destructive focus-visible:ring-destructive")}
+                />
+                {replaceErrors.serial_number && <p className="text-xs text-destructive">{replaceErrors.serial_number}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Manufacture date (tyre age)</Label>
+                  <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
+                    {dotToManufactureDate(replaceForm.serial_number) ?? "—"}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_fitted_date">Date fitted</Label>
+                  <DatePicker
+                    id="replace_fitted_date"
+                    value={replaceForm.fitted_date}
+                    onChange={(v) => updateReplaceField("fitted_date", v)}
+                    className={cn(replaceErrors.fitted_date && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.fitted_date && <p className="text-xs text-destructive">{replaceErrors.fitted_date}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReplaceOpen(false)}>Cancel</Button>
+            <Button onClick={handleReplaceTyre} disabled={replaceTyre.isPending}>
+              {replaceTyre.isPending ? "Saving…" : "Replace tyre"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={confirm.open} onOpenChange={(o) => setConfirm((c) => ({ ...c, open: o }))}>
         <AlertDialogContent>
           <AlertDialogHeader>
