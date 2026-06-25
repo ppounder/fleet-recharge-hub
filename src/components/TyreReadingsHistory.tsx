@@ -140,7 +140,7 @@ function dotToTyreAge(serial: string): string | null {
   if (months < 0) return null;
   const years = Math.floor(months / 12);
   const mm = months % 12;
-  return `${String(years).padStart(2, "0")} yr ${String(mm).padStart(2, "0")} mo old`;
+  return `${String(years).padStart(2, "0")} yr ${String(mm).padStart(2, "0")} months old`;
 }
 
 const TYRE_MANUFACTURERS = [
