@@ -40,10 +40,11 @@ export function DatePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-between text-left font-normal bg-card",
+            "h-10 w-full justify-between text-left font-normal bg-background border-input text-sm",
             !parsed && "text-muted-foreground",
             className,
           )}
+
         >
           {parsed ? format(parsed, "dd MMM yyyy") : <span>{placeholder}</span>}
           <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-70" />
