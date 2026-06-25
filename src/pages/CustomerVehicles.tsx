@@ -229,7 +229,7 @@ export default function CustomerVehicles() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
   const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
-  const [kpiFilter, setKpiFilter] = useState<"all" | "off-road" | "mots-due" | "mots-expired">("all");
+  const [kpiFilter, setKpiFilter] = useState<"all" | "off-road" | "events-due" | "events-expired">("all");
 
   const location = useLocation();
   useEffect(() => {
