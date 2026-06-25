@@ -14,8 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Plus, ArrowUp, ArrowDown } from "lucide-react";
+import { Trash2, Plus, GripVertical } from "lucide-react";
 import { useBays, useUpsertBay, useDeleteBay } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
@@ -50,20 +49,29 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     }
   };
 
-  const move = async (index: number, dir: -1 | 1) => {
-    const target = index + dir;
-    if (target < 0 || target >= sorted.length) return;
-    const a = sorted[index];
-    const b = sorted[target];
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const reorder = async (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const ids = sorted.map((b) => b.id);
+    const fromIdx = ids.indexOf(fromId);
+    const toIdx = ids.indexOf(toId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    ids.splice(toIdx, 0, ids.splice(fromIdx, 1)[0]);
     try {
-      await Promise.all([
-        upsert.mutateAsync({ id: a.id, sort_order: b.sort_order }),
-        upsert.mutateAsync({ id: b.id, sort_order: a.sort_order }),
-      ]);
+      await Promise.all(
+        ids.map((id, idx) => {
+          const original = sorted.find((b) => b.id === id);
+          if (!original || original.sort_order === idx) return Promise.resolve();
+          return upsert.mutateAsync({ id, sort_order: idx });
+        }),
+      );
     } catch (e: any) {
       toast({ title: "Failed to reorder", description: e?.message ?? String(e), variant: "destructive" });
     }
   };
+
 
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
@@ -96,54 +104,52 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           </div>
           <p className="text-xs text-muted-foreground">{bays.length} of {MAX_BAYS} bays</p>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-24">Order</TableHead>
-                <TableHead>Colour</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Active</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sorted.map((b, i) => (
-                <TableRow key={b.id}>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={i === 0}
-                        onClick={() => move(i, -1)}
-                        aria-label="Move up"
-                      >
-                        <ArrowUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={i === sorted.length - 1}
-                        onClick={() => move(i, 1)}
-                        aria-label="Move down"
-                      >
-                        <ArrowDown className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell><span className="inline-block w-6 h-6 rounded" style={{ background: b.color }} /></TableCell>
-                  <TableCell>
-                    <Input
-                      defaultValue={b.name}
-                      onBlur={(e) => e.target.value !== b.name && upsert.mutate({ id: b.id, name: e.target.value })}
-                    />
-                  </TableCell>
-                  <TableCell>
+          <div className="rounded-md border bg-card divide-y">
+            {sorted.map((b) => {
+              const isOver = overId === b.id && dragId && dragId !== b.id;
+              return (
+                <div
+                  key={b.id}
+                  draggable
+                  onDragStart={(e) => {
+                    setDragId(b.id);
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (overId !== b.id) setOverId(b.id);
+                  }}
+                  onDragLeave={() => overId === b.id && setOverId(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (dragId) reorder(dragId, b.id);
+                    setDragId(null);
+                    setOverId(null);
+                  }}
+                  onDragEnd={() => {
+                    setDragId(null);
+                    setOverId(null);
+                  }}
+                  className={`flex items-center gap-3 p-2 transition-colors ${
+                    dragId === b.id ? "opacity-50" : ""
+                  } ${isOver ? "bg-accent" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
+                    aria-label="Drag to reorder"
+                  >
+                    <GripVertical className="h-4 w-4" />
+                  </button>
+                  <span className="inline-block w-5 h-5 rounded shrink-0" style={{ background: b.color }} />
+                  <Input
+                    defaultValue={b.name}
+                    onBlur={(e) => e.target.value !== b.name && upsert.mutate({ id: b.id, name: e.target.value })}
+                    className="flex-1"
+                  />
+                  <div className="flex items-center gap-2 shrink-0">
                     <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ id: b.id, active: v })} />
-                  </TableCell>
-                  <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -152,11 +158,12 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
