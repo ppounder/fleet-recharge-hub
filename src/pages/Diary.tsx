@@ -100,7 +100,7 @@ export default function Diary() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setBaysOpen(true)}><Wrench className="h-4 w-4 mr-1" />Bays</Button>
             <Button variant="outline" size="sm" onClick={() => setTechsOpen(true)}><Users className="h-4 w-4 mr-1" />Technicians</Button>
-            <Button variant="outline" size="sm" onClick={() => setHoursOpen(true)}><Clock className="h-4 w-4 mr-1" />Shop hours</Button>
+            <Button variant="outline" size="sm" onClick={() => setHoursOpen(true)}><Clock className="h-4 w-4 mr-1" />Opening hours</Button>
             <Button size="sm" onClick={() => openNew(cursor)}><Plus className="h-4 w-4 mr-1" />New appointment</Button>
           </div>
         </div>
