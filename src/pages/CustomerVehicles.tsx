@@ -280,6 +280,7 @@ export default function CustomerVehicles() {
   useEffect(() => {
     if (selected) setForm(toForm(selected));
     else if (creating) setForm(blank);
+    setErrors({});
   }, [selected, creating]);
 
   const ALPHANUM_ONLY_FIELDS: (keyof EditableFields)[] = ["registration", "fleet_number", "asset_number", "vin"];
@@ -287,14 +288,21 @@ export default function CustomerVehicles() {
     let v = e.target.value;
     if (ALPHANUM_ONLY_FIELDS.includes(k)) v = v.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     setForm((f) => ({ ...f, [k]: v }));
+    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: undefined }));
   };
 
   const handleSave = async () => {
     if (creating) {
-      if (!form.registration.trim() || !form.make.trim() || !form.model.trim()) {
-        toast({ title: "Missing required fields", description: "Registration, Make and Model are required", variant: "destructive" });
+      const newErrors: Partial<Record<keyof EditableFields, string>> = {};
+      if (!form.registration.trim()) newErrors.registration = "Registration number is required";
+      if (!form.make.trim()) newErrors.make = "Make is required";
+      if (!form.model.trim()) newErrors.model = "Model is required";
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        toast({ title: "Missing required fields", description: "Please complete the highlighted fields", variant: "destructive" });
         return;
       }
+      setErrors({});
       try {
         const created = await createVehicle.mutateAsync({
           registration: form.registration.toUpperCase(),
