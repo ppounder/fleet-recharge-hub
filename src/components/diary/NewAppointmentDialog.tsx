@@ -13,6 +13,7 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { useToast } from "@/hooks/use-toast";
 import { format, addMinutes } from "date-fns";
 import { Trash2 } from "lucide-react";
+import { VehicleCombobox } from "./VehicleCombobox";
 
 interface Props {
   open: boolean;
@@ -204,17 +205,12 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
             </div>
             <div className="space-y-1.5">
               <Label>Vehicle</Label>
-              <Select value={vehicleId} onValueChange={setVehicleId}>
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>None</SelectItem>
-                  {filteredVehicles.map(v => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.registration ?? v.fleet_number ?? v.id.slice(0,8)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <VehicleCombobox
+                value={vehicleId === NONE ? null : vehicleId}
+                onChange={(id) => setVehicleId(id ?? NONE)}
+                customerId={customerId === NONE ? null : customerId}
+                onCustomerChange={(id) => setCustomerId(id ?? NONE)}
+              />
             </div>
           </div>
 
