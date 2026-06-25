@@ -161,20 +161,20 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
 
           {/* Date / In / Out / Bay */}
           <div className="grid grid-cols-4 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>Date</Label>
               <DatePicker value={date} onChange={setDate} />
-              {errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
+              {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>In</Label>
               <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} disabled={allDay} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>Out</Label>
               <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={allDay} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>Bay</Label>
               <Select value={bayId} onValueChange={setBayId}>
                 <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
@@ -184,20 +184,20 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
                 </SelectContent>
               </Select>
             </div>
-            {errors.time && <p className="text-sm text-destructive col-span-4">{errors.time}</p>}
+            {errors.time && <p className="text-xs text-destructive col-span-4">{errors.time}</p>}
           </div>
 
           {multipleDays && (
             <div className="grid grid-cols-4 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label>End date</Label>
                 <DatePicker value={endDate} onChange={setEndDate} />
-                {errors.endDate && <p className="text-sm text-destructive">{errors.endDate}</p>}
+                {errors.endDate && <p className="text-xs text-destructive">{errors.endDate}</p>}
               </div>
             </div>
           )}
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
             <div className="flex items-center gap-2">
               <Checkbox id="allday" checked={allDay} onCheckedChange={(v) => setAllDay(!!v)} />
               <Label htmlFor="allday" className="font-normal">All Day</Label>
@@ -206,25 +206,19 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
               <Checkbox id="multi" checked={multipleDays} onCheckedChange={(v) => setMultipleDays(!!v)} />
               <Label htmlFor="multi" className="font-normal">Multiple Days</Label>
             </div>
-          </div>
-
-          {/* Send Reminder */}
-          <div className="space-y-2">
-            <Label className={!sendReminder ? "text-muted-foreground" : ""}>Send Reminder</Label>
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Checkbox id="rem" checked={sendReminder} onCheckedChange={(v) => setSendReminder(!!v)} />
-                <Select value={reminderWhen} onValueChange={setReminderWhen} disabled={!sendReminder}>
-                  <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1h">1 Hour Before</SelectItem>
-                    <SelectItem value="3h">3 Hours Before</SelectItem>
-                    <SelectItem value="1d">1 Day Before</SelectItem>
-                    <SelectItem value="2d">2 Days Before</SelectItem>
-                    <SelectItem value="1w">1 Week Before</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex items-center gap-3 flex-wrap ml-auto">
+              <Label className={!sendReminder ? "text-muted-foreground" : ""}>Send Reminder</Label>
+              <Checkbox id="rem" checked={sendReminder} onCheckedChange={(v) => setSendReminder(!!v)} />
+              <Select value={reminderWhen} onValueChange={setReminderWhen} disabled={!sendReminder}>
+                <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1h">1 Hour Before</SelectItem>
+                  <SelectItem value="3h">3 Hours Before</SelectItem>
+                  <SelectItem value="1d">1 Day Before</SelectItem>
+                  <SelectItem value="2d">2 Days Before</SelectItem>
+                  <SelectItem value="1w">1 Week Before</SelectItem>
+                </SelectContent>
+              </Select>
               <div className="flex items-center gap-2">
                 <Checkbox id="rtext" checked={reminderText} onCheckedChange={(v) => setReminderText(!!v)} disabled={!sendReminder} />
                 <Label htmlFor="rtext" className="font-normal">Text</Label>
@@ -240,7 +234,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
 
           {/* Technician / Status */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>Technician</Label>
               <Select value={techId} onValueChange={setTechId}>
                 <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
@@ -252,7 +246,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>Status</Label>
               <Select value={statusVal} onValueChange={setStatusVal}>
                 <SelectTrigger><SelectValue placeholder="-" /></SelectTrigger>
@@ -268,11 +262,12 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>Details</Label>
-            <Textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} />
+            <Textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={2} />
           </div>
         </div>
+
 
         <DialogFooter className="flex items-center justify-between sm:justify-between">
           <div>
