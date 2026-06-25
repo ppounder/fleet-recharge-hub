@@ -18,7 +18,7 @@ import { Trash2, Plus, GripVertical } from "lucide-react";
 import { useBays, useUpsertBay, useDeleteBay } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
-const MAX_BAYS = 6;
+
 
 export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { data: bays = [] } = useBays();
