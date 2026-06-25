@@ -152,14 +152,20 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
         <div className="space-y-3">
           {/* Customer / Vehicle */}
           <div className="rounded-md border bg-muted/40 p-3 grid grid-cols-2 gap-4">
-            <CustomerPicker value={customerId} onChange={(id) => { setCustomerId(id); if (!id) setVehicleId(null); }} />
+            <CustomerPicker
+              value={customerId}
+              onChange={(id) => { setCustomerId(id); setErrors(prev => ({ ...prev, customer: "" })); if (!id) setVehicleId(null); }}
+              error={errors.customer}
+            />
             <VehiclePicker
               value={vehicleId}
-              onChange={setVehicleId}
+              onChange={(id) => { setVehicleId(id); setErrors(prev => ({ ...prev, vehicle: "" })); }}
               customerId={customerId}
               onCustomerChange={setCustomerId}
+              error={errors.vehicle}
             />
           </div>
+
 
 
           {/* Date / In / Out / Bay */}
