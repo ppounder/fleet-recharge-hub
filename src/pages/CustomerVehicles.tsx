@@ -754,23 +754,16 @@ export default function CustomerVehicles() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="distance_source">Source</Label>
-                    <Select
-                      value={form.distance_source || "__none__"}
-                      onValueChange={(v) => setForm((f) => ({ ...f, distance_source: v === "__none__" ? "" : v }))}
-                    >
-                      <SelectTrigger id="distance_source" className="bg-card"><SelectValue placeholder="Select source" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">None</SelectItem>
-                        <SelectItem value="Manual">Manual</SelectItem>
-                        <SelectItem value="Telematics">Telematics</SelectItem>
-                        <SelectItem value="Driver">Driver</SelectItem>
-                        <SelectItem value="Supplier">Supplier</SelectItem>
-                        <SelectItem value="MOT">MOT</SelectItem>
-                        <SelectItem value="Service">Service</SelectItem>
-                        <SelectItem value="Estimated">Estimated</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="distance_source"
+                      type="text"
+                      value={latestOdoReading?.source ?? ""}
+                      readOnly
+                      tabIndex={-1}
+                      className="bg-muted cursor-not-allowed"
+                    />
                   </div>
+
                   <div className="space-y-1.5">
                     <Label htmlFor="average_monthly_distance">Average monthly distance</Label>
                     <Input
