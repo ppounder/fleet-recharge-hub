@@ -18,10 +18,13 @@ import { useQueryClient } from "@tanstack/react-query";
 export function CustomerPicker({
   value,
   onChange,
+  error,
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
+  error?: string;
 }) {
+
   const { data: customers = [] } = useCustomers();
   const { toast } = useToast();
   const qc = useQueryClient();
