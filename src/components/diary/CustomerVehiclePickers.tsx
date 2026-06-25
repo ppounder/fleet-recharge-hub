@@ -222,11 +222,14 @@ export function VehiclePicker({
           </PopoverContent>
         </Popover>
       </div>
-      <p className="text-sm text-muted-foreground truncate min-h-[1.25rem]">
-        {selected
-          ? `${selected.registration ?? selected.fleet_number ?? selected.id.slice(0,8)}${selected.make || selected.model ? ` — ${selected.make ?? ""} ${selected.model ?? ""}`.trimEnd() : ""}`
-          : "No vehicle selected"}
+      <p className={`text-sm truncate min-h-[1.25rem] ${error ? "text-destructive" : "text-muted-foreground"}`}>
+        {error
+          ? error
+          : selected
+            ? `${selected.registration ?? selected.fleet_number ?? selected.id.slice(0,8)}${selected.make || selected.model ? ` — ${selected.make ?? ""} ${selected.model ?? ""}`.trimEnd() : ""}`
+            : "No vehicle selected"}
       </p>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
