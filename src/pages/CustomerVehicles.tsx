@@ -996,13 +996,18 @@ export default function CustomerVehicles() {
             vehicles={(() => {
               const now = new Date();
               const in30 = new Date(); in30.setDate(in30.getDate() + 30);
+              const keyDateFields = [
+                "mot_due", "next_service", "next_service_date", "next_inspection_date",
+                "loler_expiry_date", "tacho_2yr_expiry_date", "tacho_6yr_expiry_date", "rfl_expiry_date",
+              ] as const;
+              const getDates = (v: any) => keyDateFields.map((f) => v[f]).filter(Boolean) as string[];
               if (kpiFilter === "off-road") return vehicles.filter((v) => v.status === "off-road");
-              if (kpiFilter === "mots-expired") return vehicles.filter((v) => isDateExpired(v.mot_due));
-              if (kpiFilter === "mots-due") return vehicles.filter((v) => {
-                if (!v.mot_due || isDateExpired(v.mot_due)) return false;
-                const d = new Date(v.mot_due);
-                return d <= in30 && d >= now;
-              });
+              if (kpiFilter === "events-expired") return vehicles.filter((v) => getDates(v).some((d) => isDateExpired(d)));
+              if (kpiFilter === "events-due") return vehicles.filter((v) => getDates(v).some((d) => {
+                if (isDateExpired(d)) return false;
+                const dt = new Date(d);
+                return dt <= in30 && dt >= now;
+              }));
               return vehicles;
             })()}
 
