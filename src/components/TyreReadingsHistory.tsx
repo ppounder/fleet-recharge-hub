@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench, ArrowLeftRight } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench, ArrowLeftRight, Replace } from "lucide-react";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -656,6 +656,118 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
     [activeTyrePositions, changePosForm.to_position, changePosForm.from_position],
   );
 
+  // ----- Replace tyre dialog state -----
+  const initialReplaceForm = {
+    old_tyre_id: "",
+    position: "",
+    manufacturer: "",
+    tyre_size: "",
+    serial_number: "",
+    fitted_date: new Date().toISOString().slice(0, 10),
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+  };
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const [replaceForm, setReplaceForm] = useState(initialReplaceForm);
+  const [replaceManufacturerIsOther, setReplaceManufacturerIsOther] = useState(false);
+  type ReplaceErrors = Partial<Record<"manufacturer" | "tyre_size" | "serial_number" | "fitted_date" | "date" | "time", string>>;
+  const [replaceErrors, setReplaceErrors] = useState<ReplaceErrors>({});
+
+  const updateReplaceField = <K extends keyof typeof initialReplaceForm>(key: K, value: string) => {
+    setReplaceForm((prev) => ({ ...prev, [key]: value }));
+    if (replaceErrors[key as keyof ReplaceErrors]) {
+      setReplaceErrors((p) => ({ ...p, [key]: undefined }));
+    }
+  };
+
+  const startReplaceTyre = (t: Tyre) => {
+    setReplaceForm({
+      ...initialReplaceForm,
+      old_tyre_id: t.id,
+      position: t.position,
+    });
+    setReplaceManufacturerIsOther(false);
+    setReplaceErrors({});
+    setReplaceOpen(true);
+  };
+
+  const replaceTyre = useMutation({
+    mutationFn: async (payload: {
+      old_tyre_id: string;
+      vehicle_id: string;
+      position: string;
+      disposed_at: string;
+      manufacturer: string;
+      tyre_size: string;
+      serial_number: string;
+      fitted_date: string;
+    }) => {
+      // 1. Record disposal of old tyre
+      const { error: dispErr } = await supabase.from("tyre_disposals").insert({
+        vehicle_id: payload.vehicle_id,
+        position: payload.position,
+        disposed_at: payload.disposed_at,
+      });
+      if (dispErr) throw dispErr;
+      // 2. Mark old tyre as disposed
+      const { error: updErr } = await supabase
+        .from("tyres")
+        .update({ disposed_at: payload.disposed_at })
+        .eq("id", payload.old_tyre_id);
+      if (updErr) throw updErr;
+      // 3. Insert new tyre at the same position
+      const { error: insErr } = await supabase.from("tyres").insert({
+        vehicle_id: payload.vehicle_id,
+        position: payload.position,
+        manufacturer: payload.manufacturer,
+        tyre_size: payload.tyre_size,
+        serial_number: payload.serial_number,
+        manufacture_date: dotToManufactureDate(payload.serial_number),
+        fitted_date: payload.fitted_date,
+      });
+      if (insErr) throw insErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["tyre_disposals", vehicleId] });
+      setReplaceOpen(false);
+      setReplaceForm(initialReplaceForm);
+      setReplaceErrors({});
+      setReplaceManufacturerIsOther(false);
+      toast({ title: "Tyre replaced" });
+    },
+    onError: (e: any) =>
+      toast({ title: "Failed to replace tyre", description: e.message, variant: "destructive" }),
+  });
+
+  const handleReplaceTyre = () => {
+    const errs: ReplaceErrors = {};
+    if (!replaceForm.manufacturer.trim()) errs.manufacturer = "Manufacturer is required";
+    if (!replaceForm.tyre_size.trim()) errs.tyre_size = "Tyre size is required";
+    if (!replaceForm.serial_number.trim()) errs.serial_number = "Serial number is required";
+    if (!replaceForm.fitted_date) errs.fitted_date = "Date is required";
+    if (!replaceForm.date) errs.date = "Date is required";
+    if (!replaceForm.time) errs.time = "Time is required";
+    if (Object.keys(errs).length) {
+      setReplaceErrors(errs);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
+      return;
+    }
+    const disposedAt = new Date(`${replaceForm.date}T${replaceForm.time}`).toISOString();
+    replaceTyre.mutate({
+      old_tyre_id: replaceForm.old_tyre_id,
+      vehicle_id: vehicleId,
+      position: replaceForm.position,
+      disposed_at: disposedAt,
+      manufacturer: replaceForm.manufacturer.trim(),
+      tyre_size: replaceForm.tyre_size.trim(),
+      serial_number: replaceForm.serial_number.trim(),
+      fitted_date: replaceForm.fitted_date,
+    });
+  };
+
+
+
   return (
     <div className="space-y-8">
       {section !== "readings" && (<>
@@ -721,6 +833,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                                 title="Change tyre position"
                               >
                                 <ArrowLeftRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => startReplaceTyre(t)}
+                                aria-label="Replace tyre"
+                                title="Replace tyre"
+                              >
+                                <Replace className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="icon"
@@ -1417,6 +1538,158 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
             <Button variant="outline" onClick={() => setTyreOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveTyre} disabled={saveTyre.isPending}>
               {saveTyre.isPending ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={replaceOpen}
+        onOpenChange={(next) => {
+          setReplaceOpen(next);
+          if (!next) {
+            setReplaceForm(initialReplaceForm);
+            setReplaceErrors({});
+            setReplaceManufacturerIsOther(false);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Replace tyre</DialogTitle>
+            <DialogDescription>
+              Dispose of the existing tyre at <span className="font-medium text-foreground">{replaceForm.position || "—"}</span> and fit a new tyre at the same position.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-md border bg-muted/30 p-3 space-y-3">
+              <p className="text-sm font-medium">Dispose existing tyre</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_disp_date">Disposal date</Label>
+                  <DatePicker
+                    id="replace_disp_date"
+                    value={replaceForm.date}
+                    onChange={(v) => updateReplaceField("date", v)}
+                    className={cn(replaceErrors.date && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.date && <p className="text-xs text-destructive">{replaceErrors.date}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_disp_time">Time</Label>
+                  <Input
+                    id="replace_disp_time"
+                    type="time"
+                    value={replaceForm.time}
+                    onChange={(e) => updateReplaceField("time", e.target.value)}
+                    aria-invalid={!!replaceErrors.time}
+                    className={cn(replaceErrors.time && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.time && <p className="text-xs text-destructive">{replaceErrors.time}</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-medium">New tyre details</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_manufacturer">Manufacturer</Label>
+                  <Select
+                    value={
+                      replaceManufacturerIsOther
+                        ? OTHER_MANUFACTURER
+                        : TYRE_MANUFACTURERS.includes(replaceForm.manufacturer)
+                          ? replaceForm.manufacturer
+                          : ""
+                    }
+                    onValueChange={(v) => {
+                      if (v === OTHER_MANUFACTURER) {
+                        setReplaceManufacturerIsOther(true);
+                        updateReplaceField("manufacturer", "");
+                      } else {
+                        setReplaceManufacturerIsOther(false);
+                        updateReplaceField("manufacturer", v);
+                      }
+                    }}
+                  >
+                    <SelectTrigger
+                      id="replace_manufacturer"
+                      aria-invalid={!!replaceErrors.manufacturer}
+                      className={cn(replaceErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                    >
+                      <SelectValue placeholder="Select manufacturer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TYRE_MANUFACTURERS.map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                      <SelectItem value={OTHER_MANUFACTURER}>{OTHER_MANUFACTURER}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {replaceManufacturerIsOther && (
+                    <Input
+                      autoFocus
+                      placeholder="Enter manufacturer"
+                      value={replaceForm.manufacturer}
+                      onChange={(e) => updateReplaceField("manufacturer", e.target.value)}
+                      aria-invalid={!!replaceErrors.manufacturer}
+                      className={cn(replaceErrors.manufacturer && "border-destructive focus-visible:ring-destructive")}
+                    />
+                  )}
+                  {replaceErrors.manufacturer && <p className="text-xs text-destructive">{replaceErrors.manufacturer}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_tyre_size">Tyre size</Label>
+                  <Input
+                    id="replace_tyre_size"
+                    value={replaceForm.tyre_size}
+                    onChange={(e) => updateReplaceField("tyre_size", e.target.value)}
+                    placeholder="e.g. 315/80R22.5"
+                    aria-invalid={!!replaceErrors.tyre_size}
+                    className={cn(replaceErrors.tyre_size && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.tyre_size && <p className="text-xs text-destructive">{replaceErrors.tyre_size}</p>}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="replace_serial">Serial number</Label>
+                <Input
+                  id="replace_serial"
+                  value={replaceForm.serial_number}
+                  onChange={(e) => updateReplaceField("serial_number", e.target.value)}
+                  placeholder="DOT code, e.g. XXXX XXXX 1223"
+                  aria-invalid={!!replaceErrors.serial_number}
+                  className={cn(replaceErrors.serial_number && "border-destructive focus-visible:ring-destructive")}
+                />
+                {replaceErrors.serial_number && <p className="text-xs text-destructive">{replaceErrors.serial_number}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Manufacture date (tyre age)</Label>
+                  <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
+                    {dotToManufactureDate(replaceForm.serial_number) ?? "—"}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="replace_fitted_date">Date fitted</Label>
+                  <DatePicker
+                    id="replace_fitted_date"
+                    value={replaceForm.fitted_date}
+                    onChange={(v) => updateReplaceField("fitted_date", v)}
+                    className={cn(replaceErrors.fitted_date && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {replaceErrors.fitted_date && <p className="text-xs text-destructive">{replaceErrors.fitted_date}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReplaceOpen(false)}>Cancel</Button>
+            <Button onClick={handleReplaceTyre} disabled={replaceTyre.isPending}>
+              {replaceTyre.isPending ? "Saving…" : "Replace tyre"}
             </Button>
           </DialogFooter>
         </DialogContent>
