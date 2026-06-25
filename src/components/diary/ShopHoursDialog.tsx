@@ -73,7 +73,7 @@ export function ShopHoursDialog({ open, onOpenChange }: { open: boolean; onOpenC
     setSaving(true);
     try {
       await Promise.all(DAYS.map(({ dow }) => upsert.mutateAsync(draft[dow] as any)));
-      toast.success("Shop hours saved");
+      toast.success("Opening hours saved");
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to save shop hours");
