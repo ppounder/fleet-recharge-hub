@@ -353,7 +353,15 @@ export default function CustomerVehicles() {
         setCreating(false);
         setSelected(created as Vehicle);
       } catch (e: any) {
-        toast({ title: "Create failed", description: e.message, variant: "destructive" });
+        const msg = String(e?.message || "");
+        if (e?.code === "23505" || /duplicate key|unique/i.test(msg)) {
+          const dupField: "registration" | "vin" = /vin/i.test(msg) ? "vin" : "registration";
+          const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
+          setErrors((p) => ({ ...p, [dupField]: `${label} already exists for another asset / vehicle` }));
+          toast({ title: "Duplicate value", description: `${label} must be unique`, variant: "destructive" });
+        } else {
+          toast({ title: "Create failed", description: e.message, variant: "destructive" });
+        }
       }
       return;
     }
