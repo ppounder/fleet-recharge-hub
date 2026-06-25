@@ -177,12 +177,13 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
             </div>
             <div className="space-y-1">
               <Label>In</Label>
-              <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} disabled={allDay} />
+              <Input type="time" value={startTime} onChange={(e) => { setStartTime(e.target.value); setErrors(p => ({ ...p, time: "" })); }} disabled={allDay} aria-invalid={!!errors.time} className={errors.time ? "border-destructive" : ""} />
             </div>
             <div className="space-y-1">
               <Label>Out</Label>
-              <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={allDay} />
+              <Input type="time" value={endTime} onChange={(e) => { setEndTime(e.target.value); setErrors(p => ({ ...p, time: "" })); }} disabled={allDay} aria-invalid={!!errors.time} className={errors.time ? "border-destructive" : ""} />
             </div>
+
             <div className="space-y-1">
               <Label>Bay</Label>
               <Select value={bayId} onValueChange={setBayId}>
