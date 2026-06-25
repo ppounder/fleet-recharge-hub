@@ -930,18 +930,23 @@ export default function CustomerVehicles() {
         {!isLoading && vehicles.length > 0 && (() => {
           const now = new Date();
           const in30 = new Date(); in30.setDate(in30.getDate() + 30);
+          const keyDateFields = [
+            "mot_due", "next_service", "next_service_date", "next_inspection_date",
+            "loler_expiry_date", "tacho_2yr_expiry_date", "tacho_6yr_expiry_date", "rfl_expiry_date",
+          ] as const;
+          const getDates = (v: any) => keyDateFields.map((f) => v[f]).filter(Boolean) as string[];
           const offRoad = vehicles.filter((v) => v.status === "off-road").length;
-          const motsExpired = vehicles.filter((v) => isDateExpired(v.mot_due)).length;
-          const motsDue = vehicles.filter((v) => {
-            if (!v.mot_due || isDateExpired(v.mot_due)) return false;
-            const d = new Date(v.mot_due);
-            return d <= in30 && d >= now;
-          }).length;
+          const eventsExpired = vehicles.filter((v) => getDates(v).some((d) => isDateExpired(d))).length;
+          const eventsDue = vehicles.filter((v) => getDates(v).some((d) => {
+            if (isDateExpired(d)) return false;
+            const dt = new Date(d);
+            return dt <= in30 && dt >= now;
+          })).length;
           const tiles: { label: string; value: number; desc: string; key: typeof kpiFilter }[] = [
             { label: "All assets / vehicles", value: vehicles.length, desc: "Total assets and vehicles", key: "all" },
             { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", key: "off-road" },
-            { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", key: "mots-due" },
-            { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", key: "mots-expired" },
+            { label: "Events due", value: eventsDue, desc: "Key dates due within 30 days", key: "events-due" },
+            { label: "Events expired", value: eventsExpired, desc: "Key dates that have passed", key: "events-expired" },
           ];
           return (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
