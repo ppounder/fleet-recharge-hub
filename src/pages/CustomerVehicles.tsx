@@ -1804,7 +1804,7 @@ function CompanyDetails({ vehicle }: { vehicle?: Vehicle | null }) {
               onChange={setCustomerId}
             />
             <div className="pl-4 border-l-2 border-border ml-2 mt-2 space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Depot</Label>
+              <Label>Depot</Label>
               <SearchableSelect
                 value={depot}
                 options={depotOpts}
