@@ -281,8 +281,12 @@ export default function CustomerVehicles() {
     else if (creating) setForm(blank);
   }, [selected, creating]);
 
-  const set = (k: keyof EditableFields) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const ALPHANUM_ONLY_FIELDS: (keyof EditableFields)[] = ["registration", "fleet_number", "asset_number"];
+  const set = (k: keyof EditableFields) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    let v = e.target.value;
+    if (ALPHANUM_ONLY_FIELDS.includes(k)) v = v.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    setForm((f) => ({ ...f, [k]: v }));
+  };
 
   const handleSave = async () => {
     if (creating) {
