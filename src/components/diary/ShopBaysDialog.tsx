@@ -64,7 +64,13 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         ids.map((id, idx) => {
           const original = sorted.find((b) => b.id === id);
           if (!original || original.sort_order === idx) return Promise.resolve();
-          return upsert.mutateAsync({ id, sort_order: idx });
+          return upsert.mutateAsync({
+            id: original.id,
+            name: original.name,
+            color: original.color,
+            active: original.active,
+            sort_order: idx,
+          });
         }),
       );
     } catch (e: any) {
