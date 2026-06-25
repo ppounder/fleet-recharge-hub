@@ -41,6 +41,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Reading | null>(null);
   const [deleting, setDeleting] = useState<Reading | null>(null);
+  const [confirmLower, setConfirmLower] = useState(false);
 
   const [source, setSource] = useState("");
   const [reading, setReading] = useState("");
