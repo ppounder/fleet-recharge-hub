@@ -353,21 +353,7 @@ export default function CustomerVehicles() {
         setCreating(false);
         setSelected(created as Vehicle);
       } catch (e: any) {
-        const msg = String(e?.message || "");
-        if (e?.code === "23505" || /duplicate key|unique/i.test(msg)) {
-          const dupField: "registration" | "vin" = /vin/i.test(msg) ? "vin" : "registration";
-          const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
-          const value = (dupField === "vin" ? form.vin : form.registration).toUpperCase();
-          setErrors((p) => ({ ...p, [dupField]: `${label} "${value}" is already in use. Please enter a different value.` }));
-          toast({ title: `Duplicate ${label.toLowerCase()}`, description: `An asset / vehicle with this ${label.toLowerCase()} already exists. Please correct the highlighted field.`, variant: "destructive" });
-          setTimeout(() => {
-            const el = document.getElementById(dupField);
-            el?.focus();
-            el?.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 50);
-        } else {
-          toast({ title: "Create failed", description: e.message, variant: "destructive" });
-        }
+        handleDupError(e, "Create failed");
       }
       return;
     }
@@ -423,22 +409,42 @@ export default function CustomerVehicles() {
       } as any);
       toast({ title: "Vehicle updated" });
     } catch (e: any) {
-      const msg = String(e?.message || "");
-      if (e?.code === "23505" || /duplicate key|unique/i.test(msg)) {
-        const dupField: "registration" | "vin" = /vin/i.test(msg) ? "vin" : "registration";
-        const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
-        const value = (dupField === "vin" ? form.vin : form.registration).toUpperCase();
-        setErrors((p) => ({ ...p, [dupField]: `${label} "${value}" is already in use. Please enter a different value.` }));
-        toast({ title: `Duplicate ${label.toLowerCase()}`, description: `An asset / vehicle with this ${label.toLowerCase()} already exists. Please correct the highlighted field.`, variant: "destructive" });
-        setTimeout(() => {
-          const el = document.getElementById(dupField);
-          el?.focus();
-          el?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 50);
-      } else {
-        toast({ title: "Update failed", description: e.message, variant: "destructive" });
-      }
+      handleDupError(e, "Update failed");
     }
+  };
+
+  const handleDupError = (e: any, fallbackTitle: string) => {
+    // Log full error to aid debugging if detection fails
+    // eslint-disable-next-line no-console
+    console.error("[vehicles] save error", { code: e?.code, message: e?.message, details: e?.details, hint: e?.hint, e });
+    const code = e?.code;
+    const msg = String(e?.message || "");
+    const details = String(e?.details || "");
+    const combined = `${msg} ${details}`;
+    const isDup = code === "23505" || /duplicate key|unique|already exists/i.test(combined);
+    if (!isDup) {
+      toast({ title: fallbackTitle, description: msg || "Unknown error", variant: "destructive" });
+      return;
+    }
+    // Detect which field from the constraint name or details payload
+    const isVin = /vin/i.test(combined);
+    const dupField: "registration" | "vin" = isVin ? "vin" : "registration";
+    const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
+    const value = (dupField === "vin" ? form.vin : form.registration).toUpperCase();
+    setErrors((p) => ({ ...p, [dupField]: `${label} "${value}" is already in use. Please enter a different value.` }));
+    toast({
+      title: `Duplicate ${label.toLowerCase()}`,
+      description: `An asset / vehicle with this ${label.toLowerCase()} ("${value}") already exists. Please correct the highlighted field.`,
+      variant: "destructive",
+    });
+    setTimeout(() => {
+      const el = document.getElementById(dupField) as HTMLInputElement | null;
+      if (el) {
+        el.focus();
+        el.select?.();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 50);
   };
 
   if (selected || creating) {
