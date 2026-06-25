@@ -814,7 +814,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 <TableHead>Manufacturer</TableHead>
                 <TableHead>Tyre size</TableHead>
                 <TableHead>Serial number</TableHead>
-                <TableHead>Manufacture date</TableHead>
+                <TableHead>Tyre age</TableHead>
                 <TableHead>Date fitted</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -834,7 +834,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                       <TableCell>{t?.manufacturer ?? "—"}</TableCell>
                       <TableCell>{t?.tyre_size ?? "—"}</TableCell>
                       <TableCell>{t?.serial_number ?? "—"}</TableCell>
-                      <TableCell>{t?.manufacture_date ?? "—"}</TableCell>
+                      <TableCell>{t ? (dotToTyreAge(t.serial_number) ?? t.manufacture_date ?? "—") : "—"}</TableCell>
                       <TableCell>{t ? format(parseISO(t.fitted_date), "dd MMM yyyy") : "—"}</TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-1">
