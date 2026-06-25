@@ -937,29 +937,28 @@ export default function CustomerVehicles() {
             const d = new Date(v.mot_due);
             return d <= in30 && d >= now;
           }).length;
-          const tiles: { label: string; value: number; desc: string; accent: boolean; key: typeof kpiFilter }[] = [
-            { label: "All assets / vehicles", value: vehicles.length, desc: "Total assets and vehicles", accent: false, key: "all" },
-            { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", accent: true, key: "off-road" },
-            { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", accent: false, key: "mots-due" },
-            { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", accent: false, key: "mots-expired" },
+          const tiles: { label: string; value: number; desc: string; key: typeof kpiFilter }[] = [
+            { label: "All assets / vehicles", value: vehicles.length, desc: "Total assets and vehicles", key: "all" },
+            { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", key: "off-road" },
+            { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", key: "mots-due" },
+            { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", key: "mots-expired" },
           ];
           return (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
               {tiles.map((t) => {
                 const active = kpiFilter === t.key;
                 return (
                 <button
                   key={t.label}
                   type="button"
-                  onClick={() => setKpiFilter(active && t.key !== "all" ? "all" : t.key)}
+                  onClick={() => setKpiFilter(active ? "all" : t.key)}
+                  aria-pressed={active}
                   className={cn(
-                    "text-left rounded-xl p-5 relative overflow-hidden hover:shadow-lg transition-shadow border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "text-left rounded-xl p-5 relative overflow-hidden border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:shadow-lg",
                     active
-                      ? (t.accent ? "stat-card-accent border-transparent" : "bg-primary/10 border-primary/20 text-foreground")
+                      ? "stat-card-accent border-transparent shadow-lg"
                       : "bg-card border-border text-foreground hover:bg-muted/40",
                   )}
-
                 >
                   <div className="absolute top-3 right-3 opacity-60">
                     <ArrowUpRight className="w-4 h-4" />
