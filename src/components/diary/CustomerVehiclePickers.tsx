@@ -90,9 +90,10 @@ export function CustomerPicker({
           </PopoverContent>
         </Popover>
       </div>
-      <p className="text-sm text-muted-foreground truncate min-h-[1.25rem]">
-        {selected ? selected.name : "No customer selected"}
+      <p className={`text-sm truncate min-h-[1.25rem] ${error ? "text-destructive" : "text-muted-foreground"}`}>
+        {error ? error : selected ? selected.name : "No customer selected"}
       </p>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
