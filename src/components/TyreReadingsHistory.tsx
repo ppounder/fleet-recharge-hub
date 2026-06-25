@@ -837,6 +837,15 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                               <Button
                                 size="icon"
                                 variant="ghost"
+                                onClick={() => startReplaceTyre(t)}
+                                aria-label="Replace tyre"
+                                title="Replace tyre"
+                              >
+                                <Replace className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
                                 onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))}
                                 className="text-destructive hover:bg-destructive hover:text-white"
                                 aria-label="Dispose tyre"
