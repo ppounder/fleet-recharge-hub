@@ -1,11 +1,21 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { useBays, useUpsertBay, useDeleteBay } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,6 +28,9 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [color, setColor] = useState("#0ea5e9");
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const sorted = [...bays].sort((a, b) => a.sort_order - b.sort_order);
 
   const add = async () => {
     if (!name.trim()) {
@@ -34,6 +47,33 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       toast({ title: "Bay added" });
     } catch (e: any) {
       toast({ title: "Failed to add bay", description: e?.message ?? String(e), variant: "destructive" });
+    }
+  };
+
+  const move = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= sorted.length) return;
+    const a = sorted[index];
+    const b = sorted[target];
+    try {
+      await Promise.all([
+        upsert.mutateAsync({ id: a.id, sort_order: b.sort_order }),
+        upsert.mutateAsync({ id: b.id, sort_order: a.sort_order }),
+      ]);
+    } catch (e: any) {
+      toast({ title: "Failed to reorder", description: e?.message ?? String(e), variant: "destructive" });
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await del.mutateAsync(confirmDelete.id);
+      toast({ title: "Bay deleted" });
+    } catch (e: any) {
+      toast({ title: "Failed to delete bay", description: e?.message ?? String(e), variant: "destructive" });
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -59,6 +99,7 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-24">Order</TableHead>
                 <TableHead>Colour</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Active</TableHead>
@@ -66,8 +107,32 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bays.map(b => (
+              {sorted.map((b, i) => (
                 <TableRow key={b.id}>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={i === 0}
+                        onClick={() => move(i, -1)}
+                        aria-label="Move up"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={i === sorted.length - 1}
+                        onClick={() => move(i, 1)}
+                        aria-label="Move down"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                   <TableCell><span className="inline-block w-6 h-6 rounded" style={{ background: b.color }} /></TableCell>
                   <TableCell>
                     <Input
@@ -79,7 +144,12 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                     <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ id: b.id, active: v })} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => del.mutate(b.id)} className="text-destructive hover:text-destructive">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setConfirmDelete({ id: b.id, name: b.name })}
+                      className="text-destructive hover:text-destructive"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -88,6 +158,26 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             </TableBody>
           </Table>
         </div>
+
+        <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete bay?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <strong>{confirmDelete?.name}</strong>? This cannot be undone and any appointments assigned to this bay will be unassigned.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
