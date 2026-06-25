@@ -103,17 +103,6 @@ export function ShopHoursDialog({ open, onOpenChange }: { open: boolean; onOpenC
                       <Label className="text-xs">Close</Label>
                       <Input type="time" value={h.close_time} onChange={(e) => update(dow, { close_time: e.target.value })} className="w-24 h-8" />
                     </div>
-                    <div className="flex items-center gap-1.5 ml-auto">
-                      <Switch checked={h.lunch_enabled} onCheckedChange={(v) => update(dow, { lunch_enabled: v })} />
-                      <Label className="text-xs">Lunch</Label>
-                      {h.lunch_enabled && (
-                        <>
-                          <Input type="time" value={h.lunch_start} onChange={(e) => update(dow, { lunch_start: e.target.value })} className="w-24 h-8" />
-                          <span className="text-xs">–</span>
-                          <Input type="time" value={h.lunch_end} onChange={(e) => update(dow, { lunch_end: e.target.value })} className="w-24 h-8" />
-                        </>
-                      )}
-                    </div>
                   </>
                 )}
               </div>
