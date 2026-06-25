@@ -13,6 +13,7 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { useToast } from "@/hooks/use-toast";
 import { format, addMinutes } from "date-fns";
 import { Trash2 } from "lucide-react";
+import { VehicleCombobox } from "./VehicleCombobox";
 
 interface Props {
   open: boolean;
