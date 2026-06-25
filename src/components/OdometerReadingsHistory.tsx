@@ -354,6 +354,22 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </AlertDialog>
+
+      <AlertDialog open={confirmLower} onOpenChange={setConfirmLower}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Lower odometer reading</AlertDialogTitle>
+            <AlertDialogDescription>
+              The odometer reading is less than the previous reading. Do you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setConfirmLower(false); save.mutate(); }}>Yes</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
