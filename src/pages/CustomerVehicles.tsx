@@ -937,21 +937,26 @@ export default function CustomerVehicles() {
             const d = new Date(v.mot_due);
             return d <= in30 && d >= now;
           }).length;
-          const tiles = [
-            { label: "All assets / vehicles", value: vehicles.length, desc: "Total assets and vehicles", accent: false },
-            { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", accent: true },
-            { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", accent: false },
-            { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", accent: false },
+          const tiles: { label: string; value: number; desc: string; accent: boolean; key: typeof kpiFilter }[] = [
+            { label: "All assets / vehicles", value: vehicles.length, desc: "Total assets and vehicles", accent: false, key: "all" },
+            { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", accent: true, key: "off-road" },
+            { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", accent: false, key: "mots-due" },
+            { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", accent: false, key: "mots-expired" },
           ];
           return (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-              {tiles.map((t) => (
-                <div
+              {tiles.map((t) => {
+                const active = kpiFilter === t.key;
+                return (
+                <button
                   key={t.label}
+                  type="button"
+                  onClick={() => setKpiFilter(active && t.key !== "all" ? "all" : t.key)}
                   className={cn(
-                    "rounded-xl p-5 relative overflow-hidden hover:shadow-lg transition-shadow border",
+                    "text-left rounded-xl p-5 relative overflow-hidden hover:shadow-lg transition-shadow border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     t.accent ? "stat-card-accent border-transparent" : "bg-primary/10 border-primary/20 text-foreground",
+                    active && "ring-2 ring-primary shadow-lg",
                   )}
                 >
                   <div className="absolute top-3 right-3 opacity-60">
@@ -960,11 +965,13 @@ export default function CustomerVehicles() {
                   <p className="text-sm font-medium">{t.label}</p>
                   <p className="text-4xl font-bold mt-1">{t.value}</p>
                   <p className="text-xs mt-2 opacity-80">{t.desc}</p>
-                </div>
-              ))}
+                </button>
+                );
+              })}
             </div>
           );
         })()}
+
 
 
         {isLoading ? (
