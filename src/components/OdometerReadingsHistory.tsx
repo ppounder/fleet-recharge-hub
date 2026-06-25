@@ -354,7 +354,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      </AlertDialog>
+
 
       <AlertDialog open={confirmLower} onOpenChange={setConfirmLower}>
         <AlertDialogContent>
