@@ -656,6 +656,118 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
     [activeTyrePositions, changePosForm.to_position, changePosForm.from_position],
   );
 
+  // ----- Replace tyre dialog state -----
+  const initialReplaceForm = {
+    old_tyre_id: "",
+    position: "",
+    manufacturer: "",
+    tyre_size: "",
+    serial_number: "",
+    fitted_date: new Date().toISOString().slice(0, 10),
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+  };
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const [replaceForm, setReplaceForm] = useState(initialReplaceForm);
+  const [replaceManufacturerIsOther, setReplaceManufacturerIsOther] = useState(false);
+  type ReplaceErrors = Partial<Record<"manufacturer" | "tyre_size" | "serial_number" | "fitted_date" | "date" | "time", string>>;
+  const [replaceErrors, setReplaceErrors] = useState<ReplaceErrors>({});
+
+  const updateReplaceField = <K extends keyof typeof initialReplaceForm>(key: K, value: string) => {
+    setReplaceForm((prev) => ({ ...prev, [key]: value }));
+    if (replaceErrors[key as keyof ReplaceErrors]) {
+      setReplaceErrors((p) => ({ ...p, [key]: undefined }));
+    }
+  };
+
+  const startReplaceTyre = (t: Tyre) => {
+    setReplaceForm({
+      ...initialReplaceForm,
+      old_tyre_id: t.id,
+      position: t.position,
+    });
+    setReplaceManufacturerIsOther(false);
+    setReplaceErrors({});
+    setReplaceOpen(true);
+  };
+
+  const replaceTyre = useMutation({
+    mutationFn: async (payload: {
+      old_tyre_id: string;
+      vehicle_id: string;
+      position: string;
+      disposed_at: string;
+      manufacturer: string;
+      tyre_size: string;
+      serial_number: string;
+      fitted_date: string;
+    }) => {
+      // 1. Record disposal of old tyre
+      const { error: dispErr } = await supabase.from("tyre_disposals").insert({
+        vehicle_id: payload.vehicle_id,
+        position: payload.position,
+        disposed_at: payload.disposed_at,
+      });
+      if (dispErr) throw dispErr;
+      // 2. Mark old tyre as disposed
+      const { error: updErr } = await supabase
+        .from("tyres")
+        .update({ disposed_at: payload.disposed_at })
+        .eq("id", payload.old_tyre_id);
+      if (updErr) throw updErr;
+      // 3. Insert new tyre at the same position
+      const { error: insErr } = await supabase.from("tyres").insert({
+        vehicle_id: payload.vehicle_id,
+        position: payload.position,
+        manufacturer: payload.manufacturer,
+        tyre_size: payload.tyre_size,
+        serial_number: payload.serial_number,
+        manufacture_date: dotToManufactureDate(payload.serial_number),
+        fitted_date: payload.fitted_date,
+      });
+      if (insErr) throw insErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tyres", vehicleId] });
+      qc.invalidateQueries({ queryKey: ["tyre_disposals", vehicleId] });
+      setReplaceOpen(false);
+      setReplaceForm(initialReplaceForm);
+      setReplaceErrors({});
+      setReplaceManufacturerIsOther(false);
+      toast({ title: "Tyre replaced" });
+    },
+    onError: (e: any) =>
+      toast({ title: "Failed to replace tyre", description: e.message, variant: "destructive" }),
+  });
+
+  const handleReplaceTyre = () => {
+    const errs: ReplaceErrors = {};
+    if (!replaceForm.manufacturer.trim()) errs.manufacturer = "Manufacturer is required";
+    if (!replaceForm.tyre_size.trim()) errs.tyre_size = "Tyre size is required";
+    if (!replaceForm.serial_number.trim()) errs.serial_number = "Serial number is required";
+    if (!replaceForm.fitted_date) errs.fitted_date = "Date is required";
+    if (!replaceForm.date) errs.date = "Date is required";
+    if (!replaceForm.time) errs.time = "Time is required";
+    if (Object.keys(errs).length) {
+      setReplaceErrors(errs);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
+      return;
+    }
+    const disposedAt = new Date(`${replaceForm.date}T${replaceForm.time}`).toISOString();
+    replaceTyre.mutate({
+      old_tyre_id: replaceForm.old_tyre_id,
+      vehicle_id: vehicleId,
+      position: replaceForm.position,
+      disposed_at: disposedAt,
+      manufacturer: replaceForm.manufacturer.trim(),
+      tyre_size: replaceForm.tyre_size.trim(),
+      serial_number: replaceForm.serial_number.trim(),
+      fitted_date: replaceForm.fitted_date,
+    });
+  };
+
+
+
   return (
     <div className="space-y-8">
       {section !== "readings" && (<>
