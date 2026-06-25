@@ -295,8 +295,10 @@ export default function CustomerVehicles() {
     if (creating) {
       const newErrors: Partial<Record<keyof EditableFields, string>> = {};
       if (!form.registration.trim()) newErrors.registration = "Registration number is required";
+      if (!form.asset_type.trim()) newErrors.asset_type = "Asset type is required";
       if (!form.make.trim()) newErrors.make = "Make is required";
       if (!form.model.trim()) newErrors.model = "Model is required";
+      if (!form.vin.trim()) newErrors.vin = (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") + " is required";
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
         toast({ title: "Missing required fields", description: "Please complete the highlighted fields", variant: "destructive" });
