@@ -814,7 +814,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 <TableHead>Manufacturer</TableHead>
                 <TableHead>Tyre size</TableHead>
                 <TableHead>Serial number</TableHead>
-                <TableHead>Manufacture date</TableHead>
+                <TableHead>Tyre age</TableHead>
                 <TableHead>Date fitted</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
