@@ -141,14 +141,14 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-primary">{editing ? "Edit Appointment" : "New Appointment"}</DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[95vh] p-4 gap-3">
+        <DialogHeader className="space-y-0">
+          <DialogTitle className="text-primary text-base">{editing ? "Edit Appointment" : "New Appointment"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5">
+        <div className="space-y-3">
           {/* Customer / Vehicle */}
-          <div className="rounded-md border bg-muted/40 p-4 grid grid-cols-2 gap-6">
+          <div className="rounded-md border bg-muted/40 p-3 grid grid-cols-2 gap-4">
             <CustomerPicker value={customerId} onChange={(id) => { setCustomerId(id); if (!id) setVehicleId(null); }} />
             <VehiclePicker
               value={vehicleId}
@@ -157,6 +157,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
               onCustomerChange={setCustomerId}
             />
           </div>
+
 
           {/* Date / In / Out / Bay */}
           <div className="grid grid-cols-4 gap-3">
