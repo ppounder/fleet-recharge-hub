@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Jobs from "./pages/Jobs";
 import Bookings from "./pages/Bookings";
+import Diary from "./pages/Diary";
 import JobDetail from "./pages/JobDetail";
 import Fleet from "./pages/Fleet";
 import Approvals from "./pages/Approvals";
@@ -50,6 +51,7 @@ const AppRoutes = () => (
     <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+    <Route path="/diary" element={<ProtectedRoute><Diary /></ProtectedRoute>} />
     <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
     <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
     <Route path="/fleet" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
