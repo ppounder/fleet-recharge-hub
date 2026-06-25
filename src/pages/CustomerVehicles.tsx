@@ -1017,7 +1017,14 @@ function VehiclesTable({
     <TableHead className={className}>
       <button onClick={() => setSort(k)} className="inline-flex items-center gap-1 hover:text-foreground">
         {children}
-        <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-foreground" : "opacity-40"}`} />
+        {sortKey === k ? (
+          sortDir === "asc"
+            ? <ChevronUp className="w-4 h-4 text-primary" strokeWidth={3} />
+            : <ChevronDown className="w-4 h-4 text-primary" strokeWidth={3} />
+        ) : (
+          <ArrowUpDown className="w-3 h-3 opacity-40" />
+        )}
+
       </button>
     </TableHead>
   );
