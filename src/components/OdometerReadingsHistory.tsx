@@ -41,6 +41,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Reading | null>(null);
   const [deleting, setDeleting] = useState<Reading | null>(null);
+  const [confirmLower, setConfirmLower] = useState(false);
 
   const [source, setSource] = useState("");
   const [reading, setReading] = useState("");
@@ -142,6 +143,14 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
 
   const handleSave = () => {
     if (!validate()) return;
+    // Check previous reading (exclude the one being edited)
+    const prev = readings
+      .filter((r) => !editing || r.id !== editing.id)
+      .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())[0];
+    if (prev && Number(reading) < prev.reading) {
+      setConfirmLower(true);
+      return;
+    }
     save.mutate();
   };
 
@@ -342,6 +351,22 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
             <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
+      <AlertDialog open={confirmLower} onOpenChange={setConfirmLower}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Lower odometer reading</AlertDialogTitle>
+            <AlertDialogDescription>
+              The odometer reading is less than the previous reading. Do you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setConfirmLower(false); save.mutate(); }}>Yes</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
