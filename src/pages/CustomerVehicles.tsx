@@ -955,9 +955,11 @@ export default function CustomerVehicles() {
                   onClick={() => setKpiFilter(active && t.key !== "all" ? "all" : t.key)}
                   className={cn(
                     "text-left rounded-xl p-5 relative overflow-hidden hover:shadow-lg transition-shadow border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    t.accent ? "stat-card-accent border-transparent" : "bg-primary/10 border-primary/20 text-foreground",
-                    active && "ring-2 ring-primary shadow-lg",
+                    active
+                      ? (t.accent ? "stat-card-accent border-transparent" : "bg-primary/10 border-primary/20 text-foreground")
+                      : "bg-card border-border text-foreground hover:bg-muted/40",
                   )}
+
                 >
                   <div className="absolute top-3 right-3 opacity-60">
                     <ArrowUpRight className="w-4 h-4" />
