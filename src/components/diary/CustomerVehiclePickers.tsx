@@ -129,12 +129,15 @@ export function VehiclePicker({
   onChange,
   customerId,
   onCustomerChange,
+  error,
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
   customerId: string | null;
   onCustomerChange?: (id: string | null) => void;
+  error?: string;
 }) {
+
   const { data: vehicles = [] } = useVehicles();
   const { data: customers = [] } = useCustomers();
   const { user, profile } = useAuth();
