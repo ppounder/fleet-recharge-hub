@@ -241,14 +241,14 @@ function DayView({
   return (
     <div className="overflow-x-auto">
       <div className="min-w-fit">
-        <div className="grid" style={{ gridTemplateColumns: `60px repeat(${resources.length + (unassigned.length ? 1 : 0)}, minmax(180px, 1fr))` }}>
+        <div className="grid" style={{ gridTemplateColumns: `60px repeat(${resources.length + 1}, minmax(180px, 1fr))` }}>
           <div />
+          <div className="px-2 py-2 text-sm font-medium border-b text-center text-muted-foreground">Unassigned</div>
           {resources.map((r: any) => (
             <div key={r.id} className="px-2 py-2 text-sm font-medium border-b text-center" style={{ borderTop: `3px solid ${r.color}` }}>
               {resourceMode === "bay" ? r.name : `${r.first_name} ${r.last_name}`}
             </div>
           ))}
-          {unassigned.length > 0 && <div className="px-2 py-2 text-sm font-medium border-b text-center text-muted-foreground">Unassigned</div>}
         </div>
 
         <div className="grid relative" style={{ gridTemplateColumns: `60px repeat(${resources.length + (unassigned.length ? 1 : 0)}, minmax(180px, 1fr))` }}>
