@@ -987,7 +987,19 @@ export default function CustomerVehicles() {
           </Card>
 ) : (
           <VehiclesTable
-            vehicles={vehicles}
+            vehicles={(() => {
+              const now = new Date();
+              const in30 = new Date(); in30.setDate(in30.getDate() + 30);
+              if (kpiFilter === "off-road") return vehicles.filter((v) => v.status === "off-road");
+              if (kpiFilter === "mots-expired") return vehicles.filter((v) => isDateExpired(v.mot_due));
+              if (kpiFilter === "mots-due") return vehicles.filter((v) => {
+                if (!v.mot_due || isDateExpired(v.mot_due)) return false;
+                const d = new Date(v.mot_due);
+                return d <= in30 && d >= now;
+              });
+              return vehicles;
+            })()}
+
             search={search}
             setSearch={setSearch}
             sortKey={sortKey}
