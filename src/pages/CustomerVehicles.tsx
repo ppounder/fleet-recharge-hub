@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, ArrowUpRight, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
@@ -924,6 +924,44 @@ export default function CustomerVehicles() {
           <h1 className="text-2xl font-bold">Assets / Vehicles</h1>
           <p className="text-sm text-muted-foreground">{vehicles.length} vehicle{vehicles.length !== 1 ? "s" : ""} assigned to you</p>
         </div>
+
+        {!isLoading && vehicles.length > 0 && (() => {
+          const now = new Date();
+          const in30 = new Date(); in30.setDate(in30.getDate() + 30);
+          const offRoad = vehicles.filter((v) => v.status === "off-road").length;
+          const motsExpired = vehicles.filter((v) => isDateExpired(v.mot_due)).length;
+          const motsDue = vehicles.filter((v) => {
+            if (!v.mot_due || isDateExpired(v.mot_due)) return false;
+            const d = new Date(v.mot_due);
+            return d <= in30 && d >= now;
+          }).length;
+          const tiles = [
+            { label: "Off-road", value: offRoad, desc: "Vehicles currently off the road", accent: true },
+            { label: "MOTs due", value: motsDue, desc: "Due within the next 30 days", accent: false },
+            { label: "MOTs expired", value: motsExpired, desc: "MOT date has passed", accent: false },
+          ];
+          return (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tiles.map((t) => (
+                <div
+                  key={t.label}
+                  className={cn(
+                    "rounded-xl p-5 relative overflow-hidden hover:shadow-lg transition-shadow border",
+                    t.accent ? "stat-card-accent border-transparent" : "bg-primary/10 border-primary/20 text-foreground",
+                  )}
+                >
+                  <div className="absolute top-3 right-3 opacity-60">
+                    <ArrowUpRight className="w-4 h-4" />
+                  </div>
+                  <p className="text-sm font-medium">{t.label}</p>
+                  <p className="text-4xl font-bold mt-1">{t.value}</p>
+                  <p className="text-xs mt-2 opacity-80">{t.desc}</p>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
