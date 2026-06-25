@@ -357,8 +357,14 @@ export default function CustomerVehicles() {
         if (e?.code === "23505" || /duplicate key|unique/i.test(msg)) {
           const dupField: "registration" | "vin" = /vin/i.test(msg) ? "vin" : "registration";
           const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
-          setErrors((p) => ({ ...p, [dupField]: `${label} already exists for another asset / vehicle` }));
-          toast({ title: "Duplicate value", description: `${label} must be unique`, variant: "destructive" });
+          const value = (dupField === "vin" ? form.vin : form.registration).toUpperCase();
+          setErrors((p) => ({ ...p, [dupField]: `${label} "${value}" is already in use. Please enter a different value.` }));
+          toast({ title: `Duplicate ${label.toLowerCase()}`, description: `An asset / vehicle with this ${label.toLowerCase()} already exists. Please correct the highlighted field.`, variant: "destructive" });
+          setTimeout(() => {
+            const el = document.getElementById(dupField);
+            el?.focus();
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 50);
         } else {
           toast({ title: "Create failed", description: e.message, variant: "destructive" });
         }
@@ -421,8 +427,14 @@ export default function CustomerVehicles() {
       if (e?.code === "23505" || /duplicate key|unique/i.test(msg)) {
         const dupField: "registration" | "vin" = /vin/i.test(msg) ? "vin" : "registration";
         const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
-        setErrors((p) => ({ ...p, [dupField]: `${label} already exists for another asset / vehicle` }));
-        toast({ title: "Duplicate value", description: `${label} must be unique`, variant: "destructive" });
+        const value = (dupField === "vin" ? form.vin : form.registration).toUpperCase();
+        setErrors((p) => ({ ...p, [dupField]: `${label} "${value}" is already in use. Please enter a different value.` }));
+        toast({ title: `Duplicate ${label.toLowerCase()}`, description: `An asset / vehicle with this ${label.toLowerCase()} already exists. Please correct the highlighted field.`, variant: "destructive" });
+        setTimeout(() => {
+          const el = document.getElementById(dupField);
+          el?.focus();
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 50);
       } else {
         toast({ title: "Update failed", description: e.message, variant: "destructive" });
       }
