@@ -124,6 +124,25 @@ function dotToManufactureDate(serial: string): string | null {
   return `Week ${String(ww).padStart(2, "0")} / 20${String(yy).padStart(2, "0")}`;
 }
 
+function dotToTyreAge(serial: string): string | null {
+  const last4 = (serial || "").replace(/\s+/g, "").slice(-4);
+  if (!/^\d{4}$/.test(last4)) return null;
+  const ww = parseInt(last4.slice(0, 2), 10);
+  const yy = parseInt(last4.slice(2, 4), 10);
+  if (ww < 1 || ww > 53) return null;
+  // Approx start of ISO week: Jan 1 + (ww-1)*7 days
+  const manufactured = new Date(2000 + yy, 0, 1 + (ww - 1) * 7);
+  const now = new Date();
+  let months =
+    (now.getFullYear() - manufactured.getFullYear()) * 12 +
+    (now.getMonth() - manufactured.getMonth());
+  if (now.getDate() < manufactured.getDate()) months -= 1;
+  if (months < 0) return null;
+  const years = Math.floor(months / 12);
+  const mm = months % 12;
+  return `${String(years).padStart(2, "0")} yr ${String(mm).padStart(2, "0")} mo old`;
+}
+
 const TYRE_MANUFACTURERS = [
   "Avon",
   "BFGoodrich",
@@ -1521,6 +1540,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
                   {dotToManufactureDate(tyreForm.serial_number) ?? "—"}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {dotToTyreAge(tyreForm.serial_number) ?? "—"}
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_fitted_date">Date</Label>
@@ -1672,6 +1694,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                   <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
                     {dotToManufactureDate(replaceForm.serial_number) ?? "—"}
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    {dotToTyreAge(replaceForm.serial_number) ?? "—"}
+                  </p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="replace_fitted_date">Date fitted</Label>
