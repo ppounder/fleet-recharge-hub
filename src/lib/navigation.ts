@@ -58,6 +58,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
   "supplier": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
     { label: "Bookings and Jobs", href: "/jobs", icon: Wrench, badgeKey: "openJobs" },
+    { label: "Diary", href: "/diary", icon: CalendarDays },
     { label: "Invoicing", href: "/invoicing", icon: FileText },
     { label: "Commercial Terms", href: "/commercial-terms", icon: Handshake },
     { label: "Reports", href: "/reports", icon: BarChart3 },
