@@ -251,12 +251,29 @@ function DayView({
           ))}
         </div>
 
-        <div className="grid relative" style={{ gridTemplateColumns: `60px repeat(${resources.length + (unassigned.length ? 1 : 0)}, minmax(180px, 1fr))` }}>
+        <div className="grid relative" style={{ gridTemplateColumns: `60px repeat(${resources.length + 1}, minmax(180px, 1fr))` }}>
           <div>
             {hoursList.map(h => (
               <div key={h} className="text-xs text-muted-foreground text-right pr-2 border-t" style={{ height: HOUR_PX }}>
                 {format(setHours(new Date(), h), "h a")}
               </div>
+            ))}
+          </div>
+          <div
+            className="relative border-l bg-muted/30"
+            style={{ height: gridHeight }}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, null)}
+            onClick={(e) => {
+              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              const minutes = Math.round(((e.clientY - rect.top) / gridHeight) * totalMinutes / 30) * 30;
+              const start = setMinutes(setHours(date, openHour), minutes);
+              onSlotClick(start, null, null);
+            }}
+          >
+            {hoursList.map(h => <div key={h} className="border-t" style={{ height: HOUR_PX }} />)}
+            {unassigned.map((a: Appointment) => (
+              <ApptBlock key={a.id} a={a} color="#94a3b8" style={positionStyle(a)} onClick={() => onAppointmentClick(a)} label={labelFor(a)} />
             ))}
           </div>
           {resources.map((r: any) => (
@@ -283,19 +300,6 @@ function DayView({
               ))}
             </div>
           ))}
-          {unassigned.length > 0 && (
-            <div
-              className="relative border-l bg-muted/30"
-              style={{ height: gridHeight }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => handleDrop(e, null)}
-            >
-              {hoursList.map(h => <div key={h} className="border-t" style={{ height: HOUR_PX }} />)}
-              {unassigned.map((a: Appointment) => (
-                <ApptBlock key={a.id} a={a} color="#94a3b8" style={positionStyle(a)} onClick={() => onAppointmentClick(a)} label={labelFor(a)} />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
