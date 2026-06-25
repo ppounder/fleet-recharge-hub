@@ -14,6 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          all_day: boolean
+          bay_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          details: string | null
+          ends_at: string
+          fleet_id: string
+          id: string
+          job_id: string | null
+          reminder_phone: string | null
+          send_reminder: boolean
+          starts_at: string
+          status: string
+          technician_id: string | null
+          title: string | null
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          all_day?: boolean
+          bay_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          details?: string | null
+          ends_at: string
+          fleet_id: string
+          id?: string
+          job_id?: string | null
+          reminder_phone?: string | null
+          send_reminder?: boolean
+          starts_at: string
+          status?: string
+          technician_id?: string | null
+          title?: string | null
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          all_day?: boolean
+          bay_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          details?: string | null
+          ends_at?: string
+          fleet_id?: string
+          id?: string
+          job_id?: string | null
+          reminder_phone?: string | null
+          send_reminder?: boolean
+          starts_at?: string
+          status?: string
+          technician_id?: string | null
+          title?: string | null
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_bay_id_fkey"
+            columns: ["bay_id"]
+            isOneToOne: false
+            referencedRelation: "bays"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bays: {
+        Row: {
+          active: boolean
+          color: string
+          created_at: string
+          fleet_id: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          fleet_id: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          fleet_id?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       commercial_terms: {
         Row: {
           created_at: string
@@ -714,6 +846,48 @@ export type Database = {
           },
         ]
       }
+      shop_hours: {
+        Row: {
+          close_time: string
+          created_at: string
+          day_of_week: number
+          fleet_id: string
+          id: string
+          is_open: boolean
+          lunch_enabled: boolean
+          lunch_end: string | null
+          lunch_start: string | null
+          open_time: string
+          updated_at: string
+        }
+        Insert: {
+          close_time?: string
+          created_at?: string
+          day_of_week: number
+          fleet_id: string
+          id?: string
+          is_open?: boolean
+          lunch_enabled?: boolean
+          lunch_end?: string | null
+          lunch_start?: string | null
+          open_time?: string
+          updated_at?: string
+        }
+        Update: {
+          close_time?: string
+          created_at?: string
+          day_of_week?: number
+          fleet_id?: string
+          id?: string
+          is_open?: boolean
+          lunch_enabled?: boolean
+          lunch_end?: string | null
+          lunch_start?: string | null
+          open_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       supplier_networks: {
         Row: {
           api_endpoint: string | null
@@ -784,6 +958,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      technicians: {
+        Row: {
+          active: boolean
+          color: string
+          created_at: string
+          email: string | null
+          first_name: string
+          fleet_id: string
+          id: string
+          last_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          email?: string | null
+          first_name: string
+          fleet_id: string
+          id?: string
+          last_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          fleet_id?: string
+          id?: string
+          last_name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       tyre_disposals: {
         Row: {
@@ -1580,6 +1790,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_fleet_id: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

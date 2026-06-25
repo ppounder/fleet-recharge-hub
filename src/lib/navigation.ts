@@ -19,6 +19,7 @@ import {
   Package,
   Network,
   Plug,
+  CalendarDays,
 } from "lucide-react";
 
 export type UserRole = "fleet-manager" | "supplier" | "customer";
@@ -36,6 +37,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
   "fleet-manager": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
     { label: "Bookings", href: "/bookings", icon: ClipboardList, badgeKey: "bookings" },
+    { label: "Diary", href: "/diary", icon: CalendarDays },
     { label: "Approvals", href: "/approvals", icon: Shield, badgeKey: "approvals" },
     { label: "Jobs", href: "/jobs", icon: Wrench, badgeKey: "activeJobs" },
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
