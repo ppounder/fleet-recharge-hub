@@ -20,13 +20,21 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const [color, setColor] = useState("#0ea5e9");
 
   const add = async () => {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      toast({ title: "Bay name is required", variant: "destructive" });
+      return;
+    }
     if (bays.length >= MAX_BAYS) {
       toast({ title: `Maximum ${MAX_BAYS} bays allowed`, variant: "destructive" });
       return;
     }
-    await upsert.mutateAsync({ name: name.trim(), color, sort_order: bays.length });
-    setName("");
+    try {
+      await upsert.mutateAsync({ name: name.trim(), color, sort_order: bays.length, active: true });
+      setName("");
+      toast({ title: "Bay added" });
+    } catch (e: any) {
+      toast({ title: "Failed to add bay", description: e?.message ?? String(e), variant: "destructive" });
+    }
   };
 
   return (
