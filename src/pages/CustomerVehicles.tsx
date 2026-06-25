@@ -239,6 +239,7 @@ export default function CustomerVehicles() {
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [msgDialogOpen, setMsgDialogOpen] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof EditableFields, string>>>({});
   const { profile } = useAuth();
 
   const { data: recentNotes = [] } = useQuery({
