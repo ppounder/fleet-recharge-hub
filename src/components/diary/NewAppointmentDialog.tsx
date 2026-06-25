@@ -36,7 +36,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
   const del = useDeleteAppointment();
   const { toast } = useToast();
 
-  const [date, setDate] = useState<Date | undefined>();
+  const [date, setDate] = useState<string>("");
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("09:00");
   const [allDay, setAllDay] = useState(false);
