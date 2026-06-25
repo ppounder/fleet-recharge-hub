@@ -545,7 +545,17 @@ export default function CustomerVehicles() {
                               )}
                             </div>
                           ) : (
-                            <Input id={k} value={form[k]} onChange={set(k)} className="bg-card" />
+                            <Input
+                              id={k}
+                              value={form[k]}
+                              onChange={set(k)}
+                              aria-invalid={!!errors[k]}
+                              aria-describedby={errors[k] ? `${k}-error` : undefined}
+                              className={cn("bg-card", errors[k] && "border-destructive focus-visible:ring-destructive")}
+                            />
+                          )}
+                          {errors[k] && (
+                            <p id={`${k}-error`} className="text-xs text-destructive">{errors[k]}</p>
                           )}
                         </div>
                       ))}
