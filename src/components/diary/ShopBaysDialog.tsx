@@ -18,7 +18,7 @@ import { Trash2, Plus, GripVertical } from "lucide-react";
 import { useBays, useUpsertBay, useDeleteBay } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
-const MAX_BAYS = 6;
+
 
 export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { data: bays = [] } = useBays();
@@ -34,10 +34,6 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const add = async () => {
     if (!name.trim()) {
       toast({ title: "Bay name is required", variant: "destructive" });
-      return;
-    }
-    if (bays.length >= MAX_BAYS) {
-      toast({ title: `Maximum ${MAX_BAYS} bays allowed`, variant: "destructive" });
       return;
     }
     try {
@@ -106,9 +102,9 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               <Label>Colour</Label>
               <Input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-16 h-10 p-1" />
             </div>
-            <Button onClick={add} disabled={bays.length >= MAX_BAYS}><Plus className="h-4 w-4 mr-1" />Add</Button>
+            <Button onClick={add}><Plus className="h-4 w-4 mr-1" />Add</Button>
           </div>
-          <p className="text-xs text-muted-foreground">{bays.length} of {MAX_BAYS} bays</p>
+          <p className="text-xs text-muted-foreground">{bays.length} {bays.length === 1 ? "bay" : "bays"}</p>
 
           <div className="rounded-md border bg-card divide-y">
             {sorted.map((b) => {
