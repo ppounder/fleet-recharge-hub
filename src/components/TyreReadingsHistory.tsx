@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -1402,36 +1403,12 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_fitted_date">Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="tyre_fitted_date"
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-between font-normal",
-                        !tyreForm.fitted_date && "text-muted-foreground",
-                        tyreErrors.fitted_date && "border-destructive focus-visible:ring-destructive"
-                      )}
-                    >
-                      <span>
-                        {tyreForm.fitted_date
-                          ? format(parseISO(tyreForm.fitted_date), "dd MMM yyyy")
-                          : "Pick a date"}
-                      </span>
-                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={tyreForm.fitted_date ? parseISO(tyreForm.fitted_date) : undefined}
-                      onSelect={(d) => updateTyreField("fitted_date", d ? format(d, "yyyy-MM-dd") : "")}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  id="tyre_fitted_date"
+                  value={tyreForm.fitted_date}
+                  onChange={(v) => updateTyreField("fitted_date", v)}
+                  className={cn(tyreErrors.fitted_date && "border-destructive focus-visible:ring-destructive")}
+                />
                 {tyreErrors.fitted_date && <p className="text-xs text-destructive">{tyreErrors.fitted_date}</p>}
               </div>
             </div>
