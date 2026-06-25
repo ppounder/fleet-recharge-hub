@@ -1402,36 +1402,12 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="tyre_fitted_date">Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="tyre_fitted_date"
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-between font-normal",
-                        !tyreForm.fitted_date && "text-muted-foreground",
-                        tyreErrors.fitted_date && "border-destructive focus-visible:ring-destructive"
-                      )}
-                    >
-                      <span>
-                        {tyreForm.fitted_date
-                          ? format(parseISO(tyreForm.fitted_date), "dd MMM yyyy")
-                          : "Pick a date"}
-                      </span>
-                      <CalendarIcon className="ml-2 h-4 w-4 opacity-70" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={tyreForm.fitted_date ? parseISO(tyreForm.fitted_date) : undefined}
-                      onSelect={(d) => updateTyreField("fitted_date", d ? format(d, "yyyy-MM-dd") : "")}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  id="tyre_fitted_date"
+                  value={tyreForm.fitted_date}
+                  onChange={(v) => updateTyreField("fitted_date", v)}
+                  className={cn(tyreErrors.fitted_date && "border-destructive focus-visible:ring-destructive")}
+                />
                 {tyreErrors.fitted_date && <p className="text-xs text-destructive">{tyreErrors.fitted_date}</p>}
               </div>
             </div>
