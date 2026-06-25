@@ -100,6 +100,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
     if (multipleDays && !endDate) e.endDate = "Required";
     if (!allDay && (!startTime || !endTime)) e.time = "Required";
     if (!allDay && !multipleDays && startTime >= endTime) e.time = "End must be after start";
+    if (!details.trim()) e.details = "Details are required";
     setErrors(e);
     if (Object.keys(e).length) return;
 
@@ -274,7 +275,8 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
 
           <div className="space-y-1">
             <Label>Details</Label>
-            <Textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={2} />
+            <Textarea value={details} onChange={(e) => { setDetails(e.target.value); setErrors(p => ({ ...p, details: "" })); }} rows={2} aria-invalid={!!errors.details} className={errors.details ? "border-destructive" : ""} />
+            {errors.details && <p className="text-xs text-destructive">{errors.details}</p>}
           </div>
         </div>
 
