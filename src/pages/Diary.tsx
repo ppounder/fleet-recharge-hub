@@ -83,9 +83,9 @@ export default function Diary() {
   const apptLabel = (a: Appointment) => {
     const cust = a.customer_id ? customerById[a.customer_id]?.name : null;
     const veh = a.vehicle_id ? (vehicleById[a.vehicle_id]?.registration || vehicleById[a.vehicle_id]?.fleet_number) : null;
-    if (cust && veh) return `${cust} · ${veh}`;
-    if (cust) return cust;
+    if (veh && cust) return `${veh} · ${cust}`;
     if (veh) return veh;
+    if (cust) return cust;
     return a.title || a.details || "Appointment";
   };
 
