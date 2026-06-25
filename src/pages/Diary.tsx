@@ -187,9 +187,16 @@ function DayView({
 }: any) {
   const dow = date.getDay();
   const dayHours = hours.find((h: any) => h.day_of_week === dow);
-  const openHour = dayHours?.is_open ? parseInt((dayHours.open_time || "07:30").substring(0, 2)) : 7;
-  const closeHour = dayHours?.is_open ? Math.max(openHour + 1, parseInt((dayHours.close_time || "17:30").substring(0, 2)) + 1) : 19;
-  const hoursList = Array.from({ length: closeHour - openHour }, (_, i) => openHour + i);
+  const isOpen = !!dayHours?.is_open;
+  const parseHM = (t: string) => ({ h: parseInt(t.substring(0,2)), m: parseInt(t.substring(3,5)) });
+  const openHM = parseHM(dayHours?.open_time || "07:30");
+  const closeHM = parseHM(dayHours?.close_time || "17:30");
+  const openTotal = openHM.h * 60 + openHM.m;
+  const closeTotal = closeHM.h * 60 + closeHM.m;
+  // grid window: pad 1h before open and after close, clamp 0–24
+  const gridStartHour = isOpen ? Math.max(0, openHM.h - 1) : 7;
+  const gridEndHour = isOpen ? Math.min(24, (closeHM.m > 0 ? closeHM.h + 2 : closeHM.h + 1)) : 19;
+  const hoursList = Array.from({ length: gridEndHour - gridStartHour }, (_, i) => gridStartHour + i);
 
   const resources = resourceMode === "bay" ? bays : technicians;
   const resourceKey = resourceMode === "bay" ? "bay_id" : "technician_id";
@@ -201,16 +208,20 @@ function DayView({
     !a[resourceKey as keyof Appointment] && isSameDay(parseISO(a.starts_at), date)
   );
 
-  const totalMinutes = (closeHour - openHour) * 60;
-  const gridHeight = (closeHour - openHour) * HOUR_PX;
+  const totalMinutes = (gridEndHour - gridStartHour) * 60;
+  const gridHeight = (gridEndHour - gridStartHour) * HOUR_PX;
+  const gridStartTotal = gridStartHour * 60;
+  const minutesToPx = (m: number) => ((m - gridStartTotal) / totalMinutes) * gridHeight;
+  const openTopPx = minutesToPx(openTotal);
+  const openBottomPx = minutesToPx(closeTotal);
 
   const positionStyle = (a: Appointment) => {
     const s = parseISO(a.starts_at);
     const e = parseISO(a.ends_at);
-    const startM = (s.getHours() - openHour) * 60 + s.getMinutes();
+    const startM = s.getHours() * 60 + s.getMinutes();
     const lenM = Math.max(20, differenceInMinutes(e, s));
     return {
-      top: `${(startM / totalMinutes) * gridHeight}px`,
+      top: `${minutesToPx(startM)}px`,
       height: `${(lenM / totalMinutes) * gridHeight}px`,
     };
   };
@@ -223,7 +234,7 @@ function DayView({
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const offsetY = e.clientY - rect.top;
     const minutes = Math.round((offsetY / gridHeight) * totalMinutes / 15) * 15;
-    const newStart = setMinutes(setHours(date, openHour), minutes);
+    const newStart = setMinutes(setHours(date, gridStartHour), minutes);
     const dur = differenceInMinutes(parseISO(appt.ends_at), parseISO(appt.starts_at));
     upsertMove(appt, newStart, dur, { [resourceKey]: resourceId });
   };
@@ -238,9 +249,74 @@ function DayView({
     });
   };
 
+  const fmtHM = (h: number, m: number) => `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+
+  // Overlay rendered in each resource column to mark closed periods + open band edges
+  const OpenClosedOverlay = () => (
+    <>
+      {isOpen ? (
+        <>
+          {openTopPx > 0 && (
+            <div
+              className="absolute left-0 right-0 pointer-events-none"
+              style={{
+                top: 0,
+                height: openTopPx,
+                backgroundImage:
+                  "repeating-linear-gradient(135deg, hsl(var(--muted)) 0 6px, transparent 6px 12px)",
+                opacity: 0.5,
+              }}
+            />
+          )}
+          {openBottomPx < gridHeight && (
+            <div
+              className="absolute left-0 right-0 pointer-events-none"
+              style={{
+                top: openBottomPx,
+                height: gridHeight - openBottomPx,
+                backgroundImage:
+                  "repeating-linear-gradient(135deg, hsl(var(--muted)) 0 6px, transparent 6px 12px)",
+                opacity: 0.5,
+              }}
+            />
+          )}
+          <div
+            className="absolute left-0 right-0 border-t-2 border-primary/60 pointer-events-none"
+            style={{ top: openTopPx }}
+          />
+          <div
+            className="absolute left-0 right-0 border-t-2 border-primary/60 pointer-events-none"
+            style={{ top: openBottomPx }}
+          />
+        </>
+      ) : (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(135deg, hsl(var(--muted)) 0 6px, transparent 6px 12px)",
+            opacity: 0.5,
+          }}
+        />
+      )}
+    </>
+  );
+
   return (
     <div className="overflow-x-auto">
       <div className="min-w-fit">
+        <div className="mb-2 text-xs text-muted-foreground flex items-center gap-2">
+          <Clock className="h-3.5 w-3.5" />
+          {isOpen ? (
+            <>
+              <span className="font-medium text-foreground">Open</span>
+              <span>{fmtHM(openHM.h, openHM.m)} – {fmtHM(closeHM.h, closeHM.m)}</span>
+            </>
+          ) : (
+            <span className="font-medium text-foreground">Closed today</span>
+          )}
+        </div>
+
         <div className="grid" style={{ gridTemplateColumns: `60px repeat(${resources.length + 1}, minmax(180px, 1fr))` }}>
           <div />
           <div className="px-2 py-2 text-sm font-medium border-b text-center text-muted-foreground">Unassigned</div>
@@ -267,7 +343,7 @@ function DayView({
             onClick={(e) => {
               const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
               const minutes = Math.round(((e.clientY - rect.top) / gridHeight) * totalMinutes / 30) * 30;
-              const start = setMinutes(setHours(date, openHour), minutes);
+              const start = setMinutes(setHours(date, gridStartHour), minutes);
               onSlotClick(start, null, null);
             }}
           >
@@ -286,15 +362,12 @@ function DayView({
               onClick={(e) => {
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const minutes = Math.round(((e.clientY - rect.top) / gridHeight) * totalMinutes / 30) * 30;
-                const start = setMinutes(setHours(date, openHour), minutes);
+                const start = setMinutes(setHours(date, gridStartHour), minutes);
                 onSlotClick(start, resourceMode === "bay" ? r.id : null, resourceMode === "technician" ? r.id : null);
               }}
             >
               {hoursList.map(h => <div key={h} className="border-t" style={{ height: HOUR_PX }} />)}
-              {/* lunch overlay */}
-              {dayHours?.lunch_enabled && dayHours.lunch_start && dayHours.lunch_end && (
-                <LunchOverlay openHour={openHour} totalMinutes={totalMinutes} gridHeight={gridHeight} start={dayHours.lunch_start} end={dayHours.lunch_end} />
-              )}
+              <OpenClosedOverlay />
               {apptsForResource(r.id).map((a: Appointment) => (
                 <ApptBlock key={a.id} a={a} color={r.color} style={positionStyle(a)} onClick={() => onAppointmentClick(a)} label={labelFor(a)} />
               ))}
