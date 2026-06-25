@@ -36,10 +36,6 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       toast({ title: "Bay name is required", variant: "destructive" });
       return;
     }
-    if (bays.length >= MAX_BAYS) {
-      toast({ title: `Maximum ${MAX_BAYS} bays allowed`, variant: "destructive" });
-      return;
-    }
     try {
       await upsert.mutateAsync({ name: name.trim(), color, sort_order: bays.length, active: true });
       setName("");
