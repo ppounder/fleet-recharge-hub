@@ -217,6 +217,9 @@ const DEFAULT_VISIBLE: ColKey[] = ["registration", "fleet_number", "asset_type",
 const DEFAULT_ORDER: ColKey[] = ALL_COLUMNS.map((c) => c.key);
 const LOCKED_COLS: ColKey[] = ["registration"];
 
+const normalizeVehicleIdentity = (value: unknown) => String(value ?? "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+const vinFieldLabel = (assetType: string) => (assetType === "Tail Lift" || assetType === "Plant" ? "Serial number" : "VIN");
+
 export default function CustomerVehicles() {
   const { data: vehicles = [], isLoading } = useVehicles();
   const update = useUpdateVehicle();
@@ -305,6 +308,7 @@ export default function CustomerVehicles() {
         return;
       }
       setErrors({});
+      if (!validateUniqueVehicleFields()) return;
       try {
         const created = await createVehicle.mutateAsync({
           registration: form.registration.toUpperCase(),
@@ -358,6 +362,8 @@ export default function CustomerVehicles() {
       return;
     }
     if (!selected) return;
+    setErrors({});
+    if (!validateUniqueVehicleFields(selected.id)) return;
     try {
       await update.mutateAsync({
         id: selected.id,
@@ -423,14 +429,46 @@ export default function CustomerVehicles() {
     const combined = `${msg} ${details}`;
     const isDup = code === "23505" || /duplicate key|unique|already exists/i.test(combined);
     if (!isDup) {
+      if (code === "42501" || /row-level security|permission denied/i.test(combined)) {
+        toast({
+          title: "Unable to save asset / vehicle",
+          description: "Your account does not have permission to create this asset / vehicle.",
+          variant: "destructive",
+        });
+        return;
+      }
       toast({ title: fallbackTitle, description: msg || "Unknown error", variant: "destructive" });
       return;
     }
     // Detect which field from the constraint name or details payload
     const isVin = /vin/i.test(combined);
     const dupField: "registration" | "vin" = isVin ? "vin" : "registration";
-    const label = dupField === "vin" ? (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") : "Registration number";
-    const value = (dupField === "vin" ? form.vin : form.registration).toUpperCase();
+    showDuplicateFieldError(dupField);
+  };
+
+  const validateUniqueVehicleFields = (excludeVehicleId?: string) => {
+    const duplicateRegistration = vehicles.some((v) =>
+      v.id !== excludeVehicleId && normalizeVehicleIdentity(v.registration) === normalizeVehicleIdentity(form.registration),
+    );
+    if (duplicateRegistration) {
+      showDuplicateFieldError("registration");
+      return false;
+    }
+
+    const duplicateVin = vehicles.some((v) =>
+      v.id !== excludeVehicleId && normalizeVehicleIdentity(v.vin) === normalizeVehicleIdentity(form.vin),
+    );
+    if (duplicateVin) {
+      showDuplicateFieldError("vin");
+      return false;
+    }
+
+    return true;
+  };
+
+  const showDuplicateFieldError = (dupField: "registration" | "vin") => {
+    const label = dupField === "vin" ? vinFieldLabel(form.asset_type) : "Registration number";
+    const value = normalizeVehicleIdentity(dupField === "vin" ? form.vin : form.registration);
     setErrors((p) => ({ ...p, [dupField]: `${label} "${value}" is already in use. Please enter a different value.` }));
     toast({
       title: `Duplicate ${label.toLowerCase()}`,
