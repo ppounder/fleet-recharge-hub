@@ -85,7 +85,7 @@ export function ShopHoursDialog({ open, onOpenChange }: { open: boolean; onOpenC
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Shop hours</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Opening hours</DialogTitle></DialogHeader>
         <div className="space-y-1.5">
           {DAYS.map(({ label, dow }) => {
             const h = draft[dow] ?? defaultRow(dow);
