@@ -1694,6 +1694,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                   <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
                     {dotToManufactureDate(replaceForm.serial_number) ?? "—"}
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    {dotToTyreAge(replaceForm.serial_number) ?? "—"}
+                  </p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="replace_fitted_date">Date fitted</Label>
