@@ -933,7 +933,7 @@ export default function CustomerVehicles() {
             </Button>
             <Button onClick={handleSave} disabled={update.isPending || createVehicle.isPending}>
               {(update.isPending || createVehicle.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {creating ? "Create Asset" : "Save"}
+              {creating ? "Save" : "Save"}
             </Button>
           </div>
         </div>
