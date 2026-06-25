@@ -295,8 +295,10 @@ export default function CustomerVehicles() {
     if (creating) {
       const newErrors: Partial<Record<keyof EditableFields, string>> = {};
       if (!form.registration.trim()) newErrors.registration = "Registration number is required";
+      if (!form.asset_type.trim()) newErrors.asset_type = "Asset type is required";
       if (!form.make.trim()) newErrors.make = "Make is required";
       if (!form.model.trim()) newErrors.model = "Model is required";
+      if (!form.vin.trim()) newErrors.vin = (form.asset_type === "Tail Lift" || form.asset_type === "Plant" ? "Serial number" : "VIN") + " is required";
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
         toast({ title: "Missing required fields", description: "Please complete the highlighted fields", variant: "destructive" });
@@ -501,8 +503,8 @@ export default function CustomerVehicles() {
                         <div key={k} className="space-y-1.5">
                           <Label htmlFor={k}>{labels[k]}</Label>
                           {k === "asset_type" ? (
-                            <Select value={form.asset_type || ""} onValueChange={(v) => setForm((f) => ({ ...f, asset_type: v }))}>
-                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder="Select asset type" /></SelectTrigger>
+                          <Select value={form.asset_type || ""} onValueChange={(v) => { setForm((f) => ({ ...f, asset_type: v })); if (errors.asset_type) setErrors((p) => ({ ...p, asset_type: undefined })); }}>
+                              <SelectTrigger id={k} className={cn("bg-card", errors.asset_type && "border-destructive focus-visible:ring-destructive")}><SelectValue placeholder="Select asset type" /></SelectTrigger>
                               <SelectContent>
                                 {["Car", "Van", "HGV", "Trailer", "Plant", "Tail Lift"].map((opt) => (
                                   <SelectItem key={opt} value={opt}>{opt}</SelectItem>
