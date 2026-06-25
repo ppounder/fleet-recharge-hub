@@ -18,10 +18,13 @@ import { useQueryClient } from "@tanstack/react-query";
 export function CustomerPicker({
   value,
   onChange,
+  error,
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
+  error?: string;
 }) {
+
   const { data: customers = [] } = useCustomers();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -87,9 +90,10 @@ export function CustomerPicker({
           </PopoverContent>
         </Popover>
       </div>
-      <p className="text-sm text-muted-foreground truncate min-h-[1.25rem]">
-        {selected ? selected.name : "No customer selected"}
+      <p className={`text-sm truncate min-h-[1.25rem] ${error ? "text-destructive" : "text-muted-foreground"}`}>
+        {error ? error : selected ? selected.name : "No customer selected"}
       </p>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
@@ -125,12 +129,15 @@ export function VehiclePicker({
   onChange,
   customerId,
   onCustomerChange,
+  error,
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
   customerId: string | null;
   onCustomerChange?: (id: string | null) => void;
+  error?: string;
 }) {
+
   const { data: vehicles = [] } = useVehicles();
   const { data: customers = [] } = useCustomers();
   const { user, profile } = useAuth();
@@ -215,11 +222,14 @@ export function VehiclePicker({
           </PopoverContent>
         </Popover>
       </div>
-      <p className="text-sm text-muted-foreground truncate min-h-[1.25rem]">
-        {selected
-          ? `${selected.registration ?? selected.fleet_number ?? selected.id.slice(0,8)}${selected.make || selected.model ? ` — ${selected.make ?? ""} ${selected.model ?? ""}`.trimEnd() : ""}`
-          : "No vehicle selected"}
+      <p className={`text-sm truncate min-h-[1.25rem] ${error ? "text-destructive" : "text-muted-foreground"}`}>
+        {error
+          ? error
+          : selected
+            ? `${selected.registration ?? selected.fleet_number ?? selected.id.slice(0,8)}${selected.make || selected.model ? ` — ${selected.make ?? ""} ${selected.model ?? ""}`.trimEnd() : ""}`
+            : "No vehicle selected"}
       </p>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">

@@ -94,12 +94,15 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
 
   const handleSave = async () => {
     const e: Record<string, string> = {};
+    if (!customerId) e.customer = "Customer is required";
+    if (!vehicleId) e.vehicle = "Vehicle is required";
     if (!date) e.date = "Required";
     if (multipleDays && !endDate) e.endDate = "Required";
     if (!allDay && (!startTime || !endTime)) e.time = "Required";
     if (!allDay && !multipleDays && startTime >= endTime) e.time = "End must be after start";
     setErrors(e);
     if (Object.keys(e).length) return;
+
 
     const endYmd = multipleDays ? endDate : date;
     const starts = allDay ? new Date(`${date}T00:00:00`) : new Date(`${date}T${startTime}:00`);
@@ -149,14 +152,20 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
         <div className="space-y-3">
           {/* Customer / Vehicle */}
           <div className="rounded-md border bg-muted/40 p-3 grid grid-cols-2 gap-4">
-            <CustomerPicker value={customerId} onChange={(id) => { setCustomerId(id); if (!id) setVehicleId(null); }} />
+            <CustomerPicker
+              value={customerId}
+              onChange={(id) => { setCustomerId(id); setErrors(prev => ({ ...prev, customer: "" })); if (!id) setVehicleId(null); }}
+              error={errors.customer}
+            />
             <VehiclePicker
               value={vehicleId}
-              onChange={setVehicleId}
+              onChange={(id) => { setVehicleId(id); setErrors(prev => ({ ...prev, vehicle: "" })); }}
               customerId={customerId}
               onCustomerChange={setCustomerId}
+              error={errors.vehicle}
             />
           </div>
+
 
 
           {/* Date / In / Out / Bay */}
@@ -168,12 +177,13 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
             </div>
             <div className="space-y-1">
               <Label>In</Label>
-              <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} disabled={allDay} />
+              <Input type="time" value={startTime} onChange={(e) => { setStartTime(e.target.value); setErrors(p => ({ ...p, time: "" })); }} disabled={allDay} aria-invalid={!!errors.time} className={errors.time ? "border-destructive" : ""} />
             </div>
             <div className="space-y-1">
               <Label>Out</Label>
-              <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={allDay} />
+              <Input type="time" value={endTime} onChange={(e) => { setEndTime(e.target.value); setErrors(p => ({ ...p, time: "" })); }} disabled={allDay} aria-invalid={!!errors.time} className={errors.time ? "border-destructive" : ""} />
             </div>
+
             <div className="space-y-1">
               <Label>Bay</Label>
               <Select value={bayId} onValueChange={setBayId}>
