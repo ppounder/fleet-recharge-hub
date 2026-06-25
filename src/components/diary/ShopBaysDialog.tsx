@@ -64,7 +64,13 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         ids.map((id, idx) => {
           const original = sorted.find((b) => b.id === id);
           if (!original || original.sort_order === idx) return Promise.resolve();
-          return upsert.mutateAsync({ id, sort_order: idx });
+          return upsert.mutateAsync({
+            id: original.id,
+            name: original.name,
+            color: original.color,
+            active: original.active,
+            sort_order: idx,
+          });
         }),
       );
     } catch (e: any) {
@@ -145,11 +151,11 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   <span className="inline-block w-5 h-5 rounded shrink-0" style={{ background: b.color }} />
                   <Input
                     defaultValue={b.name}
-                    onBlur={(e) => e.target.value !== b.name && upsert.mutate({ id: b.id, name: e.target.value })}
+                    onBlur={(e) => e.target.value !== b.name && upsert.mutate({ ...b, name: e.target.value })}
                     className="flex-1"
                   />
                   <div className="flex items-center gap-2 shrink-0">
-                    <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ id: b.id, active: v })} />
+                    <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ ...b, active: v })} />
                     <Button
                       variant="ghost"
                       size="icon"
