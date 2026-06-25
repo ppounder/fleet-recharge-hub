@@ -49,20 +49,29 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     }
   };
 
-  const move = async (index: number, dir: -1 | 1) => {
-    const target = index + dir;
-    if (target < 0 || target >= sorted.length) return;
-    const a = sorted[index];
-    const b = sorted[target];
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const reorder = async (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const ids = sorted.map((b) => b.id);
+    const fromIdx = ids.indexOf(fromId);
+    const toIdx = ids.indexOf(toId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    ids.splice(toIdx, 0, ids.splice(fromIdx, 1)[0]);
     try {
-      await Promise.all([
-        upsert.mutateAsync({ id: a.id, sort_order: b.sort_order }),
-        upsert.mutateAsync({ id: b.id, sort_order: a.sort_order }),
-      ]);
+      await Promise.all(
+        ids.map((id, idx) => {
+          const original = sorted.find((b) => b.id === id);
+          if (!original || original.sort_order === idx) return Promise.resolve();
+          return upsert.mutateAsync({ id, sort_order: idx });
+        }),
+      );
     } catch (e: any) {
       toast({ title: "Failed to reorder", description: e?.message ?? String(e), variant: "destructive" });
     }
   };
+
 
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
