@@ -1389,7 +1389,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 onChange={(e) => updateTyreField("serial_number", e.target.value)}
                 placeholder="DOT code, e.g. XXXX XXXX 1223"
                 aria-invalid={!!tyreErrors.serial_number}
-                className={cn("font-mono", tyreErrors.serial_number && "border-destructive focus-visible:ring-destructive")}
+                className={cn(tyreErrors.serial_number && "border-destructive focus-visible:ring-destructive")}
               />
               {tyreErrors.serial_number && <p className="text-xs text-destructive">{tyreErrors.serial_number}</p>}
             </div>
