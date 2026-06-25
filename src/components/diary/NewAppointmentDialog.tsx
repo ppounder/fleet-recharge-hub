@@ -55,7 +55,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
     if (editing) {
       const s = new Date(editing.starts_at);
       const e = new Date(editing.ends_at);
-      setDate(s);
+      setDate(format(s, "yyyy-MM-dd"));
       setStartTime(toTimeInput(s));
       setEndTime(toTimeInput(e));
       setAllDay(editing.all_day);
@@ -69,7 +69,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
       setReminderPhone(editing.reminder_phone ?? "");
     } else {
       const s = initialStart ?? new Date();
-      setDate(s);
+      setDate(format(s, "yyyy-MM-dd"));
       setStartTime(toTimeInput(s));
       setEndTime(toTimeInput(addMinutes(s, 60)));
       setAllDay(false);
@@ -96,7 +96,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
     setErrors(e);
     if (Object.keys(e).length) return;
 
-    const ymd = format(date!, "yyyy-MM-dd");
+    const ymd = date;
     const starts = allDay ? new Date(`${ymd}T00:00:00`) : new Date(`${ymd}T${startTime}:00`);
     const ends = allDay ? new Date(`${ymd}T23:59:59`) : new Date(`${ymd}T${endTime}:00`);
 
