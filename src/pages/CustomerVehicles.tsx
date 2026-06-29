@@ -256,7 +256,7 @@ export default function CustomerVehicles() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicle_status_history")
-        .select("id, maintenance_message, changed_at")
+        .select("id, maintenance_message, changed_at, changed_by")
         .eq("vehicle_id", selected!.id)
         .not("maintenance_message", "is", null)
         .neq("maintenance_message", "")
