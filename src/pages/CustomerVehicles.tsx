@@ -673,7 +673,7 @@ export default function CustomerVehicles() {
                       {(() => {
                         const q = noteSearch.trim().toLowerCase();
                         const filtered = q
-                          ? recentNotes.filter((n: any) => (n.maintenance_message ?? "").toLowerCase().includes(q))
+                          ? recentNotes.filter((n: any) => (n.maintenance_message ?? "").toLowerCase().includes(q) || (n.changed_by ?? "").toLowerCase().includes(q))
                           : recentNotes;
                         if (recentNotes.length === 0) {
                           return (
