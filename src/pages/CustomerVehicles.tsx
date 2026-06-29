@@ -648,7 +648,16 @@ export default function CustomerVehicles() {
               <CollapsibleCard title="Notes">
                 <div className="space-y-2">
                   {selected && (
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="relative w-64">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={noteSearch}
+                          onChange={(e) => setNoteSearch(e.target.value)}
+                          placeholder="Search notes..."
+                          className="h-9 pl-8"
+                        />
+                      </div>
                       <Button
                         type="button"
                         size="sm"
@@ -661,17 +670,32 @@ export default function CustomerVehicles() {
                   )}
                   {selected ? (
                     <div className="relative rounded-md border bg-card">
-                      {recentNotes.length === 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => setMsgDialogOpen(true)}
-                          className="w-full text-left text-sm text-muted-foreground px-3 py-6"
-                        >
-                          No note recorded
-                        </button>
-                      ) : (
+                      {(() => {
+                        const q = noteSearch.trim().toLowerCase();
+                        const filtered = q
+                          ? recentNotes.filter((n: any) => (n.maintenance_message ?? "").toLowerCase().includes(q))
+                          : recentNotes;
+                        if (recentNotes.length === 0) {
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setMsgDialogOpen(true)}
+                              className="w-full text-left text-sm text-muted-foreground px-3 py-6"
+                            >
+                              No note recorded
+                            </button>
+                          );
+                        }
+                        if (filtered.length === 0) {
+                          return (
+                            <div className="text-sm text-muted-foreground px-3 py-6 text-center">
+                              No notes match your search
+                            </div>
+                          );
+                        }
+                        return (
                         <ul className="divide-y">
-                          {recentNotes.map((n: any) => (
+                          {filtered.map((n: any) => (
                             <li key={n.id} className="flex items-start justify-between gap-2 px-3 py-2 hover:bg-muted/40">
                               <div className="min-w-0 flex-1">
                                 <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
@@ -700,7 +724,8 @@ export default function CustomerVehicles() {
                             </li>
                           ))}
                         </ul>
-                      )}
+                        );
+                      })()}
                     </div>
                   ) : (
                     <div className="rounded-md border bg-card px-3 py-6 text-sm text-muted-foreground">
