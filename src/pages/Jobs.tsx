@@ -29,10 +29,10 @@ export default function Jobs() {
 
   const filtered = baseFiltered.filter((j) => statusFilter === "all" || j.status === statusFilter);
 
-  const filterStatuses = isFleetManager ? [...activeJobStatuses] : jobStatusSteps.filter((s) => s !== "closed");
+  const filterStatuses = [...activeJobStatuses];
 
 
-  const title = isFleetManager ? "Jobs" : "Bookings and Jobs";
+  const title = "Jobs";
 
   return (
     <AppLayout>
