@@ -36,12 +36,11 @@ export interface NavItem {
 export const navItemsByRole: Record<UserRole, NavItem[]> = {
   "fleet-manager": [
     { label: "Dashboard", href: "/", icon: BarChart3 },
+    { label: "Assets / Vehicles", href: "/vehicles", icon: Car },
     { label: "Bookings", href: "/bookings", icon: ClipboardList, badgeKey: "bookings" },
-    
-    { label: "Approvals", href: "/approvals", icon: Shield, badgeKey: "approvals" },
     { label: "Jobs", href: "/jobs", icon: Wrench, badgeKey: "activeJobs" },
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
-    { label: "Assets / Vehicles", href: "/vehicles", icon: Car },
+    { label: "Approvals", href: "/approvals", icon: Shield, badgeKey: "approvals" },
     { label: "Suppliers", href: "/suppliers", icon: Truck },
     { label: "Supplier Networks", href: "/supplier-networks", icon: Network },
     { label: "Reports", href: "/reports", icon: FileText },
