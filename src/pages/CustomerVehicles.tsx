@@ -547,7 +547,7 @@ export default function CustomerVehicles() {
                 {!creating && selected && (
                   <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
                     <UKNumberPlate registration={selected.registration} />
-                    · {selected.make} {selected.model}
+                    · {selected.make} {selected.model}{selected.year ? ` · ${selected.year}` : ""}
                   </p>
                 )}
               </div>
