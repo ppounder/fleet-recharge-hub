@@ -656,14 +656,6 @@ export default function CustomerVehicles() {
                   )}
                   {selected ? (
                     <div className="relative rounded-md border bg-card">
-                      <button
-                        type="button"
-                        onClick={() => setMsgDialogOpen(true)}
-                        className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground z-10"
-                        aria-label="Edit notes"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
                       {recentNotes.length === 0 ? (
                         <button
                           type="button"
@@ -675,13 +667,31 @@ export default function CustomerVehicles() {
                       ) : (
                         <ul className="divide-y">
                           {recentNotes.map((n: any) => (
-                            <li
-                              key={n.id}
-                              onClick={() => setMsgDialogOpen(true)}
-                              className="px-3 py-2 cursor-pointer hover:bg-muted/40"
-                            >
-                              <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
-                              <div className="text-sm whitespace-pre-wrap break-words pr-8">{n.maintenance_message}</div>
+                            <li key={n.id} className="flex items-start justify-between gap-2 px-3 py-2 hover:bg-muted/40">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
+                                <div className="text-sm whitespace-pre-wrap break-words">{n.maintenance_message}</div>
+                              </div>
+                              <TooltipProvider delayDuration={150}>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setMsgDialogOpen(true)} aria-label="Edit note">
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Edit</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setDeleteNoteId(n.id)} aria-label="Delete note">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Delete</TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TooltipProvider>
                             </li>
                           ))}
                         </ul>
