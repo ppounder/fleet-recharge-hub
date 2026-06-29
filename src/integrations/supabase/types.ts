@@ -918,34 +918,70 @@ export type Database = {
       suppliers: {
         Row: {
           address: string | null
+          address_line1: string | null
+          address_line2: string | null
+          address_line3: string | null
           contact_email: string | null
           contact_phone: string | null
+          country: string | null
+          county: string | null
           created_at: string
           id: string
           name: string
           network_id: string | null
+          parent_supplier_id: string | null
+          pl_account_number: string | null
+          postcode: string | null
+          provides_parts: boolean
+          provides_tyres: boolean
+          provides_workshop: boolean
+          town_city: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          address_line3?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string | null
+          county?: string | null
           created_at?: string
           id?: string
           name: string
           network_id?: string | null
+          parent_supplier_id?: string | null
+          pl_account_number?: string | null
+          postcode?: string | null
+          provides_parts?: boolean
+          provides_tyres?: boolean
+          provides_workshop?: boolean
+          town_city?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          address_line3?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string | null
+          county?: string | null
           created_at?: string
           id?: string
           name?: string
           network_id?: string | null
+          parent_supplier_id?: string | null
+          pl_account_number?: string | null
+          postcode?: string | null
+          provides_parts?: boolean
+          provides_tyres?: boolean
+          provides_workshop?: boolean
+          town_city?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -955,6 +991,13 @@ export type Database = {
             columns: ["network_id"]
             isOneToOne: false
             referencedRelation: "supplier_networks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suppliers_parent_supplier_id_fkey"
+            columns: ["parent_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]

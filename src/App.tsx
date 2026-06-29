@@ -28,6 +28,7 @@ import CustomerVehicles from "./pages/CustomerVehicles";
 import CustomerActiveWork from "./pages/CustomerActiveWork";
 import NotFound from "./pages/NotFound";
 import SupplierNetworks from "./pages/SupplierNetworks";
+import Suppliers from "./pages/Suppliers";
 import AdminPasswordReset from "./pages/AdminPasswordReset";
 
 const queryClient = new QueryClient();
@@ -69,7 +70,7 @@ const AppRoutes = () => (
      <Route path="/vehicles" element={<ProtectedRoute><CustomerVehicles /></ProtectedRoute>} />
      <Route path="/active-work" element={<ProtectedRoute><CustomerActiveWork /></ProtectedRoute>} />
      <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-    <Route path="/suppliers" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+    <Route path="/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
     <Route path="/compliance" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
     <Route path="/supplier-networks" element={<ProtectedRoute><SupplierNetworks /></ProtectedRoute>} />
