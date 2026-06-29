@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { VehicleStatusDialog } from "@/components/VehicleStatusDialog";
 import { MaintenanceMessageDialog } from "@/components/MaintenanceMessageDialog";
@@ -242,6 +243,9 @@ export default function CustomerVehicles() {
   const [form, setForm] = useState<EditableFields>(blank);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [msgDialogOpen, setMsgDialogOpen] = useState(false);
+  const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null);
+  const [deletingNote, setDeletingNote] = useState(false);
+  const qc = useQueryClient();
   const [errors, setErrors] = useState<Partial<Record<keyof EditableFields, string>>>({});
   const { profile } = useAuth();
 
@@ -656,14 +660,6 @@ export default function CustomerVehicles() {
                   )}
                   {selected ? (
                     <div className="relative rounded-md border bg-card">
-                      <button
-                        type="button"
-                        onClick={() => setMsgDialogOpen(true)}
-                        className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground z-10"
-                        aria-label="Edit notes"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
                       {recentNotes.length === 0 ? (
                         <button
                           type="button"
@@ -675,13 +671,31 @@ export default function CustomerVehicles() {
                       ) : (
                         <ul className="divide-y">
                           {recentNotes.map((n: any) => (
-                            <li
-                              key={n.id}
-                              onClick={() => setMsgDialogOpen(true)}
-                              className="px-3 py-2 cursor-pointer hover:bg-muted/40"
-                            >
-                              <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
-                              <div className="text-sm whitespace-pre-wrap break-words pr-8">{n.maintenance_message}</div>
+                            <li key={n.id} className="flex items-start justify-between gap-2 px-3 py-2 hover:bg-muted/40">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
+                                <div className="text-sm whitespace-pre-wrap break-words">{n.maintenance_message}</div>
+                              </div>
+                              <TooltipProvider delayDuration={150}>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setMsgDialogOpen(true)} aria-label="Edit note">
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Edit</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setDeleteNoteId(n.id)} aria-label="Delete note">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Delete</TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TooltipProvider>
                             </li>
                           ))}
                         </ul>
@@ -1024,6 +1038,42 @@ export default function CustomerVehicles() {
             onCurrentMessageChange={() => {}}
           />
         )}
+        <AlertDialog open={deleteNoteId !== null} onOpenChange={(o) => !o && setDeleteNoteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete note?</AlertDialogTitle>
+              <AlertDialogDescription>Are you sure you want to delete this note?</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deletingNote}>No</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deletingNote}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const id = deleteNoteId;
+                  if (!id) return;
+                  setDeletingNote(true);
+                  const { error } = await supabase
+                    .from("vehicle_status_history")
+                    .update({ maintenance_message: null })
+                    .eq("id", id);
+                  setDeletingNote(false);
+                  if (error) {
+                    toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+                    return;
+                  }
+                  qc.invalidateQueries({ queryKey: ["vehicle-recent-maintenance-messages", selected?.id] });
+                  qc.invalidateQueries({ queryKey: ["vehicle-maintenance-messages", selected?.id] });
+                  qc.invalidateQueries({ queryKey: ["vehicle-status-history", selected?.id] });
+                  setDeleteNoteId(null);
+                  toast({ title: "Note deleted" });
+                }}
+              >
+                Yes
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </AppLayout>
     );
   }
