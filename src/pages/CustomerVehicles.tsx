@@ -256,7 +256,7 @@ export default function CustomerVehicles() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicle_status_history")
-        .select("id, maintenance_message, changed_at")
+        .select("id, maintenance_message, changed_at, changed_by")
         .eq("vehicle_id", selected!.id)
         .not("maintenance_message", "is", null)
         .neq("maintenance_message", "")
@@ -673,7 +673,7 @@ export default function CustomerVehicles() {
                       {(() => {
                         const q = noteSearch.trim().toLowerCase();
                         const filtered = q
-                          ? recentNotes.filter((n: any) => (n.maintenance_message ?? "").toLowerCase().includes(q))
+                          ? recentNotes.filter((n: any) => (n.maintenance_message ?? "").toLowerCase().includes(q) || (n.changed_by ?? "").toLowerCase().includes(q))
                           : recentNotes;
                         if (recentNotes.length === 0) {
                           return (
@@ -698,7 +698,10 @@ export default function CustomerVehicles() {
                           {filtered.map((n: any) => (
                             <li key={n.id} className="flex items-start justify-between gap-2 px-3 py-2 hover:bg-muted/40">
                               <div className="min-w-0 flex-1">
-                                <div className="text-xs text-muted-foreground">{formatDate(n.changed_at)}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {formatDate(n.changed_at)}
+                                  {n.changed_by ? <span> · {n.changed_by}</span> : null}
+                                </div>
                                 <div className="text-sm whitespace-pre-wrap break-words">{n.maintenance_message}</div>
                               </div>
                               <TooltipProvider delayDuration={150}>
