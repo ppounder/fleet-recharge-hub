@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Check, X, Loader2, Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -31,11 +32,13 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
   const [busyId, setBusyId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (open) {
       setDraft("");
       setEditingId(null);
+      setSearch("");
     }
   }, [open]);
 
@@ -175,9 +178,29 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
         </div>
 
         <div className="rounded-lg border overflow-hidden flex-1 min-h-0 flex flex-col">
-          <div className="px-3 py-2 border-b bg-muted/40 text-sm font-medium">Notes history</div>
+          <div className="px-3 py-2 border-b bg-muted/40 flex items-center justify-between gap-3">
+            <span className="text-sm font-medium">Notes history</span>
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search notes..."
+                className="h-8 pl-8"
+              />
+            </div>
+          </div>
           <div className="flex-1 min-h-0 overflow-y-auto">
 
+          {(() => {
+            const q = search.trim().toLowerCase();
+            const filtered = q
+              ? history.filter((h: any) =>
+                  (h.maintenance_message ?? "").toLowerCase().includes(q) ||
+                  (h.changed_by ?? "").toLowerCase().includes(q),
+                )
+              : history;
+            return (
           <Table>
 
             <TableHeader className="sticky top-0 bg-background z-10">
@@ -191,9 +214,9 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
             <TableBody>
               {isLoading ? (
                 <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">Loading...</TableCell></TableRow>
-              ) : history.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No previous notes</TableCell></TableRow>
-              ) : history.map((h: any) => {
+              ) : filtered.length === 0 ? (
+                <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">{q ? "No notes match your search" : "No previous notes"}</TableCell></TableRow>
+              ) : filtered.map((h: any) => {
                 const isBusy = busyId === h.id;
                 const isRowEditing = editingId === h.id;
                 return (
@@ -227,8 +250,12 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               })}
             </TableBody>
           </Table>
+            );
+          })()}
           </div>
         </div>
+
+
 
 
         <DialogFooter>
