@@ -250,7 +250,10 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
               })}
             </TableBody>
           </Table>
+            );
+          })()}
           </div>
+        </div>
         </div>
 
 
