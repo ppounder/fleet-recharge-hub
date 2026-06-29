@@ -1958,9 +1958,33 @@ function SearchableSelect({
           <span className={cn("truncate", !selected && "text-muted-foreground")}>
             {selected?.label || placeholder}
           </span>
-          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {value ? (
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label="Clear"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onChange?.("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onChange?.("");
+                }
+              }}
+              className="ml-2 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm opacity-60 hover:opacity-100"
+            >
+              <X className="h-4 w-4" />
+            </span>
+          ) : (
+            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          )}
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
