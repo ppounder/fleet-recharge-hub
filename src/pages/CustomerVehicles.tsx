@@ -1038,6 +1038,42 @@ export default function CustomerVehicles() {
             onCurrentMessageChange={() => {}}
           />
         )}
+        <AlertDialog open={deleteNoteId !== null} onOpenChange={(o) => !o && setDeleteNoteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete note?</AlertDialogTitle>
+              <AlertDialogDescription>Are you sure you want to delete this note?</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deletingNote}>No</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deletingNote}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const id = deleteNoteId;
+                  if (!id) return;
+                  setDeletingNote(true);
+                  const { error } = await supabase
+                    .from("vehicle_status_history")
+                    .update({ maintenance_message: null })
+                    .eq("id", id);
+                  setDeletingNote(false);
+                  if (error) {
+                    toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+                    return;
+                  }
+                  qc.invalidateQueries({ queryKey: ["vehicle-recent-maintenance-messages", selected?.id] });
+                  qc.invalidateQueries({ queryKey: ["vehicle-maintenance-messages", selected?.id] });
+                  qc.invalidateQueries({ queryKey: ["vehicle-status-history", selected?.id] });
+                  setDeleteNoteId(null);
+                  toast({ title: "Note deleted" });
+                }}
+              >
+                Yes
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </AppLayout>
     );
   }
