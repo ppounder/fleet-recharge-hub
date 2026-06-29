@@ -32,6 +32,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
   const [busyId, setBusyId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (open) {
