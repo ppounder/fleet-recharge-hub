@@ -640,7 +640,21 @@ export default function CustomerVehicles() {
 
               <CompanyDetails vehicle={selected} />
 
-              <CollapsibleCard title="Notes">
+              <CollapsibleCard
+                title="Notes"
+                action={
+                  selected && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); setMsgDialogOpen(true); }}
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add note
+                    </Button>
+                  )
+                }
+              >
                 <div className="space-y-1.5">
                   {selected ? (
                     <div className="relative rounded-md border bg-card">
