@@ -254,7 +254,8 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
           })()}
           </div>
         </div>
-        </div>
+
+
 
 
         <DialogFooter>
