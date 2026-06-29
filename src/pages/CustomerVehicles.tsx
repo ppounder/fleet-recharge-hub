@@ -640,7 +640,21 @@ export default function CustomerVehicles() {
 
               <CompanyDetails vehicle={selected} />
 
-              <CollapsibleCard title="Notes">
+              <CollapsibleCard
+                title="Notes"
+                action={
+                  selected && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); setMsgDialogOpen(true); }}
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add note
+                    </Button>
+                  )
+                }
+              >
                 <div className="space-y-1.5">
                   {selected ? (
                     <div className="relative rounded-md border bg-card">
@@ -2042,27 +2056,40 @@ function CompanyDetails({ vehicle }: { vehicle?: Vehicle | null }) {
 function CollapsibleCard({
   title,
   defaultOpen = true,
+  action,
   children,
 }: {
   title: string;
   defaultOpen?: boolean;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Card>
       <CardHeader>
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex w-full items-center justify-between text-left"
-          aria-expanded={open}
-        >
-          <CardTitle className="text-base">{title}</CardTitle>
-          <ChevronUp
-            className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "" : "rotate-180"}`}
-          />
-        </button>
+        <div className="flex w-full items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            className="flex flex-1 items-center justify-between text-left"
+            aria-expanded={open}
+          >
+            <CardTitle className="text-base">{title}</CardTitle>
+          </button>
+          <div className="flex items-center gap-2">
+            {action}
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-label={open ? "Collapse" : "Expand"}
+            >
+              <ChevronUp
+                className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "" : "rotate-180"}`}
+              />
+            </button>
+          </div>
+        </div>
       </CardHeader>
       {open && <CardContent>{children}</CardContent>}
     </Card>
