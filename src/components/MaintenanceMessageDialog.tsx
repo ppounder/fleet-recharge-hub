@@ -38,6 +38,7 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
     if (open) {
       setDraft("");
       setEditingId(null);
+      setSearch("");
     }
   }, [open]);
 
