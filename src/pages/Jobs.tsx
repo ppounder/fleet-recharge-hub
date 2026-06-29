@@ -24,10 +24,8 @@ export default function Jobs() {
 
   const isFleetManager = currentRole === "fleet-manager";
 
-  // Fleet managers see only approved+ (not closed); other roles see all non-closed
-  const baseFiltered = isFleetManager
-    ? jobs?.filter((j) => activeJobStatuses.includes(j.status as any)) ?? []
-    : jobs?.filter((j) => j.status !== "closed") ?? [];
+  // Both fleet manager and supplier see only active (post-approval) jobs here
+  const baseFiltered = jobs?.filter((j) => activeJobStatuses.includes(j.status as any)) ?? [];
 
   const filtered = baseFiltered.filter((j) => statusFilter === "all" || j.status === statusFilter);
 
