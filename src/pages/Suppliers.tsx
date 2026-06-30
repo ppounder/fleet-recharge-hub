@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { z } from "zod";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,6 @@ import {
 import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -65,9 +63,49 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
 
 const DEFAULT_VISIBLE = ["name", "pl_account_number", "town_city", "country", "contact_email", "services"];
 
-const emptyForm = {
+const supplierSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Company name is required" })
+    .max(150, { message: "Company name must be less than 150 characters" }),
+  parent_supplier_id: z.string().nullable(),
+  pl_account_number: z
+    .string()
+    .trim()
+    .max(50, { message: "P/L Account must be less than 50 characters" }),
+  address_line1: z.string().trim().max(150, { message: "Address line 1 must be less than 150 characters" }),
+  address_line2: z.string().trim().max(150, { message: "Address line 2 must be less than 150 characters" }),
+  address_line3: z.string().trim().max(150, { message: "Address line 3 must be less than 150 characters" }),
+  town_city: z.string().trim().max(100, { message: "Town/City must be less than 100 characters" }),
+  county: z.string().trim().max(100, { message: "County must be less than 100 characters" }),
+  country: z.string().trim().max(2, { message: "Invalid country" }),
+  postcode: z.string().trim().max(20, { message: "Postcode must be less than 20 characters" }),
+  contact_phone: z
+    .string()
+    .trim()
+    .max(20, { message: "Telephone must be less than 20 characters" })
+    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), {
+      message: "Enter a valid telephone number",
+    }),
+  contact_email: z
+    .string()
+    .trim()
+    .max(255, { message: "Email must be less than 255 characters" })
+    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+      message: "Enter a valid email address",
+    }),
+  provides_parts: z.boolean(),
+  provides_tyres: z.boolean(),
+  provides_workshop: z.boolean(),
+});
+
+type SupplierForm = z.infer<typeof supplierSchema>;
+type FormErrors = Partial<Record<keyof SupplierForm, string>>;
+
+const emptyForm: SupplierForm = {
   name: "",
-  parent_supplier_id: null as string | null,
+  parent_supplier_id: null,
   pl_account_number: "",
   address_line1: "",
   address_line2: "",
@@ -91,9 +129,15 @@ export default function Suppliers() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [visibleCols, setVisibleCols] = useState<string[]>(DEFAULT_VISIBLE);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<SupplierForm>(emptyForm);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [parentOpen, setParentOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+
+  const updateField = <K extends keyof SupplierForm>(key: K, value: SupplierForm[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers-list"],
@@ -108,7 +152,7 @@ export default function Suppliers() {
   });
 
   const createSupplier = useMutation({
-    mutationFn: async (payload: typeof emptyForm) => {
+    mutationFn: async (payload: SupplierForm) => {
       const { data, error } = await supabase
         .from("suppliers" as any)
         .insert({
@@ -154,15 +198,27 @@ export default function Suppliers() {
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
 
   const handleSave = async () => {
-    if (!form.name.trim()) {
-      toast({ title: "Company name is required", variant: "destructive" });
+    const result = supplierSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: FormErrors = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as keyof FormErrors;
+        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+      }
+      setErrors(fieldErrors);
+      toast({
+        title: "Please fix the errors below",
+        description: "Some fields are invalid.",
+        variant: "destructive",
+      });
       return;
     }
     try {
-      await createSupplier.mutateAsync(form);
+      await createSupplier.mutateAsync(result.data);
       toast({ title: "Supplier added" });
       setDialogOpen(false);
       setForm(emptyForm);
+      setErrors({});
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -175,6 +231,9 @@ export default function Suppliers() {
       : <ArrowDown className="w-3.5 h-3.5 text-primary" strokeWidth={3} />;
   };
 
+  const errCls = (k: keyof FormErrors) =>
+    cn(errors[k] && "border-destructive focus-visible:ring-destructive");
+
   return (
     <AppLayout>
       <div className="space-y-4">
@@ -183,7 +242,7 @@ export default function Suppliers() {
             <h1 className="text-2xl font-bold">Suppliers</h1>
             <p className="text-muted-foreground text-sm">Manage your supplier directory.</p>
           </div>
-          <Button onClick={() => { setForm(emptyForm); setDialogOpen(true); }}>
+          <Button onClick={() => { setForm(emptyForm); setErrors({}); setDialogOpen(true); }}>
             <Plus className="w-4 h-4 mr-1" /> Add supplier
           </Button>
         </div>
@@ -291,8 +350,16 @@ export default function Suppliers() {
               <h3 className="text-sm font-semibold">Supplier details</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Company name *</Label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  <Label htmlFor="name" className="text-xs">Company name *</Label>
+                  <Input
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => updateField("name", e.target.value)}
+                    aria-invalid={!!errors.name}
+                    aria-describedby={errors.name ? "name-error" : undefined}
+                    className={errCls("name")}
+                  />
+                  {errors.name && <p id="name-error" className="text-xs text-destructive">{errors.name}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -310,12 +377,12 @@ export default function Suppliers() {
                         <CommandList>
                           <CommandEmpty>No suppliers found.</CommandEmpty>
                           <CommandGroup>
-                            <CommandItem onSelect={() => { setForm({ ...form, parent_supplier_id: null }); setParentOpen(false); }}>
+                            <CommandItem onSelect={() => { updateField("parent_supplier_id", null); setParentOpen(false); }}>
                               <Check className={cn("mr-2 h-4 w-4", !form.parent_supplier_id ? "opacity-100" : "opacity-0")} />
                               None
                             </CommandItem>
                             {suppliers.map((s) => (
-                              <CommandItem key={s.id} value={s.name} onSelect={() => { setForm({ ...form, parent_supplier_id: s.id }); setParentOpen(false); }}>
+                              <CommandItem key={s.id} value={s.name} onSelect={() => { updateField("parent_supplier_id", s.id); setParentOpen(false); }}>
                                 <Check className={cn("mr-2 h-4 w-4", form.parent_supplier_id === s.id ? "opacity-100" : "opacity-0")} />
                                 {s.name}
                               </CommandItem>
@@ -328,30 +395,72 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">P/L Account number</Label>
-                  <Input value={form.pl_account_number} onChange={(e) => setForm({ ...form, pl_account_number: e.target.value })} />
+                  <Label htmlFor="pl_account_number" className="text-xs">P/L Account number</Label>
+                  <Input
+                    id="pl_account_number"
+                    value={form.pl_account_number}
+                    onChange={(e) => updateField("pl_account_number", e.target.value)}
+                    aria-invalid={!!errors.pl_account_number}
+                    className={errCls("pl_account_number")}
+                  />
+                  {errors.pl_account_number && <p className="text-xs text-destructive">{errors.pl_account_number}</p>}
                 </div>
 
                 <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Address line 1</Label>
-                  <Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} />
+                  <Label htmlFor="address_line1" className="text-xs">Address line 1</Label>
+                  <Input
+                    id="address_line1"
+                    value={form.address_line1}
+                    onChange={(e) => updateField("address_line1", e.target.value)}
+                    aria-invalid={!!errors.address_line1}
+                    className={errCls("address_line1")}
+                  />
+                  {errors.address_line1 && <p className="text-xs text-destructive">{errors.address_line1}</p>}
                 </div>
                 <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Address line 2</Label>
-                  <Input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} />
+                  <Label htmlFor="address_line2" className="text-xs">Address line 2</Label>
+                  <Input
+                    id="address_line2"
+                    value={form.address_line2}
+                    onChange={(e) => updateField("address_line2", e.target.value)}
+                    aria-invalid={!!errors.address_line2}
+                    className={errCls("address_line2")}
+                  />
+                  {errors.address_line2 && <p className="text-xs text-destructive">{errors.address_line2}</p>}
                 </div>
                 <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Address line 3</Label>
-                  <Input value={form.address_line3} onChange={(e) => setForm({ ...form, address_line3: e.target.value })} />
+                  <Label htmlFor="address_line3" className="text-xs">Address line 3</Label>
+                  <Input
+                    id="address_line3"
+                    value={form.address_line3}
+                    onChange={(e) => updateField("address_line3", e.target.value)}
+                    aria-invalid={!!errors.address_line3}
+                    className={errCls("address_line3")}
+                  />
+                  {errors.address_line3 && <p className="text-xs text-destructive">{errors.address_line3}</p>}
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Town/City</Label>
-                  <Input value={form.town_city} onChange={(e) => setForm({ ...form, town_city: e.target.value })} />
+                  <Label htmlFor="town_city" className="text-xs">Town/City</Label>
+                  <Input
+                    id="town_city"
+                    value={form.town_city}
+                    onChange={(e) => updateField("town_city", e.target.value)}
+                    aria-invalid={!!errors.town_city}
+                    className={errCls("town_city")}
+                  />
+                  {errors.town_city && <p className="text-xs text-destructive">{errors.town_city}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">County</Label>
-                  <Input value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
+                  <Label htmlFor="county" className="text-xs">County</Label>
+                  <Input
+                    id="county"
+                    value={form.county}
+                    onChange={(e) => updateField("county", e.target.value)}
+                    aria-invalid={!!errors.county}
+                    className={errCls("county")}
+                  />
+                  {errors.county && <p className="text-xs text-destructive">{errors.county}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -370,7 +479,7 @@ export default function Suppliers() {
                           <CommandEmpty>No country found.</CommandEmpty>
                           <CommandGroup>
                             {ISO_COUNTRIES.map((c) => (
-                              <CommandItem key={c.code} value={`${c.name} ${c.code}`} onSelect={() => { setForm({ ...form, country: c.code }); setCountryOpen(false); }}>
+                              <CommandItem key={c.code} value={`${c.name} ${c.code}`} onSelect={() => { updateField("country", c.code); setCountryOpen(false); }}>
                                 <Check className={cn("mr-2 h-4 w-4", form.country === c.code ? "opacity-100" : "opacity-0")} />
                                 {c.name} <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
                               </CommandItem>
@@ -382,17 +491,39 @@ export default function Suppliers() {
                   </Popover>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Postcode</Label>
-                  <Input value={form.postcode} onChange={(e) => setForm({ ...form, postcode: e.target.value })} />
+                  <Label htmlFor="postcode" className="text-xs">Postcode</Label>
+                  <Input
+                    id="postcode"
+                    value={form.postcode}
+                    onChange={(e) => updateField("postcode", e.target.value)}
+                    aria-invalid={!!errors.postcode}
+                    className={errCls("postcode")}
+                  />
+                  {errors.postcode && <p className="text-xs text-destructive">{errors.postcode}</p>}
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Telephone number</Label>
-                  <Input value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
+                  <Label htmlFor="contact_phone" className="text-xs">Telephone number</Label>
+                  <Input
+                    id="contact_phone"
+                    value={form.contact_phone}
+                    onChange={(e) => updateField("contact_phone", e.target.value)}
+                    aria-invalid={!!errors.contact_phone}
+                    className={errCls("contact_phone")}
+                  />
+                  {errors.contact_phone && <p className="text-xs text-destructive">{errors.contact_phone}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Email address</Label>
-                  <Input type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} />
+                  <Label htmlFor="contact_email" className="text-xs">Email address</Label>
+                  <Input
+                    id="contact_email"
+                    type="email"
+                    value={form.contact_email}
+                    onChange={(e) => updateField("contact_email", e.target.value)}
+                    aria-invalid={!!errors.contact_email}
+                    className={errCls("contact_email")}
+                  />
+                  {errors.contact_email && <p className="text-xs text-destructive">{errors.contact_email}</p>}
                 </div>
               </div>
             </section>
@@ -408,7 +539,7 @@ export default function Suppliers() {
                   <label key={svc.key} className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer">
                     <Checkbox
                       checked={(form as any)[svc.key]}
-                      onCheckedChange={(v) => setForm({ ...form, [svc.key]: !!v })}
+                      onCheckedChange={(v) => updateField(svc.key as keyof SupplierForm, !!v as any)}
                     />
                     <span className="text-sm">{svc.label}</span>
                   </label>
@@ -419,7 +550,9 @@ export default function Suppliers() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={createSupplier.isPending}>Save supplier</Button>
+            <Button onClick={handleSave} disabled={createSupplier.isPending}>
+              {createSupplier.isPending ? "Saving..." : "Save supplier"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
