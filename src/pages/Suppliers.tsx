@@ -429,7 +429,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5 col-span-2">
-                  <Label htmlFor="address_line1" className="text-xs">Address line 1</Label>
+                  <Label htmlFor="address_line1" className="text-xs">Address line 1 *</Label>
                   <Input
                     id="address_line1"
                     value={form.address_line1}
