@@ -552,22 +552,26 @@ export default function Suppliers() {
             </section>
 
             <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Services provided</h3>
+              <h3 className="text-sm font-semibold">Services provided *</h3>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { key: "provides_parts", label: "Parts supplier" },
                   { key: "provides_tyres", label: "Tyres" },
                   { key: "provides_workshop", label: "Workshop" },
                 ].map((svc) => (
-                  <label key={svc.key} className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer">
+                  <label key={svc.key} className={cn("flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer", errors.provides_parts && "border-destructive")}>
                     <Checkbox
                       checked={(form as any)[svc.key]}
-                      onCheckedChange={(v) => updateField(svc.key as keyof SupplierForm, !!v as any)}
+                      onCheckedChange={(v) => {
+                        setForm((prev) => ({ ...prev, [svc.key]: !!v }));
+                        if (errors.provides_parts) setErrors((prev) => ({ ...prev, provides_parts: undefined }));
+                      }}
                     />
                     <span className="text-sm">{svc.label}</span>
                   </label>
                 ))}
               </div>
+              {errors.provides_parts && <p className="text-xs text-destructive">{errors.provides_parts}</p>}
             </section>
           </div>
 
