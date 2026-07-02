@@ -463,7 +463,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="town_city" className="text-xs">Town/City</Label>
+                  <Label htmlFor="town_city" className="text-xs">Town/City *</Label>
                   <Input
                     id="town_city"
                     value={form.town_city}
