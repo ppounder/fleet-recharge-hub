@@ -486,10 +486,10 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Country</Label>
+                  <Label className="text-xs">Country *</Label>
                   <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                      <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.country && "border-destructive focus-visible:ring-destructive")}>
                         {form.country ? countryName(form.country) : <span className="text-muted-foreground">Select country...</span>}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -511,6 +511,7 @@ export default function Suppliers() {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                  {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="postcode" className="text-xs">Postcode</Label>
