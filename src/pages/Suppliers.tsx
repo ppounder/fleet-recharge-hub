@@ -526,7 +526,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="contact_phone" className="text-xs">Telephone number</Label>
+                  <Label htmlFor="contact_phone" className="text-xs">Telephone number *</Label>
                   <Input
                     id="contact_phone"
                     value={form.contact_phone}
