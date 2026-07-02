@@ -63,42 +63,64 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
 
 const DEFAULT_VISIBLE = ["name", "pl_account_number", "town_city", "country", "contact_email", "services"];
 
-const supplierSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: "Company name is required" })
-    .max(150, { message: "Company name must be less than 150 characters" }),
-  parent_supplier_id: z.string().nullable(),
-  pl_account_number: z
-    .string()
-    .trim()
-    .max(50, { message: "P/L Account must be less than 50 characters" }),
-  address_line1: z.string().trim().max(150, { message: "Address line 1 must be less than 150 characters" }),
-  address_line2: z.string().trim().max(150, { message: "Address line 2 must be less than 150 characters" }),
-  address_line3: z.string().trim().max(150, { message: "Address line 3 must be less than 150 characters" }),
-  town_city: z.string().trim().max(100, { message: "Town/City must be less than 100 characters" }),
-  county: z.string().trim().max(100, { message: "County must be less than 100 characters" }),
-  country: z.string().trim().max(2, { message: "Invalid country" }),
-  postcode: z.string().trim().max(20, { message: "Postcode must be less than 20 characters" }),
-  contact_phone: z
-    .string()
-    .trim()
-    .max(20, { message: "Telephone must be less than 20 characters" })
-    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), {
-      message: "Enter a valid telephone number",
-    }),
-  contact_email: z
-    .string()
-    .trim()
-    .max(255, { message: "Email must be less than 255 characters" })
-    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
-      message: "Enter a valid email address",
-    }),
-  provides_parts: z.boolean(),
-  provides_tyres: z.boolean(),
-  provides_workshop: z.boolean(),
-});
+const supplierSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: "Company name is required" })
+      .max(150, { message: "Company name must be less than 150 characters" }),
+    parent_supplier_id: z.string().nullable(),
+    pl_account_number: z
+      .string()
+      .trim()
+      .max(50, { message: "P/L Account must be less than 50 characters" }),
+    address_line1: z
+      .string()
+      .trim()
+      .min(1, { message: "Address line 1 is required" })
+      .max(150, { message: "Address line 1 must be less than 150 characters" }),
+    address_line2: z.string().trim().max(150, { message: "Address line 2 must be less than 150 characters" }),
+    address_line3: z.string().trim().max(150, { message: "Address line 3 must be less than 150 characters" }),
+    town_city: z
+      .string()
+      .trim()
+      .min(1, { message: "Town/City is required" })
+      .max(100, { message: "Town/City must be less than 100 characters" }),
+    county: z.string().trim().max(100, { message: "County must be less than 100 characters" }),
+    country: z
+      .string()
+      .trim()
+      .min(1, { message: "Country is required" })
+      .max(2, { message: "Invalid country" }),
+    postcode: z
+      .string()
+      .trim()
+      .min(1, { message: "Postcode is required" })
+      .max(20, { message: "Postcode must be less than 20 characters" }),
+    contact_phone: z
+      .string()
+      .trim()
+      .min(1, { message: "Telephone number is required" })
+      .max(20, { message: "Telephone must be less than 20 characters" })
+      .refine((v) => /^\+?[0-9\s()-]{7,}$/.test(v), {
+        message: "Enter a valid telephone number",
+      }),
+    contact_email: z
+      .string()
+      .trim()
+      .max(255, { message: "Email must be less than 255 characters" })
+      .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+        message: "Enter a valid email address",
+      }),
+    provides_parts: z.boolean(),
+    provides_tyres: z.boolean(),
+    provides_workshop: z.boolean(),
+  })
+  .refine((d) => d.provides_parts || d.provides_tyres || d.provides_workshop, {
+    message: "Select at least one service provided",
+    path: ["provides_parts"],
+  });
 
 type SupplierForm = z.infer<typeof supplierSchema>;
 type FormErrors = Partial<Record<keyof SupplierForm, string>>;
@@ -407,7 +429,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5 col-span-2">
-                  <Label htmlFor="address_line1" className="text-xs">Address line 1</Label>
+                  <Label htmlFor="address_line1" className="text-xs">Address line 1 *</Label>
                   <Input
                     id="address_line1"
                     value={form.address_line1}
@@ -441,7 +463,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="town_city" className="text-xs">Town/City</Label>
+                  <Label htmlFor="town_city" className="text-xs">Town/City *</Label>
                   <Input
                     id="town_city"
                     value={form.town_city}
@@ -464,10 +486,10 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Country</Label>
+                  <Label className="text-xs">Country *</Label>
                   <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                      <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.country && "border-destructive focus-visible:ring-destructive")}>
                         {form.country ? countryName(form.country) : <span className="text-muted-foreground">Select country...</span>}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -489,9 +511,10 @@ export default function Suppliers() {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                  {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="postcode" className="text-xs">Postcode</Label>
+                  <Label htmlFor="postcode" className="text-xs">Postcode *</Label>
                   <Input
                     id="postcode"
                     value={form.postcode}
@@ -503,7 +526,7 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="contact_phone" className="text-xs">Telephone number</Label>
+                  <Label htmlFor="contact_phone" className="text-xs">Telephone number *</Label>
                   <Input
                     id="contact_phone"
                     value={form.contact_phone}
@@ -529,22 +552,26 @@ export default function Suppliers() {
             </section>
 
             <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Services provided</h3>
+              <h3 className="text-sm font-semibold">Services provided *</h3>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { key: "provides_parts", label: "Parts supplier" },
                   { key: "provides_tyres", label: "Tyres" },
                   { key: "provides_workshop", label: "Workshop" },
                 ].map((svc) => (
-                  <label key={svc.key} className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer">
+                  <label key={svc.key} className={cn("flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer", errors.provides_parts && "border-destructive")}>
                     <Checkbox
                       checked={(form as any)[svc.key]}
-                      onCheckedChange={(v) => updateField(svc.key as keyof SupplierForm, !!v as any)}
+                      onCheckedChange={(v) => {
+                        setForm((prev) => ({ ...prev, [svc.key]: !!v }));
+                        if (errors.provides_parts) setErrors((prev) => ({ ...prev, provides_parts: undefined }));
+                      }}
                     />
                     <span className="text-sm">{svc.label}</span>
                   </label>
                 ))}
               </div>
+              {errors.provides_parts && <p className="text-xs text-destructive">{errors.provides_parts}</p>}
             </section>
           </div>
 

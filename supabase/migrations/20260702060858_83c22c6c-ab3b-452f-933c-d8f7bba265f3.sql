@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Fleet managers can manage suppliers" ON public.suppliers;
+CREATE POLICY "Authenticated can manage suppliers" ON public.suppliers FOR ALL TO authenticated USING (true) WITH CHECK (true);
