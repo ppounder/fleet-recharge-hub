@@ -63,42 +63,64 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
 
 const DEFAULT_VISIBLE = ["name", "pl_account_number", "town_city", "country", "contact_email", "services"];
 
-const supplierSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: "Company name is required" })
-    .max(150, { message: "Company name must be less than 150 characters" }),
-  parent_supplier_id: z.string().nullable(),
-  pl_account_number: z
-    .string()
-    .trim()
-    .max(50, { message: "P/L Account must be less than 50 characters" }),
-  address_line1: z.string().trim().max(150, { message: "Address line 1 must be less than 150 characters" }),
-  address_line2: z.string().trim().max(150, { message: "Address line 2 must be less than 150 characters" }),
-  address_line3: z.string().trim().max(150, { message: "Address line 3 must be less than 150 characters" }),
-  town_city: z.string().trim().max(100, { message: "Town/City must be less than 100 characters" }),
-  county: z.string().trim().max(100, { message: "County must be less than 100 characters" }),
-  country: z.string().trim().max(2, { message: "Invalid country" }),
-  postcode: z.string().trim().max(20, { message: "Postcode must be less than 20 characters" }),
-  contact_phone: z
-    .string()
-    .trim()
-    .max(20, { message: "Telephone must be less than 20 characters" })
-    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), {
-      message: "Enter a valid telephone number",
-    }),
-  contact_email: z
-    .string()
-    .trim()
-    .max(255, { message: "Email must be less than 255 characters" })
-    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
-      message: "Enter a valid email address",
-    }),
-  provides_parts: z.boolean(),
-  provides_tyres: z.boolean(),
-  provides_workshop: z.boolean(),
-});
+const supplierSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: "Company name is required" })
+      .max(150, { message: "Company name must be less than 150 characters" }),
+    parent_supplier_id: z.string().nullable(),
+    pl_account_number: z
+      .string()
+      .trim()
+      .max(50, { message: "P/L Account must be less than 50 characters" }),
+    address_line1: z
+      .string()
+      .trim()
+      .min(1, { message: "Address line 1 is required" })
+      .max(150, { message: "Address line 1 must be less than 150 characters" }),
+    address_line2: z.string().trim().max(150, { message: "Address line 2 must be less than 150 characters" }),
+    address_line3: z.string().trim().max(150, { message: "Address line 3 must be less than 150 characters" }),
+    town_city: z
+      .string()
+      .trim()
+      .min(1, { message: "Town/City is required" })
+      .max(100, { message: "Town/City must be less than 100 characters" }),
+    county: z.string().trim().max(100, { message: "County must be less than 100 characters" }),
+    country: z
+      .string()
+      .trim()
+      .min(1, { message: "Country is required" })
+      .max(2, { message: "Invalid country" }),
+    postcode: z
+      .string()
+      .trim()
+      .min(1, { message: "Postcode is required" })
+      .max(20, { message: "Postcode must be less than 20 characters" }),
+    contact_phone: z
+      .string()
+      .trim()
+      .min(1, { message: "Telephone number is required" })
+      .max(20, { message: "Telephone must be less than 20 characters" })
+      .refine((v) => /^\+?[0-9\s()-]{7,}$/.test(v), {
+        message: "Enter a valid telephone number",
+      }),
+    contact_email: z
+      .string()
+      .trim()
+      .max(255, { message: "Email must be less than 255 characters" })
+      .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+        message: "Enter a valid email address",
+      }),
+    provides_parts: z.boolean(),
+    provides_tyres: z.boolean(),
+    provides_workshop: z.boolean(),
+  })
+  .refine((d) => d.provides_parts || d.provides_tyres || d.provides_workshop, {
+    message: "Select at least one service provided",
+    path: ["provides_parts"],
+  });
 
 type SupplierForm = z.infer<typeof supplierSchema>;
 type FormErrors = Partial<Record<keyof SupplierForm, string>>;
