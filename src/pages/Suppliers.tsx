@@ -514,7 +514,7 @@ export default function Suppliers() {
                   {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="postcode" className="text-xs">Postcode</Label>
+                  <Label htmlFor="postcode" className="text-xs">Postcode *</Label>
                   <Input
                     id="postcode"
                     value={form.postcode}
