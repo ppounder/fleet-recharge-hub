@@ -22,11 +22,18 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check } from "lucide-react";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2 } from "lucide-react";
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
 
@@ -151,6 +158,8 @@ export default function Suppliers() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [visibleCols, setVisibleCols] = useState<string[]>(DEFAULT_VISIBLE);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<SupplierForm>(emptyForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [parentOpen, setParentOpen] = useState(false);
@@ -192,6 +201,37 @@ export default function Suppliers() {
     },
   });
 
+  const updateSupplier = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: SupplierForm }) => {
+      const { data, error } = await supabase
+        .from("suppliers" as any)
+        .update({
+          ...payload,
+          parent_supplier_id: payload.parent_supplier_id || null,
+        } as any)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["suppliers-list"] });
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+    },
+  });
+
+  const deleteSupplier = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("suppliers" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["suppliers-list"] });
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+    },
+  });
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const rows = q
@@ -219,6 +259,36 @@ export default function Suppliers() {
   const parentName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "";
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
 
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setErrors({});
+    setDialogOpen(true);
+  };
+
+  const openEdit = (s: Supplier) => {
+    setEditingId(s.id);
+    setErrors({});
+    setForm({
+      name: s.name ?? "",
+      parent_supplier_id: s.parent_supplier_id,
+      pl_account_number: s.pl_account_number ?? "",
+      address_line1: s.address_line1 ?? "",
+      address_line2: s.address_line2 ?? "",
+      address_line3: s.address_line3 ?? "",
+      town_city: s.town_city ?? "",
+      county: s.county ?? "",
+      country: s.country ?? "",
+      postcode: s.postcode ?? "",
+      contact_phone: s.contact_phone ?? "",
+      contact_email: s.contact_email ?? "",
+      provides_parts: !!s.provides_parts,
+      provides_tyres: !!s.provides_tyres,
+      provides_workshop: !!s.provides_workshop,
+    });
+    setDialogOpen(true);
+  };
+
   const handleSave = async () => {
     const result = supplierSchema.safeParse(form);
     if (!result.success) {
@@ -236,11 +306,28 @@ export default function Suppliers() {
       return;
     }
     try {
-      await createSupplier.mutateAsync(result.data);
-      toast({ title: "Supplier added" });
+      if (editingId) {
+        await updateSupplier.mutateAsync({ id: editingId, payload: result.data });
+        toast({ title: "Supplier updated" });
+      } else {
+        await createSupplier.mutateAsync(result.data);
+        toast({ title: "Supplier added" });
+      }
       setDialogOpen(false);
+      setEditingId(null);
       setForm(emptyForm);
       setErrors({});
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteSupplier.mutateAsync(deleteId);
+      toast({ title: "Supplier deleted" });
+      setDeleteId(null);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -264,7 +351,7 @@ export default function Suppliers() {
             <h1 className="text-2xl font-bold">Suppliers</h1>
             <p className="text-muted-foreground text-sm">Manage your supplier directory.</p>
           </div>
-          <Button onClick={() => { setForm(emptyForm); setErrors({}); setDialogOpen(true); }}>
+          <Button onClick={openAdd}>
             <Plus className="w-4 h-4 mr-1" /> Add supplier
           </Button>
         </div>
@@ -326,6 +413,7 @@ export default function Suppliers() {
                         )}
                       </TableHead>
                     ))}
+                    <TableHead className="w-24 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -351,6 +439,40 @@ export default function Suppliers() {
                           </div>
                         </TableCell>
                       )}
+                      <TableCell className="text-right">
+                        <TooltipProvider delayDuration={150}>
+                          <div className="flex items-center justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={() => openEdit(s)}
+                                  aria-label="Edit supplier"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
+                                  onClick={() => setDeleteId(s.id)}
+                                  aria-label="Delete supplier"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -360,10 +482,10 @@ export default function Suppliers() {
         </Card>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setErrors({}); } }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add supplier</DialogTitle>
+            <DialogTitle>{editingId ? "Edit supplier" : "Add supplier"}</DialogTitle>
             <DialogDescription>Enter the supplier details below.</DialogDescription>
           </DialogHeader>
 
@@ -577,12 +699,35 @@ export default function Suppliers() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={createSupplier.isPending}>
-              {createSupplier.isPending ? "Saving..." : "Save supplier"}
+            <Button onClick={handleSave} disabled={createSupplier.isPending || updateSupplier.isPending}>
+              {createSupplier.isPending || updateSupplier.isPending
+                ? "Saving..."
+                : editingId ? "Save changes" : "Save supplier"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete supplier?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The supplier will be permanently removed from your directory.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteSupplier.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleteSupplier.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteSupplier.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
