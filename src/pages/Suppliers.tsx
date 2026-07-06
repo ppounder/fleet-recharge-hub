@@ -259,6 +259,36 @@ export default function Suppliers() {
   const parentName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "";
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
 
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setErrors({});
+    setDialogOpen(true);
+  };
+
+  const openEdit = (s: Supplier) => {
+    setEditingId(s.id);
+    setErrors({});
+    setForm({
+      name: s.name ?? "",
+      parent_supplier_id: s.parent_supplier_id,
+      pl_account_number: s.pl_account_number ?? "",
+      address_line1: s.address_line1 ?? "",
+      address_line2: s.address_line2 ?? "",
+      address_line3: s.address_line3 ?? "",
+      town_city: s.town_city ?? "",
+      county: s.county ?? "",
+      country: s.country ?? "",
+      postcode: s.postcode ?? "",
+      contact_phone: s.contact_phone ?? "",
+      contact_email: s.contact_email ?? "",
+      provides_parts: !!s.provides_parts,
+      provides_tyres: !!s.provides_tyres,
+      provides_workshop: !!s.provides_workshop,
+    });
+    setDialogOpen(true);
+  };
+
   const handleSave = async () => {
     const result = supplierSchema.safeParse(form);
     if (!result.success) {
@@ -276,11 +306,28 @@ export default function Suppliers() {
       return;
     }
     try {
-      await createSupplier.mutateAsync(result.data);
-      toast({ title: "Supplier added" });
+      if (editingId) {
+        await updateSupplier.mutateAsync({ id: editingId, payload: result.data });
+        toast({ title: "Supplier updated" });
+      } else {
+        await createSupplier.mutateAsync(result.data);
+        toast({ title: "Supplier added" });
+      }
       setDialogOpen(false);
+      setEditingId(null);
       setForm(emptyForm);
       setErrors({});
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteSupplier.mutateAsync(deleteId);
+      toast({ title: "Supplier deleted" });
+      setDeleteId(null);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
