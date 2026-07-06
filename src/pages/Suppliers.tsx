@@ -413,6 +413,7 @@ export default function Suppliers() {
                         )}
                       </TableHead>
                     ))}
+                    <TableHead className="w-24 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
