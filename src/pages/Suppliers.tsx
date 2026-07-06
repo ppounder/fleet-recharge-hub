@@ -201,6 +201,37 @@ export default function Suppliers() {
     },
   });
 
+  const updateSupplier = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: SupplierForm }) => {
+      const { data, error } = await supabase
+        .from("suppliers" as any)
+        .update({
+          ...payload,
+          parent_supplier_id: payload.parent_supplier_id || null,
+        } as any)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["suppliers-list"] });
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+    },
+  });
+
+  const deleteSupplier = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("suppliers" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["suppliers-list"] });
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+    },
+  });
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const rows = q
