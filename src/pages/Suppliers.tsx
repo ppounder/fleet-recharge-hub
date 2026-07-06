@@ -482,10 +482,10 @@ export default function Suppliers() {
         </Card>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setErrors({}); } }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add supplier</DialogTitle>
+            <DialogTitle>{editingId ? "Edit supplier" : "Add supplier"}</DialogTitle>
             <DialogDescription>Enter the supplier details below.</DialogDescription>
           </DialogHeader>
 
