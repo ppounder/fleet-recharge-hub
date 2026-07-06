@@ -439,6 +439,53 @@ export default function Suppliers() {
                           </div>
                         </TableCell>
                       )}
+                      <TableCell className="text-right">
+                        <TooltipProvider delayDuration={150}>
+                          <div className="flex items-center justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={() => openEdit(s)}
+                                  aria-label="Edit supplier"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
+                                  onClick={() => setDeleteId(s.id)}
+                                  aria-label="Delete supplier"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
+                            {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
+                            {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
+                            {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
