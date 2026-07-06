@@ -475,19 +475,6 @@ export default function Suppliers() {
                       </TableCell>
                     </TableRow>
                   ))}
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
-                            {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
-                            {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
-                            {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
                 </TableBody>
               </Table>
             )}
