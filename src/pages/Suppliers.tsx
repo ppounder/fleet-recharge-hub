@@ -158,6 +158,8 @@ export default function Suppliers() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [visibleCols, setVisibleCols] = useState<string[]>(DEFAULT_VISIBLE);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<SupplierForm>(emptyForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [parentOpen, setParentOpen] = useState(false);
