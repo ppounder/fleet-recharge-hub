@@ -351,7 +351,7 @@ export default function Suppliers() {
             <h1 className="text-2xl font-bold">Suppliers</h1>
             <p className="text-muted-foreground text-sm">Manage your supplier directory.</p>
           </div>
-          <Button onClick={() => { setForm(emptyForm); setErrors({}); setDialogOpen(true); }}>
+          <Button onClick={openAdd}>
             <Plus className="w-4 h-4 mr-1" /> Add supplier
           </Button>
         </div>
