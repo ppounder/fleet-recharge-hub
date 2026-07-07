@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import { AppLayout } from "@/components/AppLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, Truck, Loader2 } from "lucide-react";
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
 
@@ -345,132 +345,81 @@ export default function Suppliers() {
 
   return (
     <AppLayout>
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Suppliers</h1>
-            <p className="text-muted-foreground text-sm">Manage your supplier directory.</p>
+            <p className="text-sm text-muted-foreground">{suppliers.length} suppliers in directory</p>
           </div>
-          <Button onClick={openAdd}>
+          <Button size="sm" onClick={openAdd}>
             <Plus className="w-4 h-4 mr-1" /> Add supplier
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search suppliers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10">
-                <Columns3 className="w-4 h-4 mr-1" /> Manage columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {COLUMNS.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key as string}
-                  checked={visibleCols.includes(c.key as string)}
-                  onCheckedChange={() => toggleCol(c.key as string)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
         <Card>
-          <CardContent className="p-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Truck className="w-4 h-4" /> Supplier Directory
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             {isLoading ? (
-              <div className="p-6 text-center text-muted-foreground">Loading...</div>
-            ) : filtered.length === 0 ? (
-              <div className="p-6 text-center text-muted-foreground">No suppliers found.</div>
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : suppliers.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-sm">No suppliers yet. Add your first supplier to get started.</p>
+              </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {COLUMNS.filter((c) => visibleCols.includes(c.key as string)).map((c) => (
-                      <TableHead key={c.key as string}>
-                        {c.sortable ? (
-                          <button
-                            className="flex items-center gap-1 hover:text-foreground"
-                            onClick={() => toggleSort(c.key as string)}
-                          >
-                            {c.label} <SortIcon col={c.key as string} />
-                          </button>
-                        ) : (
-                          c.label
-                        )}
-                      </TableHead>
-                    ))}
-                    <TableHead className="w-24 text-right">Actions</TableHead>
+                    <TableHead className="text-xs">Company name</TableHead>
+                    <TableHead className="text-xs">P/L Account</TableHead>
+                    <TableHead className="text-xs">Town/City</TableHead>
+                    <TableHead className="text-xs">Country</TableHead>
+                    <TableHead className="text-xs">Telephone</TableHead>
+                    <TableHead className="text-xs">Email</TableHead>
+                    <TableHead className="text-xs">Services</TableHead>
+                    <TableHead className="text-xs w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((s) => (
-                    <TableRow key={s.id}>
-                      {visibleCols.includes("name") && <TableCell className="font-medium">{s.name}</TableCell>}
-                      {visibleCols.includes("pl_account_number") && <TableCell>{s.pl_account_number || "—"}</TableCell>}
-                      {visibleCols.includes("town_city") && <TableCell>{s.town_city || "—"}</TableCell>}
-                      {visibleCols.includes("county") && <TableCell>{s.county || "—"}</TableCell>}
-                      {visibleCols.includes("country") && <TableCell>{s.country ? countryName(s.country) : "—"}</TableCell>}
-                      {visibleCols.includes("postcode") && <TableCell>{s.postcode || "—"}</TableCell>}
-                      {visibleCols.includes("contact_phone") && <TableCell>{s.contact_phone || "—"}</TableCell>}
-                      {visibleCols.includes("contact_email") && <TableCell>{s.contact_email || "—"}</TableCell>}
-                      {visibleCols.includes("services") && (
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
-                            {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
-                            {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
-                            {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </div>
-                        </TableCell>
-                      )}
-                      <TableCell className="text-right">
+                  {suppliers.map((s) => (
+                    <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
+                      <TableCell className="text-xs font-medium">{s.name}</TableCell>
+                      <TableCell className="text-xs">{s.pl_account_number || "—"}</TableCell>
+                      <TableCell className="text-xs">{s.town_city || "—"}</TableCell>
+                      <TableCell className="text-xs">{s.country ? countryName(s.country) : "—"}</TableCell>
+                      <TableCell className="text-xs">{s.contact_phone || "—"}</TableCell>
+                      <TableCell className="text-xs">{s.contact_email || "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
+                          {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
+                          {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
+                          {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <TooltipProvider delayDuration={150}>
-                          <div className="flex items-center justify-end gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
-                                  onClick={() => openEdit(s)}
-                                  aria-label="Edit supplier"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
-                                  onClick={() => setDeleteId(s.id)}
-                                  aria-label="Delete supplier"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete</TooltipContent>
-                            </Tooltip>
-                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
+                                onClick={() => setDeleteId(s.id)}
+                                aria-label="Delete supplier"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete</TooltipContent>
+                          </Tooltip>
                         </TooltipProvider>
                       </TableCell>
                     </TableRow>
