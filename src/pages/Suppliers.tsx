@@ -402,52 +402,68 @@ export default function Suppliers() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {COLUMNS.filter((c) => visibleCols.includes(c.key as string)).map((c) => (
-                      <TableHead key={c.key as string}>
-                        {c.sortable ? (
-                          <button
-                            className="flex items-center gap-1 hover:text-foreground"
-                            onClick={() => toggleSort(c.key as string)}
-                          >
-                            {c.label} <SortIcon col={c.key as string} />
-                          </button>
-                        ) : (
-                          c.label
-                        )}
-                      </TableHead>
-                    ))}
-                    
+                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                      const c = COLUMNS.find((col) => col.key === k)!;
+                      return (
+                        <TableHead key={k}>
+                          {c.sortable ? (
+                            <button
+                              className="flex items-center gap-1 hover:text-foreground"
+                              onClick={() => toggleSort(k)}
+                            >
+                              {c.label} <SortIcon col={k} />
+                            </button>
+                          ) : (
+                            c.label
+                          )}
+                        </TableHead>
+                      );
+                    })}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((s) => (
                     <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
-                      {visibleCols.includes("name") && <TableCell className="font-medium">{s.name}</TableCell>}
-                      {visibleCols.includes("pl_account_number") && <TableCell>{s.pl_account_number || "—"}</TableCell>}
-                      {visibleCols.includes("town_city") && <TableCell>{s.town_city || "—"}</TableCell>}
-                      {visibleCols.includes("county") && <TableCell>{s.county || "—"}</TableCell>}
-                      {visibleCols.includes("country") && <TableCell>{s.country ? countryName(s.country) : "—"}</TableCell>}
-                      {visibleCols.includes("postcode") && <TableCell>{s.postcode || "—"}</TableCell>}
-                      {visibleCols.includes("contact_phone") && <TableCell>{s.contact_phone || "—"}</TableCell>}
-                      {visibleCols.includes("contact_email") && <TableCell>{s.contact_email || "—"}</TableCell>}
-                      {visibleCols.includes("services") && (
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
-                            {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
-                            {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
-                            {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </div>
-                        </TableCell>
-                      )}
-
-
+                      {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                        switch (k) {
+                          case "name":
+                            return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
+                          case "pl_account_number":
+                            return <TableCell key={k}>{s.pl_account_number || "—"}</TableCell>;
+                          case "town_city":
+                            return <TableCell key={k}>{s.town_city || "—"}</TableCell>;
+                          case "county":
+                            return <TableCell key={k}>{s.county || "—"}</TableCell>;
+                          case "country":
+                            return <TableCell key={k}>{s.country ? countryName(s.country) : "—"}</TableCell>;
+                          case "postcode":
+                            return <TableCell key={k}>{s.postcode || "—"}</TableCell>;
+                          case "contact_phone":
+                            return <TableCell key={k}>{s.contact_phone || "—"}</TableCell>;
+                          case "contact_email":
+                            return <TableCell key={k}>{s.contact_email || "—"}</TableCell>;
+                          case "services":
+                            return (
+                              <TableCell key={k}>
+                                <div className="flex flex-wrap gap-1">
+                                  {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
+                                  {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
+                                  {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
+                                  {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                            );
+                          default:
+                            return null;
+                        }
+                      })}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+
             )}
           </CardContent>
         </Card>
