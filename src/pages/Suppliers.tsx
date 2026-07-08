@@ -356,38 +356,8 @@ export default function Suppliers() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search suppliers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10">
-                <Columns3 className="w-4 h-4 mr-1" /> Manage columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {COLUMNS.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key as string}
-                  checked={visibleCols.includes(c.key as string)}
-                  onCheckedChange={() => toggleCol(c.key as string)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+
+
 
         <Card>
           <CardContent className="p-0">
