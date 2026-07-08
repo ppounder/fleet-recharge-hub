@@ -262,8 +262,8 @@ export default function Suppliers() {
     else { setSortKey(key); setSortDir("asc"); }
   };
 
-  const toggleCol = (key: string) =>
-    setVisibleCols((cols) => cols.includes(key) ? cols.filter((c) => c !== key) : [...cols, key]);
+
+
 
   const parentName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "";
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
