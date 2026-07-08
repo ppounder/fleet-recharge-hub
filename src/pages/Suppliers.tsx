@@ -375,27 +375,12 @@ export default function Suppliers() {
               className="pl-8"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10">
-                <Columns3 className="w-4 h-4 mr-1" /> Manage columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {COLUMNS.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key as string}
-                  checked={visibleCols.includes(c.key as string)}
-                  onCheckedChange={() => toggleCol(c.key as string)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ManageColumnsDialog
+            visibleCols={visibleCols}
+            columnOrder={columnOrder}
+            onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+          />
+
           <Button
             variant="outline"
             size="sm"
