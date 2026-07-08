@@ -388,7 +388,7 @@ export default function Suppliers() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((s) => (
-                    <TableRow key={s.id}>
+                    <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
                       {visibleCols.includes("name") && <TableCell className="font-medium">{s.name}</TableCell>}
                       {visibleCols.includes("pl_account_number") && <TableCell>{s.pl_account_number || "—"}</TableCell>}
                       {visibleCols.includes("town_city") && <TableCell>{s.town_city || "—"}</TableCell>}
