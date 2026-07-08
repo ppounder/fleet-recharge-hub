@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +33,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, RefreshCw } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, RefreshCw, GripVertical } from "lucide-react";
+
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +58,9 @@ type Supplier = {
   provides_workshop: boolean;
 };
 
-const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boolean }[] = [
+type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
+
+const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "pl_account_number", label: "P/L Account", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
@@ -68,7 +72,10 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
   { key: "services", label: "Services", sortable: false },
 ];
 
-const DEFAULT_VISIBLE = COLUMNS.map((c) => c.key as string);
+const LOCKED_COLS: ColKey[] = ["name"];
+const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
+
 
 const supplierSchema = z
   .object({
@@ -156,7 +163,9 @@ export default function Suppliers() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [visibleCols, setVisibleCols] = useState<string[]>(DEFAULT_VISIBLE);
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -253,8 +262,8 @@ export default function Suppliers() {
     else { setSortKey(key); setSortDir("asc"); }
   };
 
-  const toggleCol = (key: string) =>
-    setVisibleCols((cols) => cols.includes(key) ? cols.filter((c) => c !== key) : [...cols, key]);
+
+
 
   const parentName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "";
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
@@ -366,27 +375,12 @@ export default function Suppliers() {
               className="pl-8"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10">
-                <Columns3 className="w-4 h-4 mr-1" /> Manage columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {COLUMNS.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key as string}
-                  checked={visibleCols.includes(c.key as string)}
-                  onCheckedChange={() => toggleCol(c.key as string)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ManageColumnsDialog
+            visibleCols={visibleCols}
+            columnOrder={columnOrder}
+            onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+          />
+
           <Button
             variant="outline"
             size="sm"
@@ -408,52 +402,68 @@ export default function Suppliers() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {COLUMNS.filter((c) => visibleCols.includes(c.key as string)).map((c) => (
-                      <TableHead key={c.key as string}>
-                        {c.sortable ? (
-                          <button
-                            className="flex items-center gap-1 hover:text-foreground"
-                            onClick={() => toggleSort(c.key as string)}
-                          >
-                            {c.label} <SortIcon col={c.key as string} />
-                          </button>
-                        ) : (
-                          c.label
-                        )}
-                      </TableHead>
-                    ))}
-                    
+                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                      const c = COLUMNS.find((col) => col.key === k)!;
+                      return (
+                        <TableHead key={k}>
+                          {c.sortable ? (
+                            <button
+                              className="flex items-center gap-1 hover:text-foreground"
+                              onClick={() => toggleSort(k)}
+                            >
+                              {c.label} <SortIcon col={k} />
+                            </button>
+                          ) : (
+                            c.label
+                          )}
+                        </TableHead>
+                      );
+                    })}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((s) => (
                     <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
-                      {visibleCols.includes("name") && <TableCell className="font-medium">{s.name}</TableCell>}
-                      {visibleCols.includes("pl_account_number") && <TableCell>{s.pl_account_number || "—"}</TableCell>}
-                      {visibleCols.includes("town_city") && <TableCell>{s.town_city || "—"}</TableCell>}
-                      {visibleCols.includes("county") && <TableCell>{s.county || "—"}</TableCell>}
-                      {visibleCols.includes("country") && <TableCell>{s.country ? countryName(s.country) : "—"}</TableCell>}
-                      {visibleCols.includes("postcode") && <TableCell>{s.postcode || "—"}</TableCell>}
-                      {visibleCols.includes("contact_phone") && <TableCell>{s.contact_phone || "—"}</TableCell>}
-                      {visibleCols.includes("contact_email") && <TableCell>{s.contact_email || "—"}</TableCell>}
-                      {visibleCols.includes("services") && (
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
-                            {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
-                            {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
-                            {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </div>
-                        </TableCell>
-                      )}
-
-
+                      {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                        switch (k) {
+                          case "name":
+                            return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
+                          case "pl_account_number":
+                            return <TableCell key={k}>{s.pl_account_number || "—"}</TableCell>;
+                          case "town_city":
+                            return <TableCell key={k}>{s.town_city || "—"}</TableCell>;
+                          case "county":
+                            return <TableCell key={k}>{s.county || "—"}</TableCell>;
+                          case "country":
+                            return <TableCell key={k}>{s.country ? countryName(s.country) : "—"}</TableCell>;
+                          case "postcode":
+                            return <TableCell key={k}>{s.postcode || "—"}</TableCell>;
+                          case "contact_phone":
+                            return <TableCell key={k}>{s.contact_phone || "—"}</TableCell>;
+                          case "contact_email":
+                            return <TableCell key={k}>{s.contact_email || "—"}</TableCell>;
+                          case "services":
+                            return (
+                              <TableCell key={k}>
+                                <div className="flex flex-wrap gap-1">
+                                  {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
+                                  {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
+                                  {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
+                                  {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                            );
+                          default:
+                            return null;
+                        }
+                      })}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+
             )}
           </CardContent>
         </Card>
@@ -708,3 +718,101 @@ export default function Suppliers() {
     </AppLayout>
   );
 }
+
+function ManageColumnsDialog({
+  visibleCols, columnOrder, onApply,
+}: {
+  visibleCols: ColKey[];
+  columnOrder: ColKey[];
+  onApply: (order: ColKey[], visible: ColKey[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftOrder, setDraftOrder] = useState<ColKey[]>(columnOrder);
+  const [draftVisible, setDraftVisible] = useState<ColKey[]>(visibleCols);
+  const [dragKey, setDragKey] = useState<ColKey | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setDraftOrder(columnOrder);
+      setDraftVisible(visibleCols);
+    }
+  }, [open, columnOrder, visibleCols]);
+
+  const toggle = (k: ColKey, checked: boolean) => {
+    if (LOCKED_COLS.includes(k)) return;
+    if (checked) setDraftVisible([...draftVisible, k]);
+    else setDraftVisible(draftVisible.filter((c) => c !== k));
+  };
+
+  const handleDrop = (target: ColKey) => {
+    if (!dragKey || dragKey === target) return;
+    const next = draftOrder.filter((k) => k !== dragKey);
+    const idx = next.indexOf(target);
+    next.splice(idx, 0, dragKey);
+    setDraftOrder(next);
+    setDragKey(null);
+  };
+
+  const handleReset = () => {
+    setDraftOrder(DEFAULT_ORDER);
+    setDraftVisible(DEFAULT_VISIBLE);
+  };
+
+  const handleApply = () => {
+    onApply(draftOrder, draftVisible);
+    setOpen(false);
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <Button variant="outline" size="sm" className="gap-2 h-10" onClick={() => setOpen(true)}>
+        <Columns3 className="w-4 h-4" />
+        Manage columns
+      </Button>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Manage columns</SheetTitle>
+          <SheetDescription>
+            Select the columns you most want to see. Drag the items into the order you want them shown in the table.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="rounded-md border divide-y flex-1 overflow-y-auto mt-4">
+          {draftOrder.map((k) => {
+            const col = COLUMNS.find((c) => c.key === k)!;
+            const locked = LOCKED_COLS.includes(k);
+            const checked = draftVisible.includes(k);
+            return (
+              <div
+                key={k}
+                draggable
+                onDragStart={() => setDragKey(k)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(k)}
+                onDragEnd={() => setDragKey(null)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-muted/50 cursor-grab active:cursor-grabbing",
+                  dragKey === k && "opacity-50"
+                )}
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-sm font-medium">{col.label}</span>
+                <Checkbox
+                  checked={checked}
+                  disabled={locked}
+                  onCheckedChange={(v) => toggle(k, !!v)}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <SheetFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={handleReset}>Reset</Button>
+          <Button onClick={handleApply}>Save</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
