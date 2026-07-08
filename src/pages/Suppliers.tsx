@@ -68,7 +68,7 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
   { key: "services", label: "Services", sortable: false },
 ];
 
-const DEFAULT_VISIBLE = ["name", "pl_account_number", "town_city", "country", "contact_email", "services"];
+const DEFAULT_VISIBLE = COLUMNS.map((c) => c.key as string);
 
 const supplierSchema = z
   .object({
@@ -356,38 +356,8 @@ export default function Suppliers() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search suppliers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10">
-                <Columns3 className="w-4 h-4 mr-1" /> Manage columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {COLUMNS.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key as string}
-                  checked={visibleCols.includes(c.key as string)}
-                  onCheckedChange={() => toggleCol(c.key as string)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+
+
 
         <Card>
           <CardContent className="p-0">
@@ -413,12 +383,12 @@ export default function Suppliers() {
                         )}
                       </TableHead>
                     ))}
-                    <TableHead className="w-24 text-right">Actions</TableHead>
+                    
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((s) => (
-                    <TableRow key={s.id}>
+                    <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
                       {visibleCols.includes("name") && <TableCell className="font-medium">{s.name}</TableCell>}
                       {visibleCols.includes("pl_account_number") && <TableCell>{s.pl_account_number || "—"}</TableCell>}
                       {visibleCols.includes("town_city") && <TableCell>{s.town_city || "—"}</TableCell>}
@@ -439,40 +409,8 @@ export default function Suppliers() {
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className="text-right">
-                        <TooltipProvider delayDuration={150}>
-                          <div className="flex items-center justify-end gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
-                                  onClick={() => openEdit(s)}
-                                  aria-label="Edit supplier"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
-                                  onClick={() => setDeleteId(s.id)}
-                                  aria-label="Delete supplier"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </TooltipProvider>
-                      </TableCell>
+
+
                     </TableRow>
                   ))}
                 </TableBody>
