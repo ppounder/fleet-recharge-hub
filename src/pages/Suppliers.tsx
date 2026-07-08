@@ -58,7 +58,9 @@ type Supplier = {
   provides_workshop: boolean;
 };
 
-const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boolean }[] = [
+type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
+
+const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "pl_account_number", label: "P/L Account", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
@@ -70,7 +72,10 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
   { key: "services", label: "Services", sortable: false },
 ];
 
-const DEFAULT_VISIBLE = COLUMNS.map((c) => c.key as string);
+const LOCKED_COLS: ColKey[] = ["name"];
+const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
+
 
 const supplierSchema = z
   .object({
