@@ -68,7 +68,7 @@ const COLUMNS: { key: keyof Supplier | "services"; label: string; sortable?: boo
   { key: "services", label: "Services", sortable: false },
 ];
 
-const DEFAULT_VISIBLE = ["name", "pl_account_number", "town_city", "country", "contact_email", "services"];
+const DEFAULT_VISIBLE = COLUMNS.map((c) => c.key as string);
 
 const supplierSchema = z
   .object({
