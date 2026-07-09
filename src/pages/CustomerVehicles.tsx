@@ -1513,12 +1513,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
     onError: (e: any) => toast({ title: "Delete failed", description: e.message, variant: "destructive" }),
   });
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
-    setRefreshing(false);
-  };
-
   const rows = useMemo(() => {
     let list = [...defects];
     if (statusFilter !== "all") list = list.filter((d) => d.status === statusFilter);
