@@ -1491,7 +1491,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
   const [deleteDefect, setDeleteDefect] = useState<VehicleDefect | null>(null);
   const [mediaDefect, setMediaDefect] = useState<VehicleDefect | null>(null);
   const [search, setSearch] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
   const [visibleCols, setVisibleCols] = useState<DefectColKey[]>(DEFECT_DEFAULT_VISIBLE);
   const [columnOrder, setColumnOrder] = useState<DefectColKey[]>(DEFECT_DEFAULT_ORDER);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
