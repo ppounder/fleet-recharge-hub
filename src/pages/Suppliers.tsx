@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, RefreshCw, GripVertical } from "lucide-react";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, GripVertical } from "lucide-react";
 
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
@@ -380,16 +380,6 @@ export default function Suppliers() {
             columnOrder={columnOrder}
             onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
           />
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10"
-            onClick={() => qc.invalidateQueries({ queryKey: ["suppliers-list"] })}
-            disabled={isLoading}
-          >
-            <RefreshCw className={cn("w-4 h-4 mr-1", isLoading && "animate-spin")} /> Refresh
-          </Button>
         </div>
 
         <Card>
