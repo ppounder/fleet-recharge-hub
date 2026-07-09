@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, ArrowUpRight, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, RefreshCw, Search, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, ArrowUpRight, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
@@ -1236,13 +1236,6 @@ function VehiclesTable({
   onRowClick: (v: Vehicle) => void;
   onAdd: () => void;
 }) {
-  const queryClient = useQueryClient();
-  const [refreshing, setRefreshing] = useState(false);
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
-    setRefreshing(false);
-  };
   const isVisible = (k: ColKey) => visibleCols.includes(k);
   const orderedColumns = useMemo(
     () => columnOrder.map((k) => ALL_COLUMNS.find((c) => c.key === k)!).filter(Boolean),
@@ -1317,10 +1310,6 @@ function VehiclesTable({
             />
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={refreshing}>
-              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
-              Refresh data
-            </Button>
             <Button size="sm" onClick={onAdd}>
               <Plus className="w-4 h-4 mr-1" /> Add Asset
             </Button>
@@ -1502,7 +1491,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
   const [deleteDefect, setDeleteDefect] = useState<VehicleDefect | null>(null);
   const [mediaDefect, setMediaDefect] = useState<VehicleDefect | null>(null);
   const [search, setSearch] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
   const [visibleCols, setVisibleCols] = useState<DefectColKey[]>(DEFECT_DEFAULT_VISIBLE);
   const [columnOrder, setColumnOrder] = useState<DefectColKey[]>(DEFECT_DEFAULT_ORDER);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -1524,12 +1512,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
     },
     onError: (e: any) => toast({ title: "Delete failed", description: e.message, variant: "destructive" }),
   });
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["vehicle_defects", vehicleId] });
-    setRefreshing(false);
-  };
 
   const rows = useMemo(() => {
     let list = [...defects];
@@ -1687,10 +1669,6 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
             />
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={refreshing}>
-              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
-              Refresh data
-            </Button>
             <Button size="sm" onClick={() => setAddOpen(true)} className="gap-2">
               <Plus className="w-4 h-4" /> Add defect
             </Button>
