@@ -365,14 +365,14 @@ export default function Suppliers() {
           </Button>
         </div>
 
-        <div className="flex items-center justify-start gap-2">
-          <div className="relative flex-1 max-w-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div className="relative max-w-sm flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search suppliers..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="pl-8 bg-card"
             />
           </div>
           <ManageColumnsDialog
