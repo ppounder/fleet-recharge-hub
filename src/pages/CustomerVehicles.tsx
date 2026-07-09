@@ -1310,10 +1310,6 @@ function VehiclesTable({
             />
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={refreshing}>
-              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
-              Refresh data
-            </Button>
             <Button size="sm" onClick={onAdd}>
               <Plus className="w-4 h-4 mr-1" /> Add Asset
             </Button>
