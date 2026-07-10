@@ -389,70 +389,103 @@ export default function Suppliers() {
             ) : filtered.length === 0 ? (
               <div className="p-6 text-center text-muted-foreground">No suppliers found.</div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
-                      const c = COLUMNS.find((col) => col.key === k)!;
-                      return (
-                        <TableHead key={k}>
-                          {c.sortable ? (
-                            <button
-                              className="flex items-center gap-1 hover:text-foreground"
-                              onClick={() => toggleSort(k)}
-                            >
-                              {c.label} <SortIcon col={k} />
-                            </button>
-                          ) : (
-                            c.label
-                          )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((s) => (
-                    <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
+              <TooltipProvider delayDuration={200}>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
                       {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
-                        switch (k) {
-                          case "name":
-                            return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
-                          case "pl_account_number":
-                            return <TableCell key={k}>{s.pl_account_number || "—"}</TableCell>;
-                          case "town_city":
-                            return <TableCell key={k}>{s.town_city || "—"}</TableCell>;
-                          case "county":
-                            return <TableCell key={k}>{s.county || "—"}</TableCell>;
-                          case "country":
-                            return <TableCell key={k}>{s.country ? countryName(s.country) : "—"}</TableCell>;
-                          case "postcode":
-                            return <TableCell key={k}>{s.postcode || "—"}</TableCell>;
-                          case "contact_phone":
-                            return <TableCell key={k}>{s.contact_phone || "—"}</TableCell>;
-                          case "contact_email":
-                            return <TableCell key={k}>{s.contact_email || "—"}</TableCell>;
-                          case "services":
-                            return (
-                              <TableCell key={k}>
-                                <div className="flex flex-wrap gap-1">
-                                  {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
-                                  {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
-                                  {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
-                                  {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
-                                    <span className="text-muted-foreground">—</span>
-                                  )}
-                                </div>
-                              </TableCell>
-                            );
-                          default:
-                            return null;
-                        }
+                        const c = COLUMNS.find((col) => col.key === k)!;
+                        return (
+                          <TableHead key={k}>
+                            {c.sortable ? (
+                              <button
+                                className="flex items-center gap-1 hover:text-foreground"
+                                onClick={() => toggleSort(k)}
+                              >
+                                {c.label} <SortIcon col={k} />
+                              </button>
+                            ) : (
+                              c.label
+                            )}
+                          </TableHead>
+                        );
                       })}
+                      <TableHead className="w-24 text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((s) => (
+                      <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
+                        {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                          switch (k) {
+                            case "name":
+                              return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
+                            case "pl_account_number":
+                              return <TableCell key={k}>{s.pl_account_number || "—"}</TableCell>;
+                            case "town_city":
+                              return <TableCell key={k}>{s.town_city || "—"}</TableCell>;
+                            case "county":
+                              return <TableCell key={k}>{s.county || "—"}</TableCell>;
+                            case "country":
+                              return <TableCell key={k}>{s.country ? countryName(s.country) : "—"}</TableCell>;
+                            case "postcode":
+                              return <TableCell key={k}>{s.postcode || "—"}</TableCell>;
+                            case "contact_phone":
+                              return <TableCell key={k}>{s.contact_phone || "—"}</TableCell>;
+                            case "contact_email":
+                              return <TableCell key={k}>{s.contact_email || "—"}</TableCell>;
+                            case "services":
+                              return (
+                                <TableCell key={k}>
+                                  <div className="flex flex-wrap gap-1">
+                                    {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
+                                    {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
+                                    {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
+                                    {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
+                                      <span className="text-muted-foreground">—</span>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              );
+                            default:
+                              return null;
+                          }
+                        })}
+                        <TableCell className="w-24 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={(e) => { e.stopPropagation(); openEdit(s); }}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit supplier</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete supplier</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TooltipProvider>
 
             )}
           </CardContent>
