@@ -355,14 +355,9 @@ export default function Suppliers() {
   return (
     <AppLayout>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Suppliers</h1>
-            <p className="text-muted-foreground text-sm">Manage your supplier directory.</p>
-          </div>
-          <Button onClick={openAdd}>
-            <Plus className="w-4 h-4 mr-1" /> Add supplier
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold">Suppliers</h1>
+          <p className="text-muted-foreground text-sm">Manage your supplier directory.</p>
         </div>
 
         <div className="flex items-center justify-between gap-3">
@@ -375,11 +370,16 @@ export default function Suppliers() {
               className="pl-8 bg-card"
             />
           </div>
-          <ManageColumnsDialog
-            visibleCols={visibleCols}
-            columnOrder={columnOrder}
-            onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
-          />
+          <div className="flex items-center gap-2">
+            <Button onClick={openAdd}>
+              <Plus className="w-4 h-4 mr-1" /> Add supplier
+            </Button>
+            <ManageColumnsDialog
+              visibleCols={visibleCols}
+              columnOrder={columnOrder}
+              onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+            />
+          </div>
         </div>
 
         <Card>
