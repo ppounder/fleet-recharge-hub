@@ -1833,26 +1833,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      current_user_fleet_id: { Args: never; Returns: string }
-      get_user_role: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      vehicle_belongs_to_customer: {
-        Args: { _user_id: string; _vehicle_id: string }
-        Returns: boolean
-      }
-      vehicle_customer_is_user: {
-        Args: { _customer_id: string; _user_id: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "fleet-manager" | "supplier" | "customer"
