@@ -1,0 +1,4 @@
+CREATE POLICY "Customers can create suppliers" ON public.suppliers FOR INSERT TO authenticated WITH CHECK (private.has_role(auth.uid(), 'customer'::app_role));
+CREATE POLICY "Customers can view suppliers" ON public.suppliers FOR SELECT TO authenticated USING (private.has_role(auth.uid(), 'customer'::app_role));
+CREATE POLICY "Customers can update suppliers" ON public.suppliers FOR UPDATE TO authenticated USING (private.has_role(auth.uid(), 'customer'::app_role)) WITH CHECK (private.has_role(auth.uid(), 'customer'::app_role));
+CREATE POLICY "Customers can delete suppliers" ON public.suppliers FOR DELETE TO authenticated USING (private.has_role(auth.uid(), 'customer'::app_role));
