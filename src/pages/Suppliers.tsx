@@ -56,6 +56,7 @@ type Supplier = {
   provides_parts: boolean;
   provides_tyres: boolean;
   provides_workshop: boolean;
+  internal_company: boolean;
 };
 
 type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
