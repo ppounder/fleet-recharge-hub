@@ -429,18 +429,43 @@ export default function Suppliers() {
       });
       return;
     }
+    // Validate contacts
+    const cErrs: Record<string, Partial<Record<keyof SupplierContact, string>>> = {};
+    for (const c of contacts) {
+      const res = contactSchema.safeParse({
+        full_name: c.full_name, position: c.position, email: c.email, phone: c.phone,
+      });
+      if (!res.success) {
+        const row: Partial<Record<keyof SupplierContact, string>> = {};
+        for (const issue of res.error.issues) {
+          const k = issue.path[0] as keyof SupplierContact;
+          if (k && !row[k]) row[k] = issue.message;
+        }
+        cErrs[c.id] = row;
+      }
+    }
+    if (Object.keys(cErrs).length) {
+      setContactErrors(cErrs);
+      toast({ title: "Please fix contact errors", description: "Some contact fields are invalid.", variant: "destructive" });
+      return;
+    }
     try {
+      let supplierId = editingId;
       if (editingId) {
         await updateSupplier.mutateAsync({ id: editingId, payload: result.data });
-        toast({ title: "Supplier updated" });
       } else {
-        await createSupplier.mutateAsync(result.data);
-        toast({ title: "Supplier added" });
+        const created: any = await createSupplier.mutateAsync(result.data);
+        supplierId = created?.id ?? null;
       }
+      if (supplierId) await persistContacts(supplierId);
+      toast({ title: editingId ? "Supplier updated" : "Supplier added" });
       setDialogOpen(false);
       setEditingId(null);
       setForm(emptyForm);
       setErrors({});
+      setContacts([]);
+      setDeletedContactIds([]);
+      setContactErrors({});
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
