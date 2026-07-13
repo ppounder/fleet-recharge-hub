@@ -684,6 +684,16 @@ export default function Suppliers() {
                   />
                   {errors.contact_email && <p className="text-xs text-destructive">{errors.contact_email}</p>}
                 </div>
+
+                <div className="space-y-1.5 col-span-2">
+                  <label className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer w-fit">
+                    <Checkbox
+                      checked={form.internal_company}
+                      onCheckedChange={(v) => updateField("internal_company", !!v)}
+                    />
+                    <span className="text-sm">Internal company</span>
+                  </label>
+                </div>
               </div>
             </section>
 
