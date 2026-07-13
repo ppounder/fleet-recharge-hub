@@ -855,7 +855,80 @@ export default function Suppliers() {
               </div>
               {errors.provides_parts && <p className="text-xs text-destructive">{errors.provides_parts}</p>}
             </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Contacts</h3>
+                <Button type="button" variant="outline" size="sm" onClick={addContact}>
+                  <Plus className="w-4 h-4 mr-1" /> Add contact
+                </Button>
+              </div>
+              {contacts.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No contacts added yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {contacts.map((c) => {
+                    const cErr = contactErrors[c.id] || {};
+                    return (
+                      <div key={c.id} className="rounded-md border border-input bg-card/50 p-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Full name *</Label>
+                            <Input
+                              value={c.full_name}
+                              onChange={(e) => updateContact(c.id, "full_name", e.target.value)}
+                              className={cn(cErr.full_name && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.full_name && <p className="text-xs text-destructive">{cErr.full_name}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Position</Label>
+                            <Input
+                              value={c.position}
+                              onChange={(e) => updateContact(c.id, "position", e.target.value)}
+                              className={cn(cErr.position && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.position && <p className="text-xs text-destructive">{cErr.position}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Email</Label>
+                            <Input
+                              type="email"
+                              value={c.email}
+                              onChange={(e) => updateContact(c.id, "email", e.target.value)}
+                              className={cn(cErr.email && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.email && <p className="text-xs text-destructive">{cErr.email}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Telephone number</Label>
+                            <Input
+                              value={c.phone}
+                              onChange={(e) => updateContact(c.id, "phone", e.target.value)}
+                              className={cn(cErr.phone && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.phone && <p className="text-xs text-destructive">{cErr.phone}</p>}
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => removeContact(c.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           </div>
+
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
