@@ -210,6 +210,9 @@ export default function Suppliers() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [parentOpen, setParentOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [contacts, setContacts] = useState<SupplierContact[]>([]);
+  const [deletedContactIds, setDeletedContactIds] = useState<string[]>([]);
+  const [contactErrors, setContactErrors] = useState<Record<string, Partial<Record<keyof SupplierContact, string>>>>({});
 
   const updateField = <K extends keyof SupplierForm>(key: K, value: SupplierForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
