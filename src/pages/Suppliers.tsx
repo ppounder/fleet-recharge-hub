@@ -131,6 +131,7 @@ const supplierSchema = z
     provides_parts: z.boolean(),
     provides_tyres: z.boolean(),
     provides_workshop: z.boolean(),
+    internal_company: z.boolean(),
   })
   .refine((d) => d.provides_parts || d.provides_tyres || d.provides_workshop, {
     message: "Select at least one service provided",
