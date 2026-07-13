@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, GripVertical, X } from "lucide-react";
 
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
@@ -160,6 +160,40 @@ const emptyForm: SupplierForm = {
   internal_company: false,
 };
 
+type SupplierContact = {
+  id: string;
+  supplier_id?: string;
+  full_name: string;
+  position: string;
+  email: string;
+  phone: string;
+  _isNew?: boolean;
+};
+
+const contactSchema = z.object({
+  full_name: z.string().trim().min(1, { message: "Full name is required" }).max(150),
+  position: z.string().trim().max(100),
+  email: z
+    .string()
+    .trim()
+    .max(255)
+    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
+  phone: z
+    .string()
+    .trim()
+    .max(20)
+    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), { message: "Enter a valid telephone number" }),
+});
+
+const emptyContact = (): SupplierContact => ({
+  id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+  full_name: "",
+  position: "",
+  email: "",
+  phone: "",
+  _isNew: true,
+});
+
 export default function Suppliers() {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -176,6 +210,9 @@ export default function Suppliers() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [parentOpen, setParentOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [contacts, setContacts] = useState<SupplierContact[]>([]);
+  const [deletedContactIds, setDeletedContactIds] = useState<string[]>([]);
+  const [contactErrors, setContactErrors] = useState<Record<string, Partial<Record<keyof SupplierContact, string>>>>({});
 
   const updateField = <K extends keyof SupplierForm>(key: K, value: SupplierForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -275,12 +312,17 @@ export default function Suppliers() {
     setEditingId(null);
     setForm(emptyForm);
     setErrors({});
+    setContacts([]);
+    setDeletedContactIds([]);
+    setContactErrors({});
     setDialogOpen(true);
   };
 
-  const openEdit = (s: Supplier) => {
+  const openEdit = async (s: Supplier) => {
     setEditingId(s.id);
     setErrors({});
+    setContactErrors({});
+    setDeletedContactIds([]);
     setForm({
       name: s.name ?? "",
       parent_supplier_id: s.parent_supplier_id,
@@ -300,7 +342,76 @@ export default function Suppliers() {
       internal_company: !!(s as any).internal_company,
     });
     setDialogOpen(true);
+    const { data, error } = await supabase
+      .from("supplier_contacts" as any)
+      .select("*")
+      .eq("supplier_id", s.id)
+      .order("created_at");
+    if (!error && data) {
+      setContacts(
+        (data as any[]).map((c) => ({
+          id: c.id,
+          supplier_id: c.supplier_id,
+          full_name: c.full_name ?? "",
+          position: c.position ?? "",
+          email: c.email ?? "",
+          phone: c.phone ?? "",
+        }))
+      );
+    } else {
+      setContacts([]);
+    }
   };
+
+  const updateContact = (id: string, key: keyof SupplierContact, value: string) => {
+    setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, [key]: value } : c)));
+    setContactErrors((prev) => {
+      const next = { ...prev };
+      if (next[id]) { const row = { ...next[id] }; delete row[key]; next[id] = row; }
+      return next;
+    });
+  };
+
+  const addContact = () => setContacts((prev) => [...prev, emptyContact()]);
+
+  const removeContact = (id: string) => {
+    setContacts((prev) => {
+      const target = prev.find((c) => c.id === id);
+      if (target && !target._isNew) setDeletedContactIds((d) => [...d, id]);
+      return prev.filter((c) => c.id !== id);
+    });
+    setContactErrors((prev) => { const n = { ...prev }; delete n[id]; return n; });
+  };
+
+  const persistContacts = async (supplierId: string) => {
+    if (deletedContactIds.length) {
+      const { error } = await supabase
+        .from("supplier_contacts" as any)
+        .delete()
+        .in("id", deletedContactIds);
+      if (error) throw error;
+    }
+    for (const c of contacts) {
+      const payload = {
+        supplier_id: supplierId,
+        full_name: c.full_name.trim(),
+        position: c.position.trim() || null,
+        email: c.email.trim() || null,
+        phone: c.phone.trim() || null,
+      };
+      if (c._isNew) {
+        const { error } = await supabase.from("supplier_contacts" as any).insert(payload as any);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("supplier_contacts" as any)
+          .update(payload as any)
+          .eq("id", c.id);
+        if (error) throw error;
+      }
+    }
+  };
+
 
   const handleSave = async () => {
     const result = supplierSchema.safeParse(form);
@@ -318,18 +429,43 @@ export default function Suppliers() {
       });
       return;
     }
+    // Validate contacts
+    const cErrs: Record<string, Partial<Record<keyof SupplierContact, string>>> = {};
+    for (const c of contacts) {
+      const res = contactSchema.safeParse({
+        full_name: c.full_name, position: c.position, email: c.email, phone: c.phone,
+      });
+      if (!res.success) {
+        const row: Partial<Record<keyof SupplierContact, string>> = {};
+        for (const issue of res.error.issues) {
+          const k = issue.path[0] as keyof SupplierContact;
+          if (k && !row[k]) row[k] = issue.message;
+        }
+        cErrs[c.id] = row;
+      }
+    }
+    if (Object.keys(cErrs).length) {
+      setContactErrors(cErrs);
+      toast({ title: "Please fix contact errors", description: "Some contact fields are invalid.", variant: "destructive" });
+      return;
+    }
     try {
+      let supplierId = editingId;
       if (editingId) {
         await updateSupplier.mutateAsync({ id: editingId, payload: result.data });
-        toast({ title: "Supplier updated" });
       } else {
-        await createSupplier.mutateAsync(result.data);
-        toast({ title: "Supplier added" });
+        const created: any = await createSupplier.mutateAsync(result.data);
+        supplierId = created?.id ?? null;
       }
+      if (supplierId) await persistContacts(supplierId);
+      toast({ title: editingId ? "Supplier updated" : "Supplier added" });
       setDialogOpen(false);
       setEditingId(null);
       setForm(emptyForm);
       setErrors({});
+      setContacts([]);
+      setDeletedContactIds([]);
+      setContactErrors({});
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -719,7 +855,80 @@ export default function Suppliers() {
               </div>
               {errors.provides_parts && <p className="text-xs text-destructive">{errors.provides_parts}</p>}
             </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Contacts</h3>
+                <Button type="button" variant="outline" size="sm" onClick={addContact}>
+                  <Plus className="w-4 h-4 mr-1" /> Add contact
+                </Button>
+              </div>
+              {contacts.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No contacts added yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {contacts.map((c) => {
+                    const cErr = contactErrors[c.id] || {};
+                    return (
+                      <div key={c.id} className="rounded-md border border-input bg-card/50 p-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Full name *</Label>
+                            <Input
+                              value={c.full_name}
+                              onChange={(e) => updateContact(c.id, "full_name", e.target.value)}
+                              className={cn(cErr.full_name && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.full_name && <p className="text-xs text-destructive">{cErr.full_name}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Position</Label>
+                            <Input
+                              value={c.position}
+                              onChange={(e) => updateContact(c.id, "position", e.target.value)}
+                              className={cn(cErr.position && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.position && <p className="text-xs text-destructive">{cErr.position}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Email</Label>
+                            <Input
+                              type="email"
+                              value={c.email}
+                              onChange={(e) => updateContact(c.id, "email", e.target.value)}
+                              className={cn(cErr.email && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.email && <p className="text-xs text-destructive">{cErr.email}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Telephone number</Label>
+                            <Input
+                              value={c.phone}
+                              onChange={(e) => updateContact(c.id, "phone", e.target.value)}
+                              className={cn(cErr.phone && "border-destructive focus-visible:ring-destructive")}
+                            />
+                            {cErr.phone && <p className="text-xs text-destructive">{cErr.phone}</p>}
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => removeContact(c.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           </div>
+
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
