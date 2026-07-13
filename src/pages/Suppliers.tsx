@@ -297,6 +297,7 @@ export default function Suppliers() {
       provides_parts: !!s.provides_parts,
       provides_tyres: !!s.provides_tyres,
       provides_workshop: !!s.provides_workshop,
+      internal_company: !!(s as any).internal_company,
     });
     setDialogOpen(true);
   };
