@@ -157,6 +157,7 @@ const emptyForm: SupplierForm = {
   provides_parts: false,
   provides_tyres: false,
   provides_workshop: false,
+  internal_company: false,
 };
 
 export default function Suppliers() {
