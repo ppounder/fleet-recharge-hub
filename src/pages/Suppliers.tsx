@@ -312,12 +312,17 @@ export default function Suppliers() {
     setEditingId(null);
     setForm(emptyForm);
     setErrors({});
+    setContacts([]);
+    setDeletedContactIds([]);
+    setContactErrors({});
     setDialogOpen(true);
   };
 
-  const openEdit = (s: Supplier) => {
+  const openEdit = async (s: Supplier) => {
     setEditingId(s.id);
     setErrors({});
+    setContactErrors({});
+    setDeletedContactIds([]);
     setForm({
       name: s.name ?? "",
       parent_supplier_id: s.parent_supplier_id,
@@ -337,7 +342,76 @@ export default function Suppliers() {
       internal_company: !!(s as any).internal_company,
     });
     setDialogOpen(true);
+    const { data, error } = await supabase
+      .from("supplier_contacts" as any)
+      .select("*")
+      .eq("supplier_id", s.id)
+      .order("created_at");
+    if (!error && data) {
+      setContacts(
+        (data as any[]).map((c) => ({
+          id: c.id,
+          supplier_id: c.supplier_id,
+          full_name: c.full_name ?? "",
+          position: c.position ?? "",
+          email: c.email ?? "",
+          phone: c.phone ?? "",
+        }))
+      );
+    } else {
+      setContacts([]);
+    }
   };
+
+  const updateContact = (id: string, key: keyof SupplierContact, value: string) => {
+    setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, [key]: value } : c)));
+    setContactErrors((prev) => {
+      const next = { ...prev };
+      if (next[id]) { const row = { ...next[id] }; delete row[key]; next[id] = row; }
+      return next;
+    });
+  };
+
+  const addContact = () => setContacts((prev) => [...prev, emptyContact()]);
+
+  const removeContact = (id: string) => {
+    setContacts((prev) => {
+      const target = prev.find((c) => c.id === id);
+      if (target && !target._isNew) setDeletedContactIds((d) => [...d, id]);
+      return prev.filter((c) => c.id !== id);
+    });
+    setContactErrors((prev) => { const n = { ...prev }; delete n[id]; return n; });
+  };
+
+  const persistContacts = async (supplierId: string) => {
+    if (deletedContactIds.length) {
+      const { error } = await supabase
+        .from("supplier_contacts" as any)
+        .delete()
+        .in("id", deletedContactIds);
+      if (error) throw error;
+    }
+    for (const c of contacts) {
+      const payload = {
+        supplier_id: supplierId,
+        full_name: c.full_name.trim(),
+        position: c.position.trim() || null,
+        email: c.email.trim() || null,
+        phone: c.phone.trim() || null,
+      };
+      if (c._isNew) {
+        const { error } = await supabase.from("supplier_contacts" as any).insert(payload as any);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("supplier_contacts" as any)
+          .update(payload as any)
+          .eq("id", c.id);
+        if (error) throw error;
+      }
+    }
+  };
+
 
   const handleSave = async () => {
     const result = supplierSchema.safeParse(form);
