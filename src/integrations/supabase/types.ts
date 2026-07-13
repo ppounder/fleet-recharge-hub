@@ -927,6 +927,7 @@ export type Database = {
           county: string | null
           created_at: string
           id: string
+          internal_company: boolean
           name: string
           network_id: string | null
           parent_supplier_id: string | null
@@ -950,6 +951,7 @@ export type Database = {
           county?: string | null
           created_at?: string
           id?: string
+          internal_company?: boolean
           name: string
           network_id?: string | null
           parent_supplier_id?: string | null
@@ -973,6 +975,7 @@ export type Database = {
           county?: string | null
           created_at?: string
           id?: string
+          internal_company?: boolean
           name?: string
           network_id?: string | null
           parent_supplier_id?: string | null

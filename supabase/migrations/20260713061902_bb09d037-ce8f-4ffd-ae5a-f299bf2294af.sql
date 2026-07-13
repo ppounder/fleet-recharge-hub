@@ -1,0 +1,1 @@
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS internal_company boolean NOT NULL DEFAULT false;

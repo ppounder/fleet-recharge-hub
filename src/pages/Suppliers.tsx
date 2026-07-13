@@ -56,6 +56,7 @@ type Supplier = {
   provides_parts: boolean;
   provides_tyres: boolean;
   provides_workshop: boolean;
+  internal_company: boolean;
 };
 
 type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
@@ -130,6 +131,7 @@ const supplierSchema = z
     provides_parts: z.boolean(),
     provides_tyres: z.boolean(),
     provides_workshop: z.boolean(),
+    internal_company: z.boolean(),
   })
   .refine((d) => d.provides_parts || d.provides_tyres || d.provides_workshop, {
     message: "Select at least one service provided",
@@ -155,6 +157,7 @@ const emptyForm: SupplierForm = {
   provides_parts: false,
   provides_tyres: false,
   provides_workshop: false,
+  internal_company: false,
 };
 
 export default function Suppliers() {
@@ -294,6 +297,7 @@ export default function Suppliers() {
       provides_parts: !!s.provides_parts,
       provides_tyres: !!s.provides_tyres,
       provides_workshop: !!s.provides_workshop,
+      internal_company: !!(s as any).internal_company,
     });
     setDialogOpen(true);
   };
@@ -679,6 +683,16 @@ export default function Suppliers() {
                     className={errCls("contact_email")}
                   />
                   {errors.contact_email && <p className="text-xs text-destructive">{errors.contact_email}</p>}
+                </div>
+
+                <div className="space-y-1.5 col-span-2">
+                  <label className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer w-fit">
+                    <Checkbox
+                      checked={form.internal_company}
+                      onCheckedChange={(v) => updateField("internal_company", !!v)}
+                    />
+                    <span className="text-sm">Internal company</span>
+                  </label>
                 </div>
               </div>
             </section>
