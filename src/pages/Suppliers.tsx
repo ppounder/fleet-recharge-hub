@@ -160,6 +160,40 @@ const emptyForm: SupplierForm = {
   internal_company: false,
 };
 
+type SupplierContact = {
+  id: string;
+  supplier_id?: string;
+  full_name: string;
+  position: string;
+  email: string;
+  phone: string;
+  _isNew?: boolean;
+};
+
+const contactSchema = z.object({
+  full_name: z.string().trim().min(1, { message: "Full name is required" }).max(150),
+  position: z.string().trim().max(100),
+  email: z
+    .string()
+    .trim()
+    .max(255)
+    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
+  phone: z
+    .string()
+    .trim()
+    .max(20)
+    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), { message: "Enter a valid telephone number" }),
+});
+
+const emptyContact = (): SupplierContact => ({
+  id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+  full_name: "",
+  position: "",
+  email: "",
+  phone: "",
+  _isNew: true,
+});
+
 export default function Suppliers() {
   const { toast } = useToast();
   const qc = useQueryClient();
