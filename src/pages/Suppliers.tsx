@@ -213,6 +213,47 @@ export default function Suppliers() {
   const [contacts, setContacts] = useState<SupplierContact[]>([]);
   const [deletedContactIds, setDeletedContactIds] = useState<string[]>([]);
   const [contactErrors, setContactErrors] = useState<Record<string, Partial<Record<keyof SupplierContact, string>>>>({});
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [contactDraft, setContactDraft] = useState<SupplierContact>(emptyContact());
+  const [contactDraftErrors, setContactDraftErrors] = useState<Partial<Record<keyof SupplierContact, string>>>({});
+  const [confirmDeleteContactId, setConfirmDeleteContactId] = useState<string | null>(null);
+
+  const openAddContact = () => {
+    setEditingContactId(null);
+    setContactDraft(emptyContact());
+    setContactDraftErrors({});
+    setContactDialogOpen(true);
+  };
+  const openEditContact = (c: SupplierContact) => {
+    setEditingContactId(c.id);
+    setContactDraft({ ...c });
+    setContactDraftErrors({});
+    setContactDialogOpen(true);
+  };
+  const saveContactDraft = () => {
+    const res = contactSchema.safeParse({
+      full_name: contactDraft.full_name,
+      position: contactDraft.position,
+      email: contactDraft.email,
+      phone: contactDraft.phone,
+    });
+    if (!res.success) {
+      const row: Partial<Record<keyof SupplierContact, string>> = {};
+      for (const issue of res.error.issues) {
+        const k = issue.path[0] as keyof SupplierContact;
+        if (!row[k]) row[k] = issue.message;
+      }
+      setContactDraftErrors(row);
+      return;
+    }
+    if (editingContactId) {
+      setContacts((prev) => prev.map((c) => (c.id === editingContactId ? { ...contactDraft, id: editingContactId } : c)));
+    } else {
+      setContacts((prev) => [...prev, { ...contactDraft }]);
+    }
+    setContactDialogOpen(false);
+  };
 
   const updateField = <K extends keyof SupplierForm>(key: K, value: SupplierForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
