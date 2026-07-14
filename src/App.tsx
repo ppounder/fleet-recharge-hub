@@ -29,6 +29,7 @@ import CustomerActiveWork from "./pages/CustomerActiveWork";
 import NotFound from "./pages/NotFound";
 import SupplierNetworks from "./pages/SupplierNetworks";
 import Suppliers from "./pages/Suppliers";
+import Customers from "./pages/Customers";
 import AdminPasswordReset from "./pages/AdminPasswordReset";
 
 const queryClient = new QueryClient();
