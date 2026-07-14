@@ -213,6 +213,47 @@ export default function Suppliers() {
   const [contacts, setContacts] = useState<SupplierContact[]>([]);
   const [deletedContactIds, setDeletedContactIds] = useState<string[]>([]);
   const [contactErrors, setContactErrors] = useState<Record<string, Partial<Record<keyof SupplierContact, string>>>>({});
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [contactDraft, setContactDraft] = useState<SupplierContact>(emptyContact());
+  const [contactDraftErrors, setContactDraftErrors] = useState<Partial<Record<keyof SupplierContact, string>>>({});
+  const [confirmDeleteContactId, setConfirmDeleteContactId] = useState<string | null>(null);
+
+  const openAddContact = () => {
+    setEditingContactId(null);
+    setContactDraft(emptyContact());
+    setContactDraftErrors({});
+    setContactDialogOpen(true);
+  };
+  const openEditContact = (c: SupplierContact) => {
+    setEditingContactId(c.id);
+    setContactDraft({ ...c });
+    setContactDraftErrors({});
+    setContactDialogOpen(true);
+  };
+  const saveContactDraft = () => {
+    const res = contactSchema.safeParse({
+      full_name: contactDraft.full_name,
+      position: contactDraft.position,
+      email: contactDraft.email,
+      phone: contactDraft.phone,
+    });
+    if (!res.success) {
+      const row: Partial<Record<keyof SupplierContact, string>> = {};
+      for (const issue of res.error.issues) {
+        const k = issue.path[0] as keyof SupplierContact;
+        if (!row[k]) row[k] = issue.message;
+      }
+      setContactDraftErrors(row);
+      return;
+    }
+    if (editingContactId) {
+      setContacts((prev) => prev.map((c) => (c.id === editingContactId ? { ...contactDraft, id: editingContactId } : c)));
+    } else {
+      setContacts((prev) => [...prev, { ...contactDraft }]);
+    }
+    setContactDialogOpen(false);
+  };
 
   const updateField = <K extends keyof SupplierForm>(key: K, value: SupplierForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -859,75 +900,132 @@ export default function Suppliers() {
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Contacts</h3>
-                <Button type="button" variant="outline" size="sm" onClick={addContact}>
+                <Button type="button" variant="outline" size="sm" onClick={openAddContact}>
                   <Plus className="w-4 h-4 mr-1" /> Add contact
                 </Button>
               </div>
-              {contacts.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No contacts added yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {contacts.map((c) => {
-                    const cErr = contactErrors[c.id] || {};
-                    return (
-                      <div key={c.id} className="rounded-md border border-input bg-card/50 p-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
-                            <Label className="text-xs">Full name *</Label>
-                            <Input
-                              value={c.full_name}
-                              onChange={(e) => updateContact(c.id, "full_name", e.target.value)}
-                              className={cn(cErr.full_name && "border-destructive focus-visible:ring-destructive")}
-                            />
-                            {cErr.full_name && <p className="text-xs text-destructive">{cErr.full_name}</p>}
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs">Position</Label>
-                            <Input
-                              value={c.position}
-                              onChange={(e) => updateContact(c.id, "position", e.target.value)}
-                              className={cn(cErr.position && "border-destructive focus-visible:ring-destructive")}
-                            />
-                            {cErr.position && <p className="text-xs text-destructive">{cErr.position}</p>}
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs">Email</Label>
-                            <Input
-                              type="email"
-                              value={c.email}
-                              onChange={(e) => updateContact(c.id, "email", e.target.value)}
-                              className={cn(cErr.email && "border-destructive focus-visible:ring-destructive")}
-                            />
-                            {cErr.email && <p className="text-xs text-destructive">{cErr.email}</p>}
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs">Telephone number</Label>
-                            <Input
-                              value={c.phone}
-                              onChange={(e) => updateContact(c.id, "phone", e.target.value)}
-                              className={cn(cErr.phone && "border-destructive focus-visible:ring-destructive")}
-                            />
-                            {cErr.phone && <p className="text-xs text-destructive">{cErr.phone}</p>}
-                          </div>
-                        </div>
-                        <div className="flex justify-end mt-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => removeContact(c.id)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" /> Remove
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Full name</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Telephone</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {contacts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                          No contacts added yet.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      contacts.map((c) => (
+                        <TableRow key={c.id}>
+                          <TableCell className="text-sm">{c.full_name}</TableCell>
+                          <TableCell className="text-sm">{c.position || <span className="text-muted-foreground">—</span>}</TableCell>
+                          <TableCell className="text-sm">{c.email || <span className="text-muted-foreground">—</span>}</TableCell>
+                          <TableCell className="text-sm">{c.phone || <span className="text-muted-foreground">—</span>}</TableCell>
+                          <TableCell>
+                            <div className="flex justify-end gap-1">
+                              <Button type="button" size="icon" variant="ghost" onClick={() => openEditContact(c)}>
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="text-destructive hover:bg-destructive hover:text-white"
+                                onClick={() => setConfirmDeleteContactId(c.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </section>
           </div>
+
+          <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{editingContactId ? "Edit contact" : "Add contact"}</DialogTitle>
+                <DialogDescription>Enter the contact details below.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Full name *</Label>
+                  <Input
+                    value={contactDraft.full_name}
+                    onChange={(e) => setContactDraft((d) => ({ ...d, full_name: e.target.value }))}
+                    className={cn(contactDraftErrors.full_name && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {contactDraftErrors.full_name && <p className="text-xs text-destructive">{contactDraftErrors.full_name}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Position</Label>
+                  <Input
+                    value={contactDraft.position}
+                    onChange={(e) => setContactDraft((d) => ({ ...d, position: e.target.value }))}
+                    className={cn(contactDraftErrors.position && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {contactDraftErrors.position && <p className="text-xs text-destructive">{contactDraftErrors.position}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email</Label>
+                  <Input
+                    type="email"
+                    value={contactDraft.email}
+                    onChange={(e) => setContactDraft((d) => ({ ...d, email: e.target.value }))}
+                    className={cn(contactDraftErrors.email && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {contactDraftErrors.email && <p className="text-xs text-destructive">{contactDraftErrors.email}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telephone number</Label>
+                  <Input
+                    value={contactDraft.phone}
+                    onChange={(e) => setContactDraft((d) => ({ ...d, phone: e.target.value }))}
+                    className={cn(contactDraftErrors.phone && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {contactDraftErrors.phone && <p className="text-xs text-destructive">{contactDraftErrors.phone}</p>}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setContactDialogOpen(false)}>Cancel</Button>
+                <Button onClick={saveContactDraft}>{editingContactId ? "Save changes" : "Add contact"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <AlertDialog open={confirmDeleteContactId !== null} onOpenChange={(o) => !o && setConfirmDeleteContactId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete contact?</AlertDialogTitle>
+                <AlertDialogDescription>Are you sure you want to remove this contact?</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>No</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    if (confirmDeleteContactId) removeContact(confirmDeleteContactId);
+                    setConfirmDeleteContactId(null);
+                  }}
+                >
+                  Yes
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
 
 
           <DialogFooter>
