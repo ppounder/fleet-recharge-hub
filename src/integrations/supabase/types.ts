@@ -191,38 +191,120 @@ export type Database = {
           },
         ]
       }
+      customer_contacts: {
+        Row: {
+          created_at: string
+          customer_id: string
+          email: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          position: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          email?: string | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          position?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          position?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_contacts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
+          address_line1: string | null
+          address_line2: string | null
+          address_line3: string | null
           contact_email: string | null
           contact_phone: string | null
+          country: string | null
+          county: string | null
           created_at: string
+          customer_type: Database["public"]["Enums"]["customer_type"] | null
           id: string
+          internal_company: boolean
           name: string
+          parent_customer_id: string | null
+          postcode: string | null
+          sl_account_number: string | null
+          town_city: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          address_line3?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string | null
+          county?: string | null
           created_at?: string
+          customer_type?: Database["public"]["Enums"]["customer_type"] | null
           id?: string
+          internal_company?: boolean
           name: string
+          parent_customer_id?: string | null
+          postcode?: string | null
+          sl_account_number?: string | null
+          town_city?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          address_line3?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string | null
+          county?: string | null
           created_at?: string
+          customer_type?: Database["public"]["Enums"]["customer_type"] | null
           id?: string
+          internal_company?: boolean
           name?: string
+          parent_customer_id?: string | null
+          postcode?: string | null
+          sl_account_number?: string | null
+          town_city?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fleets: {
         Row: {
@@ -1881,6 +1963,12 @@ export type Database = {
     }
     Enums: {
       app_role: "fleet-manager" | "supplier" | "customer"
+      customer_type:
+        | "broker"
+        | "corporate"
+        | "internal"
+        | "public_sector"
+        | "retail"
       network_type: "internal" | "external"
     }
     CompositeTypes: {
@@ -2010,6 +2098,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["fleet-manager", "supplier", "customer"],
+      customer_type: [
+        "broker",
+        "corporate",
+        "internal",
+        "public_sector",
+        "retail",
+      ],
       network_type: ["internal", "external"],
     },
   },

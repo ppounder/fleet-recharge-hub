@@ -42,6 +42,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Recharges", href: "/recharges", icon: CreditCard, badge: 5 },
     { label: "Approvals", href: "/approvals", icon: Shield, badgeKey: "approvals" },
     { label: "Suppliers", href: "/suppliers", icon: Truck },
+    { label: "Customers", href: "/customers", icon: Users },
     { label: "Supplier Networks", href: "/supplier-networks", icon: Network },
     { label: "Reports", href: "/reports", icon: FileText },
     {
@@ -83,6 +84,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Invoices", href: "/invoicing", icon: FileText },
     { label: "History", href: "/history", icon: ClipboardList },
     { label: "Suppliers", href: "/suppliers", icon: Truck },
+    { label: "Customers", href: "/customers", icon: Users },
     {
       label: "Settings",
       href: "/settings",
