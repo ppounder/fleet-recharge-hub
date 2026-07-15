@@ -1,0 +1,4 @@
+CREATE POLICY "Customer role can insert customers" ON public.customers FOR INSERT TO authenticated WITH CHECK (private.has_role(auth.uid(), 'customer'::app_role));
+CREATE POLICY "Customer role can update customers" ON public.customers FOR UPDATE TO authenticated USING (private.has_role(auth.uid(), 'customer'::app_role)) WITH CHECK (private.has_role(auth.uid(), 'customer'::app_role));
+CREATE POLICY "Customer role can delete customers" ON public.customers FOR DELETE TO authenticated USING (private.has_role(auth.uid(), 'customer'::app_role));
+CREATE POLICY "Customer role can view all customers" ON public.customers FOR SELECT TO authenticated USING (private.has_role(auth.uid(), 'customer'::app_role));
