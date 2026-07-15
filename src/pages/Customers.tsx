@@ -51,7 +51,6 @@ type Customer = {
   postcode: string | null;
   contact_phone: string | null;
   contact_email: string | null;
-  internal_company: boolean;
   customer_type: string | null;
 };
 
@@ -109,7 +108,6 @@ const customerSchema = z.object({
     .trim()
     .max(255)
     .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
-  internal_company: z.boolean(),
 });
 
 type CustomerForm = z.infer<typeof customerSchema>;
@@ -129,7 +127,6 @@ const emptyForm: CustomerForm = {
   postcode: "",
   contact_phone: "",
   contact_email: "",
-  internal_company: false,
 };
 
 type CustomerContact = {
@@ -330,7 +327,6 @@ export default function Customers() {
       postcode: s.postcode ?? "",
       contact_phone: s.contact_phone ?? "",
       contact_email: s.contact_email ?? "",
-      internal_company: !!s.internal_company,
     });
     setDialogOpen(true);
     const { data, error } = await supabase
@@ -707,13 +703,6 @@ export default function Customers() {
                   {errors.contact_email && <p className="text-xs text-destructive">{errors.contact_email}</p>}
                 </div>
 
-                <div className="space-y-1.5 col-span-2">
-                  <label className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer w-fit">
-                    <Checkbox checked={form.internal_company}
-                      onCheckedChange={(v) => updateField("internal_company", !!v)} />
-                    <span className="text-sm">Internal company</span>
-                  </label>
-                </div>
               </div>
             </section>
 
