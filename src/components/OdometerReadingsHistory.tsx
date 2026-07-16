@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 import { toast } from "@/hooks/use-toast";
 import { formatDateTime, cn } from "@/lib/utils";
 
