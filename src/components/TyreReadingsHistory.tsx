@@ -1028,7 +1028,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="position">Tyre position</Label>
+              <Label htmlFor="position">Tyre position *</Label>
               <Select
                 value={form.position}
                 onValueChange={(v) => updateField("position", v)}
@@ -1053,7 +1053,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="tyre_code">Tyre condition</Label>
+              <Label htmlFor="tyre_code">Tyre condition *</Label>
               <Input
                 id="tyre_code"
                 value={form.tyre_code}
@@ -1073,7 +1073,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 <div className="space-y-2">
                   {([
                     { key: "tread_outer", label: "Outer" },
-                    { key: "tread_centre", label: "Centre" },
+                    { key: "tread_centre", label: "Centre *" },
                     { key: "tread_inner", label: "Inner" },
                   ] as const).map(({ key, label }) => (
                     <div key={key} className="grid grid-cols-[80px_1fr] items-center gap-2">
@@ -1101,7 +1101,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="pressure">Pressure</Label>
+                <Label htmlFor="pressure">Pressure *</Label>
                 <div className="flex gap-2">
                   <Input
                     id="pressure"
@@ -1141,7 +1141,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 )}
               </div>
               <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="reading_date">Date taken</Label>
+                <Label htmlFor="reading_date">Date taken *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -1207,7 +1207,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="dispose_position">Tyre position</Label>
+              <Label htmlFor="dispose_position">Tyre position *</Label>
               <Select
                 value={disposeForm.position}
                 onValueChange={(v) => {
@@ -1235,7 +1235,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="dispose_date">Disposal date</Label>
+                <Label htmlFor="dispose_date">Disposal date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -1273,7 +1273,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="dispose_time">Time</Label>
+                <Label htmlFor="dispose_time">Time *</Label>
                 <Input
                   id="dispose_time"
                   type="time"
@@ -1321,7 +1321,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
               <Input value={changePosForm.from_position} disabled />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="change_to_position">New position</Label>
+              <Label htmlFor="change_to_position">New position *</Label>
               <Select
                 value={changePosForm.to_position || undefined}
                 onValueChange={(v) => {
@@ -1355,7 +1355,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="change_date">Position date</Label>
+                <Label htmlFor="change_date">Position date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -1387,7 +1387,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 {changePosErrors.date && <p className="text-xs text-destructive">{changePosErrors.date}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="change_time">Time</Label>
+                <Label htmlFor="change_time">Time *</Label>
                 <Input
                   id="change_time"
                   type="time"
@@ -1439,7 +1439,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="tyre_position">Tyre position</Label>
+              <Label htmlFor="tyre_position">Tyre position *</Label>
               <Select
                 value={tyreForm.position}
                 onValueChange={(v) => updateTyreField("position", v)}
@@ -1462,7 +1462,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="tyre_manufacturer">Manufacturer</Label>
+                <Label htmlFor="tyre_manufacturer">Manufacturer *</Label>
                 <Select
                   value={
                     manufacturerIsOther
@@ -1508,7 +1508,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 {tyreErrors.manufacturer && <p className="text-xs text-destructive">{tyreErrors.manufacturer}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="tyre_size">Tyre size</Label>
+                <Label htmlFor="tyre_size">Tyre size *</Label>
                 <Input
                   id="tyre_size"
                   value={tyreForm.tyre_size}
@@ -1522,7 +1522,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="tyre_serial">Serial number</Label>
+              <Label htmlFor="tyre_serial">Serial number *</Label>
               <Input
                 id="tyre_serial"
                 value={tyreForm.serial_number}
@@ -1545,7 +1545,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                 </p>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="tyre_fitted_date">Date</Label>
+                <Label htmlFor="tyre_fitted_date">Date *</Label>
                 <DatePicker
                   id="tyre_fitted_date"
                   value={tyreForm.fitted_date}
@@ -1588,7 +1588,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
               <p className="text-sm font-medium">Dispose existing tyre</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="replace_disp_date">Disposal date</Label>
+                  <Label htmlFor="replace_disp_date">Disposal date *</Label>
                   <DatePicker
                     id="replace_disp_date"
                     value={replaceForm.date}
@@ -1598,7 +1598,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                   {replaceErrors.date && <p className="text-xs text-destructive">{replaceErrors.date}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="replace_disp_time">Time</Label>
+                  <Label htmlFor="replace_disp_time">Time *</Label>
                   <Input
                     id="replace_disp_time"
                     type="time"
@@ -1616,7 +1616,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
               <p className="text-sm font-medium">New tyre details</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="replace_manufacturer">Manufacturer</Label>
+                  <Label htmlFor="replace_manufacturer">Manufacturer *</Label>
                   <Select
                     value={
                       replaceManufacturerIsOther
@@ -1662,7 +1662,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                   {replaceErrors.manufacturer && <p className="text-xs text-destructive">{replaceErrors.manufacturer}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="replace_tyre_size">Tyre size</Label>
+                  <Label htmlFor="replace_tyre_size">Tyre size *</Label>
                   <Input
                     id="replace_tyre_size"
                     value={replaceForm.tyre_size}
@@ -1676,7 +1676,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="replace_serial">Serial number</Label>
+                <Label htmlFor="replace_serial">Serial number *</Label>
                 <Input
                   id="replace_serial"
                   value={replaceForm.serial_number}
@@ -1699,7 +1699,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="replace_fitted_date">Date fitted</Label>
+                  <Label htmlFor="replace_fitted_date">Date fitted *</Label>
                   <DatePicker
                     id="replace_fitted_date"
                     value={replaceForm.fitted_date}
