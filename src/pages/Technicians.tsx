@@ -109,19 +109,18 @@ const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
 const technicianSchema = z.object({
   first_name: z.string().trim().min(1, { message: "First name is required" }).max(80),
   last_name: z.string().trim().min(1, { message: "Last name is required" }).max(80),
-  address_line1: z.string().trim().min(1, { message: "Address line 1 is required" }).max(150),
+  address_line1: z.string().trim().max(150),
   address_line2: z.string().trim().max(150),
   address_line3: z.string().trim().max(150),
-  town_city: z.string().trim().min(1, { message: "Town/City is required" }).max(100),
+  town_city: z.string().trim().max(100),
   county: z.string().trim().max(100),
-  country: z.string().trim().min(1, { message: "Country is required" }).max(2),
-  postcode: z.string().trim().min(1, { message: "Postcode is required" }).max(20),
+  country: z.string().trim().max(2),
+  postcode: z.string().trim().max(20),
   phone: z
     .string()
     .trim()
-    .min(1, { message: "Telephone number is required" })
     .max(20)
-    .refine((v) => /^\+?[0-9\s()-]{7,}$/.test(v), { message: "Enter a valid telephone number" }),
+    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), { message: "Enter a valid telephone number" }),
   email: z
     .string()
     .trim()
