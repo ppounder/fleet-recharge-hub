@@ -71,6 +71,7 @@ type ColKey = "name" | "pl_account_number" | "reference_number" | "town_city" | 
 const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "pl_account_number", label: "P/L Account", sortable: true },
+  { key: "reference_number", label: "Reference", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
   { key: "county", label: "County", sortable: true },
   { key: "country", label: "Country", sortable: true },
