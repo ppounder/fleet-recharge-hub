@@ -50,7 +50,7 @@ export default function AdminPasswordReset() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">User email</Label>
+                <Label htmlFor="email">User email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -60,7 +60,7 @@ export default function AdminPasswordReset() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">New password</Label>
+                <Label htmlFor="password">New password *</Label>
                 <Input
                   id="password"
                   type="text"
