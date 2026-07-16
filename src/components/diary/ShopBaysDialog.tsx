@@ -95,7 +95,7 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         <div className="space-y-4">
           <div className="flex items-end gap-2">
             <div className="flex-1 space-y-1.5">
-              <Label>Name</Label>
+              <Label>Name *</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Bay 4" />
             </div>
             <div className="space-y-1.5">

@@ -28,8 +28,8 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
         <DialogHeader><DialogTitle>Technicians</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-2 items-end">
-            <div className="space-y-1.5"><Label>First name</Label><Input value={first} onChange={e => setFirst(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>Last name</Label><Input value={last} onChange={e => setLast(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label>First name *</Label><Input value={first} onChange={e => setFirst(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label>Last name *</Label><Input value={last} onChange={e => setLast(e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Colour</Label><Input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-16 h-10 p-1" /></div>
             <Button onClick={add}><Plus className="h-4 w-4 mr-1" />Add</Button>
           </div>
