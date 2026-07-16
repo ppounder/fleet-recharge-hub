@@ -925,7 +925,7 @@ export default function Technicians() {
                   </TableBody>
                 </Table>
               </div>
-            </section>
+            </CollapsibleCard>
           </div>
 
           <DialogFooter className="shrink-0 px-6 py-4 border-t">
