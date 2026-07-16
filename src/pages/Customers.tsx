@@ -523,7 +523,7 @@ export default function Customers() {
                             </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
                                   onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }}>
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
