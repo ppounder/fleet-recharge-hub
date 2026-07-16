@@ -1137,6 +1137,60 @@ export type Database = {
           },
         ]
       }
+      technician_allocations: {
+        Row: {
+          allocation_end_date: string | null
+          allocation_start_date: string
+          allocation_type: string
+          created_at: string
+          fleet_id: string
+          id: string
+          revert_after_end: boolean
+          technician_id: string
+          updated_at: string
+          workshop_id: string
+        }
+        Insert: {
+          allocation_end_date?: string | null
+          allocation_start_date?: string
+          allocation_type: string
+          created_at?: string
+          fleet_id: string
+          id?: string
+          revert_after_end?: boolean
+          technician_id: string
+          updated_at?: string
+          workshop_id: string
+        }
+        Update: {
+          allocation_end_date?: string | null
+          allocation_start_date?: string
+          allocation_type?: string
+          created_at?: string
+          fleet_id?: string
+          id?: string
+          revert_after_end?: boolean
+          technician_id?: string
+          updated_at?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_allocations_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_allocations_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       technicians: {
         Row: {
           active: boolean
