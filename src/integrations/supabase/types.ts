@@ -249,6 +249,7 @@ export type Database = {
           name: string
           parent_customer_id: string | null
           postcode: string | null
+          reference_number: string | null
           sl_account_number: string | null
           town_city: string | null
           updated_at: string
@@ -270,6 +271,7 @@ export type Database = {
           name: string
           parent_customer_id?: string | null
           postcode?: string | null
+          reference_number?: string | null
           sl_account_number?: string | null
           town_city?: string | null
           updated_at?: string
@@ -291,6 +293,7 @@ export type Database = {
           name?: string
           parent_customer_id?: string | null
           postcode?: string | null
+          reference_number?: string | null
           sl_account_number?: string | null
           town_city?: string | null
           updated_at?: string
