@@ -263,14 +263,7 @@ export default function CommercialTerms() {
                             >
                               <Handshake className="w-3.5 h-3.5 mr-1" /> Prices
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={(e) => { e.stopPropagation(); setDeleteTermId(term.id); }}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <DeleteActionButton label="Delete term" onClick={(e) => { e.stopPropagation(); setDeleteTermId(term.id); }} />
                           </div>
                         </TableCell>
                       </TableRow>
