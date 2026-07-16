@@ -100,7 +100,7 @@ const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "email", label: "Email", sortable: true },
   { key: "employee_number", label: "Employee #", sortable: true },
   { key: "labour_type", label: "Labour type", sortable: true },
-  { key: "start_date", label: "Start date", sortable: true },
+  { key: "start_date", label: "Allocation start date", sortable: true },
 ];
 const LOCKED_COLS: ColKey[] = ["name"];
 const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
