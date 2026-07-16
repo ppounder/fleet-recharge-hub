@@ -791,8 +791,7 @@ export default function Technicians() {
               </div>
             </CollapsibleCard>
 
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Employment</h3>
+            <CollapsibleCard title="Employment">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Job title</Label>
