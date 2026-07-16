@@ -620,8 +620,7 @@ export default function Workshops() {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Workshop details</h3>
+            <CollapsibleCard title="Workshop details">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5 col-span-2">
                   <Label htmlFor="name" className="text-xs">Company name *</Label>
