@@ -2099,7 +2099,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reset_technician_password: { Args: { _tech_id: string }; Returns: string }
+      set_technician_credentials: {
+        Args: {
+          _password?: string
+          _pin?: string
+          _tech_id: string
+          _username?: string
+        }
+        Returns: undefined
+      }
+      unlock_technician_account: {
+        Args: { _tech_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "fleet-manager" | "supplier" | "customer"
