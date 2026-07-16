@@ -228,7 +228,7 @@ export default function Settings() {
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Username *</Label>
               <Input
                 id="username"
                 value={form.username}
@@ -245,7 +245,7 @@ export default function Settings() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="firstName">First name</Label>
+                <Label htmlFor="firstName">First name *</Label>
                 <Input
                   id="firstName"
                   value={form.firstName}
@@ -259,7 +259,7 @@ export default function Settings() {
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="lastName">Last name</Label>
+                <Label htmlFor="lastName">Last name *</Label>
                 <Input
                   id="lastName"
                   value={form.lastName}
@@ -290,7 +290,7 @@ export default function Settings() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
