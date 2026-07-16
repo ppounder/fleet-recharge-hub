@@ -501,14 +501,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                           <TableCell className="text-right text-xs text-muted-foreground">{vatPc}%</TableCell>
                           <TableCell className="text-right font-mono">£{(net + vat).toFixed(2)}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeletePartRow(mp.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <DeleteActionButton label="Delete parts row" onClick={() => handleDeletePartRow(mp.id)} />
                           </TableCell>
                         </TableRow>
                       );
