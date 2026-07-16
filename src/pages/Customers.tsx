@@ -717,15 +717,16 @@ export default function Customers() {
                 </div>
 
               </div>
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Contacts</h3>
+            <CollapsibleCard
+              title="Contacts"
+              action={
                 <Button type="button" variant="outline" size="sm" onClick={openAddContact}>
                   <Plus className="w-4 h-4 mr-1" /> Add contact
                 </Button>
-              </div>
+              }
+            >
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader>
