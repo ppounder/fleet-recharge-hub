@@ -83,7 +83,7 @@ type EditableFields = {
 };
 
 const blank: EditableFields = {
-  status: "",
+  status: "on-road",
   vin: "",
   registration: "",
   fleet_number: "",
