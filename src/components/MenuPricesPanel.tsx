@@ -18,7 +18,8 @@ import { useVatBands } from "@/hooks/useVatBands";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 import { MenuPriceEditSheet } from "@/components/MenuPriceEditSheet";
 
 interface MenuPricesPanelProps {
