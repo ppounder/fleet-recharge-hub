@@ -900,19 +900,88 @@ export default function Technicians() {
                   <Label className="text-xs">N.I. number</Label>
                   <Input value={form.ni_number} onChange={(e) => updateField("ni_number", e.target.value.toUpperCase())} className={errCls("ni_number")} />
                 </div>
+              </div>
+            </CollapsibleCard>
+
+            <CollapsibleCard title="Login details">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">PIN *</Label>
+                  <Label className="text-xs">Username *</Label>
                   <Input
+                    value={form.username}
+                    onChange={(e) => updateField("username", e.target.value.trim())}
+                    className={errCls("username")}
+                    autoComplete="off"
+                  />
+                  {errors.username && <p className="text-xs text-destructive">{errors.username}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email *</Label>
+                  <Input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => updateField("email", e.target.value)}
+                    className={errCls("email")}
+                  />
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Password {editingId ? "" : "*"}</Label>
+                  <Input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => updateField("password", e.target.value)}
+                    className={errCls("password")}
+                    placeholder={editingId ? "Leave blank to keep current" : "Minimum 8 characters"}
+                    autoComplete="new-password"
+                  />
+                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  <p className="text-xs text-muted-foreground">Stored securely as a bcrypt hash.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">PIN {editingId ? "" : "*"}</Label>
+                  <Input
+                    type="password"
                     inputMode="numeric"
                     value={form.pin}
                     onChange={(e) => updateField("pin", e.target.value.replace(/\D/g, ""))}
                     className={errCls("pin")}
-                    placeholder="Minimum 4 digits"
+                    placeholder={editingId ? "Leave blank to keep current" : "Minimum 4 digits"}
+                    autoComplete="off"
                   />
                   {errors.pin && <p className="text-xs text-destructive">{errors.pin}</p>}
+                  <p className="text-xs text-muted-foreground">Stored securely as a bcrypt hash.</p>
                 </div>
+
+                <div className="col-span-2 flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <Label className="text-sm">Auto-unlock account after failed login attempts</Label>
+                    <p className="text-xs text-muted-foreground">When on, the account unlocks automatically once the lockout period expires.</p>
+                  </div>
+                  <Switch
+                    checked={form.auto_unlock_enabled}
+                    onCheckedChange={(v) => updateField("auto_unlock_enabled", v)}
+                  />
+                </div>
+
+                {editingId && (
+                  <div className="col-span-2 flex flex-wrap items-center gap-2 pt-1">
+                    <Button type="button" variant="outline" size="sm" onClick={handleResetPassword} disabled={resetting}>
+                      {resetting ? "Resetting..." : "Reset password"}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={handleSendReminder} disabled={sendingReminder}>
+                      {sendingReminder ? "Sending..." : "Send password reminder"}
+                    </Button>
+                    {form.status === "account_locked" && (
+                      <Button type="button" variant="outline" size="sm" onClick={handleUnlock} disabled={unlocking}>
+                        {unlocking ? "Unlocking..." : "Unlock account"}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </CollapsibleCard>
+
 
             <CollapsibleCard
               title="Allocation *"
