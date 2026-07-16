@@ -153,14 +153,23 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   />
                   <div className="flex items-center gap-2 shrink-0">
                     <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ ...b, active: v })} />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setConfirmDelete({ id: b.id, name: b.name })}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setConfirmDelete({ id: b.id, name: b.name })}
+                            className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete bay</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               );
