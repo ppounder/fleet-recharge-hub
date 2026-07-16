@@ -953,6 +953,157 @@ export default function Technicians() {
         </DialogContent>
       </Dialog>
 
+      {/* Allocation Add/Edit Dialog */}
+      <Dialog open={allocDialogOpen} onOpenChange={setAllocDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingAllocId ? "Edit allocation" : "Add allocation"}</DialogTitle>
+            <DialogDescription>Assign the technician to a workshop for a period.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Workshop *</Label>
+              <Popover open={allocWorkshopOpen} onOpenChange={setAllocWorkshopOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", allocDraftErrors.workshop_id && "border-destructive focus-visible:ring-destructive")}>
+                    {allocDraft.workshop_id ? workshopName(allocDraft.workshop_id) : <span className="text-muted-foreground">Select workshop...</span>}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search workshop..." />
+                    <CommandList>
+                      <CommandEmpty>No workshops found.</CommandEmpty>
+                      <CommandGroup>
+                        {workshops.map((w) => (
+                          <CommandItem key={w.id} value={w.name} onSelect={() => { setAllocDraft((p) => ({ ...p, workshop_id: w.id })); setAllocDraftErrors((p) => ({ ...p, workshop_id: undefined })); setAllocWorkshopOpen(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", allocDraft.workshop_id === w.id ? "opacity-100" : "opacity-0")} />
+                            {w.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {allocDraftErrors.workshop_id && <p className="text-xs text-destructive">{allocDraftErrors.workshop_id}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Allocation start date *</Label>
+                <DatePicker
+                  value={allocDraft.allocation_start_date}
+                  onChange={(d) => { setAllocDraft((p) => ({ ...p, allocation_start_date: d })); setAllocDraftErrors((p) => ({ ...p, allocation_start_date: undefined })); }}
+                  className={cn(allocDraftErrors.allocation_start_date && "border-destructive")}
+                />
+                {allocDraftErrors.allocation_start_date && <p className="text-xs text-destructive">{allocDraftErrors.allocation_start_date}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Allocation end date</Label>
+                <DatePicker
+                  value={allocDraft.allocation_end_date}
+                  onChange={(d) => { setAllocDraft((p) => ({ ...p, allocation_end_date: d })); setAllocDraftErrors((p) => ({ ...p, allocation_end_date: undefined })); }}
+                  className={cn(allocDraftErrors.allocation_end_date && "border-destructive")}
+                />
+                {allocDraftErrors.allocation_end_date && <p className="text-xs text-destructive">{allocDraftErrors.allocation_end_date}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Allocation type *</Label>
+              <Popover open={allocTypeOpen} onOpenChange={setAllocTypeOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                    {ALLOCATION_TYPE_LABELS[allocDraft.allocation_type]}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search..." />
+                    <CommandList>
+                      <CommandEmpty>No results.</CommandEmpty>
+                      <CommandGroup>
+                        {(Object.keys(ALLOCATION_TYPE_LABELS) as AllocationType[]).map((k) => (
+                          <CommandItem key={k} value={ALLOCATION_TYPE_LABELS[k]} onSelect={() => { setAllocDraft((p) => ({ ...p, allocation_type: k })); setAllocTypeOpen(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", allocDraft.allocation_type === k ? "opacity-100" : "opacity-0")} />
+                            {ALLOCATION_TYPE_LABELS[k]}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <div>
+                <Label className="text-sm">Revert to previous after end date</Label>
+                <p className="text-xs text-muted-foreground">When the end date is reached, revert to previous allocation.</p>
+              </div>
+              <Switch checked={allocDraft.revert_after_end} onCheckedChange={(v) => setAllocDraft((p) => ({ ...p, revert_after_end: v }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAllocDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              const res = allocationSchema.safeParse({
+                workshop_id: allocDraft.workshop_id,
+                allocation_start_date: allocDraft.allocation_start_date,
+                allocation_end_date: allocDraft.allocation_end_date,
+                allocation_type: allocDraft.allocation_type,
+                revert_after_end: allocDraft.revert_after_end,
+              });
+              if (!res.success) {
+                const errs: Partial<Record<keyof AllocationDraft, string>> = {};
+                for (const issue of res.error.issues) {
+                  const k = issue.path[0] as keyof AllocationDraft;
+                  if (k && !errs[k]) errs[k] = issue.message;
+                }
+                setAllocDraftErrors(errs);
+                return;
+              }
+              if (editingAllocId) {
+                setAllocations((prev) => prev.map((x) => (x.id === editingAllocId ? { ...allocDraft, id: editingAllocId } : x)));
+              } else {
+                setAllocations((prev) => [...prev, { ...allocDraft }]);
+              }
+              setAllocMissingError(null);
+              setAllocDialogOpen(false);
+            }}>Save allocation</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!confirmDeleteAllocId} onOpenChange={(o) => !o && setConfirmDeleteAllocId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete allocation?</AlertDialogTitle>
+            <AlertDialogDescription>This will remove the allocation when you save the technician.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                const id = confirmDeleteAllocId!;
+                setAllocations((prev) => {
+                  const t = prev.find((c) => c.id === id);
+                  if (t && !t._isNew) setDeletedAllocationIds((d) => [...d, id]);
+                  return prev.filter((c) => c.id !== id);
+                });
+                setConfirmDeleteAllocId(null);
+              }}
+            >Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
