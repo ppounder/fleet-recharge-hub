@@ -725,14 +725,8 @@ export default function Customers() {
                           <TableCell className="text-sm">{c.phone || <span className="text-muted-foreground">—</span>}</TableCell>
                           <TableCell>
                             <div className="flex justify-end gap-1">
-                              <Button type="button" size="icon" variant="ghost" onClick={() => openEditContact(c)}>
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                              <Button type="button" size="icon" variant="ghost"
-                                className="text-destructive hover:bg-destructive hover:text-white"
-                                onClick={() => setConfirmDeleteContactId(c.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <EditActionButton label="Edit contact" onClick={() => openEditContact(c)} />
+                              <DeleteActionButton label="Delete contact" onClick={() => setConfirmDeleteContactId(c.id)} />
                             </div>
                           </TableCell>
                         </TableRow>
