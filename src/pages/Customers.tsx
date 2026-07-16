@@ -120,6 +120,7 @@ const emptyForm: CustomerForm = {
   name: "",
   parent_customer_id: null,
   sl_account_number: "",
+  reference_number: "",
   customer_type: undefined as any,
   address_line1: "",
   address_line2: "",
