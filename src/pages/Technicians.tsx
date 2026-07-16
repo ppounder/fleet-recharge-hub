@@ -724,87 +724,75 @@ export default function Technicians() {
               </div>
             </section>
 
-            <Collapsible open={addressOpen} onOpenChange={setAddressOpen}>
-              <CollapsibleTrigger asChild>
-                <button className="flex items-center justify-between w-full text-left group">
-                  <h3 className="text-sm font-semibold">Address details</h3>
-                  {addressOpen ? (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  )}
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="grid grid-cols-2 gap-3 pt-3">
-                  <div className="space-y-1.5 col-span-2">
-                    <Label className="text-xs">Address line 1</Label>
-                    <Input value={form.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} className={errCls("address_line1")} />
-                  </div>
-                  <div className="space-y-1.5 col-span-2">
-                    <Label className="text-xs">Address line 2</Label>
-                    <Input value={form.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} className={errCls("address_line2")} />
-                  </div>
-                  <div className="space-y-1.5 col-span-2">
-                    <Label className="text-xs">Address line 3</Label>
-                    <Input value={form.address_line3} onChange={(e) => updateField("address_line3", e.target.value)} className={errCls("address_line3")} />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Town/City</Label>
-                    <Input value={form.town_city} onChange={(e) => updateField("town_city", e.target.value)} className={errCls("town_city")} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">County</Label>
-                    <Input value={form.county} onChange={(e) => updateField("county", e.target.value)} className={errCls("county")} />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Country</Label>
-                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.country && "border-destructive focus-visible:ring-destructive")}>
-                          {form.country ? countryName(form.country) : <span className="text-muted-foreground">Select country...</span>}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search country..." />
-                          <CommandList>
-                            <CommandEmpty>No country found.</CommandEmpty>
-                            <CommandGroup>
-                              {ISO_COUNTRIES.map((c) => (
-                                <CommandItem key={c.code} value={`${c.name} ${c.code}`} onSelect={() => { updateField("country", c.code); setCountryOpen(false); }}>
-                                  <Check className={cn("mr-2 h-4 w-4", form.country === c.code ? "opacity-100" : "opacity-0")} />
-                                  {c.name} <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Postcode</Label>
-                    <Input value={form.postcode} onChange={(e) => updateField("postcode", e.target.value)} className={errCls("postcode")} />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Telephone number</Label>
-                    <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} className={errCls("phone")} />
-                    {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Email address</Label>
-                    <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} className={errCls("email")} />
-                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                  </div>
+            <CollapsibleCard title="Address details" defaultOpen={addressOpen}>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5 col-span-2">
+                  <Label className="text-xs">Address line 1</Label>
+                  <Input value={form.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} className={errCls("address_line1")} />
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
+                <div className="space-y-1.5 col-span-2">
+                  <Label className="text-xs">Address line 2</Label>
+                  <Input value={form.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} className={errCls("address_line2")} />
+                </div>
+                <div className="space-y-1.5 col-span-2">
+                  <Label className="text-xs">Address line 3</Label>
+                  <Input value={form.address_line3} onChange={(e) => updateField("address_line3", e.target.value)} className={errCls("address_line3")} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Town/City</Label>
+                  <Input value={form.town_city} onChange={(e) => updateField("town_city", e.target.value)} className={errCls("town_city")} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">County</Label>
+                  <Input value={form.county} onChange={(e) => updateField("county", e.target.value)} className={errCls("county")} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Country</Label>
+                  <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.country && "border-destructive focus-visible:ring-destructive")}>
+                        {form.country ? countryName(form.country) : <span className="text-muted-foreground">Select country...</span>}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search country..." />
+                        <CommandList>
+                          <CommandEmpty>No country found.</CommandEmpty>
+                          <CommandGroup>
+                            {ISO_COUNTRIES.map((c) => (
+                              <CommandItem key={c.code} value={`${c.name} ${c.code}`} onSelect={() => { updateField("country", c.code); setCountryOpen(false); }}>
+                                <Check className={cn("mr-2 h-4 w-4", form.country === c.code ? "opacity-100" : "opacity-0")} />
+                                {c.name} <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Postcode</Label>
+                  <Input value={form.postcode} onChange={(e) => updateField("postcode", e.target.value)} className={errCls("postcode")} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telephone number</Label>
+                  <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} className={errCls("phone")} />
+                  {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email address</Label>
+                  <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} className={errCls("email")} />
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                </div>
+              </div>
+            </CollapsibleCard>
 
             <section className="space-y-3">
               <h3 className="text-sm font-semibold">Employment</h3>
