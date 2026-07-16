@@ -612,6 +612,8 @@ export default function Suppliers() {
                               return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
                             case "pl_account_number":
                               return <TableCell key={k}>{s.pl_account_number || "—"}</TableCell>;
+                            case "reference_number":
+                              return <TableCell key={k}>{s.reference_number || "—"}</TableCell>;
                             case "town_city":
                               return <TableCell key={k}>{s.town_city || "—"}</TableCell>;
                             case "county":
