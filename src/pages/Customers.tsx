@@ -25,14 +25,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, GripVertical } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
@@ -512,24 +511,8 @@ export default function Customers() {
                         })}
                         <TableCell className="w-24 text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8"
-                                  onClick={(e) => { e.stopPropagation(); openEdit(s); }}>
-                                  <Pencil className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit customer</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"
-                                  onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }}>
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete customer</TooltipContent>
-                            </Tooltip>
+                            <EditActionButton label="Edit customer" onClick={(e) => { e.stopPropagation(); openEdit(s); }} />
+                            <DeleteActionButton label="Delete customer" onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -740,14 +723,8 @@ export default function Customers() {
                           <TableCell className="text-sm">{c.phone || <span className="text-muted-foreground">—</span>}</TableCell>
                           <TableCell>
                             <div className="flex justify-end gap-1">
-                              <Button type="button" size="icon" variant="ghost" onClick={() => openEditContact(c)}>
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                              <Button type="button" size="icon" variant="ghost"
-                                className="text-destructive hover:bg-destructive hover:text-white"
-                                onClick={() => setConfirmDeleteContactId(c.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <EditActionButton label="Edit contact" onClick={() => openEditContact(c)} />
+                              <DeleteActionButton label="Delete contact" onClick={() => setConfirmDeleteContactId(c.id)} />
                             </div>
                           </TableCell>
                         </TableRow>

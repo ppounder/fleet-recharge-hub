@@ -18,7 +18,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { MenuPricesPanel } from "@/components/MenuPricesPanel";
 import { LabourRatesPanel } from "@/components/LabourRatesPanel";
-import { Plus, Trash2, ArrowLeft, Handshake, Calendar } from "lucide-react";
+import { Plus, ArrowLeft, Handshake, Calendar } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 import { format } from "date-fns";
 
 export default function CommercialTerms() {
@@ -262,14 +263,7 @@ export default function CommercialTerms() {
                             >
                               <Handshake className="w-3.5 h-3.5 mr-1" /> Prices
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={(e) => { e.stopPropagation(); setDeleteTermId(term.id); }}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <DeleteActionButton label="Delete term" onClick={(e) => { e.stopPropagation(); setDeleteTermId(term.id); }} />
                           </div>
                         </TableCell>
                       </TableRow>

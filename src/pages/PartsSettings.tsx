@@ -10,7 +10,8 @@ import { useParts, useCreatePart, useUpdatePart, useDeletePart } from "@/hooks/u
 import { useVatBands } from "@/hooks/useVatBands";
 import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, X, Save, Package } from "lucide-react";
+import { Plus, X, Save, Package } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 export default function PartsSettings() {
   const { toast } = useToast();
@@ -178,17 +179,8 @@ export default function PartsSettings() {
                         <TableCell className="text-muted-foreground">{vatLabel(part.vat_band_id)}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(part)}>
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => deletePart.mutate(part.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <EditActionButton label="Edit part" onClick={() => startEdit(part)} />
+                            <DeleteActionButton label="Delete part" onClick={() => deletePart.mutate(part.id)} />
                           </div>
                         </TableCell>
                       </TableRow>

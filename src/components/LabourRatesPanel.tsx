@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useLabourRates, useCreateLabourRate, useUpdateLabourRate, useDeleteLabourRate } from "@/hooks/useLabourRates";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Check, X } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 interface LabourRatesPanelProps {
   providerId: string;
@@ -157,17 +158,8 @@ export function LabourRatesPanel({ providerId, fleetId }: LabourRatesPanelProps)
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(rate)}>
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => deleteRate.mutate(rate.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <EditActionButton label="Edit labour rate" onClick={() => startEdit(rate)} />
+                            <DeleteActionButton label="Delete labour rate" onClick={() => deleteRate.mutate(rate.id)} />
                           </div>
                         </TableCell>
                       </>

@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { CalendarIcon, Clock, Loader2, Pencil } from "lucide-react";
+import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { EditActionButton } from "@/components/ui/action-buttons";
 import { Vehicle } from "@/hooks/useVehicles";
 import { cn, formatDate } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -302,14 +303,11 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                   onClick={() => setMsgDialogOpen(true)}
                   className="pr-9 cursor-pointer"
                 />
-                <button
-                  type="button"
+                <EditActionButton
+                  label="Edit notes"
                   onClick={() => setMsgDialogOpen(true)}
-                  className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
-                  aria-label="Edit notes"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
+                  className="absolute right-2 top-2"
+                />
               </div>
             </div>
           </div>

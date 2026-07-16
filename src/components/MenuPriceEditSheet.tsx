@@ -26,7 +26,8 @@ import {
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Save, Wrench, Package } from "lucide-react";
+import { Plus, Save, Wrench, Package } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 
 interface MenuPriceEditSheetProps {
   open: boolean;
@@ -376,14 +377,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                           </TableCell>
                           <TableCell className="text-right font-mono">£{lineTotal.toFixed(2)}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeleteLabour(ml.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <DeleteActionButton label="Delete labour row" onClick={() => handleDeleteLabour(ml.id)} />
                           </TableCell>
                         </TableRow>
                       );
@@ -507,14 +501,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                           <TableCell className="text-right text-xs text-muted-foreground">{vatPc}%</TableCell>
                           <TableCell className="text-right font-mono">£{(net + vat).toFixed(2)}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeletePartRow(mp.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <DeleteActionButton label="Delete parts row" onClick={() => handleDeletePartRow(mp.id)} />
                           </TableCell>
                         </TableRow>
                       );

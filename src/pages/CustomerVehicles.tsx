@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useVehicles, useUpdateVehicle, useCreateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { useVehicleDefects, VehicleDefect, DefectStatus } from "@/hooks/useVehicleDefects";
-import { ArrowLeft, ArrowUpDown, ArrowUpRight, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, ArrowUpRight, Calendar as CalendarIcon, Camera, Car, Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Columns3, GripVertical, Loader2, Pencil, Plus, Search, X } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
@@ -704,26 +705,10 @@ export default function CustomerVehicles() {
                                 </div>
                                 <div className="text-sm whitespace-pre-wrap break-words">{n.maintenance_message}</div>
                               </div>
-                              <TooltipProvider delayDuration={150}>
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setMsgDialogOpen(true)} aria-label="Edit note">
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Edit</TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setDeleteNoteId(n.id)} aria-label="Delete note">
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Delete</TooltipContent>
-                                  </Tooltip>
-                                </div>
-                              </TooltipProvider>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <EditActionButton label="Edit note" onClick={() => setMsgDialogOpen(true)} />
+                                <DeleteActionButton label="Delete note" onClick={() => setDeleteNoteId(n.id)} />
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -1629,25 +1614,8 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
                   <Camera className="h-4 w-4" />
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Edit defect"
-                title="Edit"
-                onClick={(e) => { e.stopPropagation(); setEditDefect(d); }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Delete defect"
-                title="Delete"
-                className="text-destructive hover:bg-destructive hover:text-white"
-                onClick={(e) => { e.stopPropagation(); setDeleteDefect(d); }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <EditActionButton label="Edit defect" onClick={(e) => { e.stopPropagation(); setEditDefect(d); }} />
+              <DeleteActionButton label="Delete defect" onClick={(e) => { e.stopPropagation(); setDeleteDefect(d); }} />
             </div>
           </TableCell>
         );

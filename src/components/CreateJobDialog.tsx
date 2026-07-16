@@ -23,7 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Trash2, PlusCircle, Sparkles, Loader2, CalendarIcon } from "lucide-react";
+import { Plus, PlusCircle, Sparkles, Loader2, CalendarIcon } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 import { format } from "date-fns";
 
 // ── Work Line Types ──────────────────────────────────────────────
@@ -670,9 +671,7 @@ export function CreateJobDialog() {
                           <span className="text-xs font-mono text-muted-foreground">
                             Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
                           </span>
-                          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
+                          <DeleteActionButton label="Remove work line" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1} />
                         </div>
                         <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
                           <div className="space-y-1.5">

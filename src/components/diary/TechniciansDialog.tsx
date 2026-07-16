@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 import { useTechnicians, useUpsertTechnician, useDeleteTechnician } from "@/hooks/useDiary";
 
 export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
@@ -43,9 +44,7 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
                   <TableCell>{t.first_name} {t.last_name}</TableCell>
                   <TableCell><Switch checked={t.active} onCheckedChange={(v) => upsert.mutate({ id: t.id, active: v })} /></TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => del.mutate(t.id)} className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DeleteActionButton label="Delete technician" onClick={() => del.mutate(t.id)} />
                   </TableCell>
                 </TableRow>
               ))}
