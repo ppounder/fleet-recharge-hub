@@ -193,6 +193,7 @@ const emptyForm = (): TechnicianForm => ({
   email: "",
   job_title: "",
   status: "active",
+  start_date: format(new Date(), "yyyy-MM-dd"),
   pin: "",
   employee_number: "",
   ni_number: "",
