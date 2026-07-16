@@ -62,6 +62,11 @@ type Technician = {
   workshop_id: string | null;
   status: "active" | "account_locked" | "deleted";
   pin: string | null;
+  username: string | null;
+  password_hash: string | null;
+  pin_hash: string | null;
+  failed_login_attempts: number;
+  auto_unlock_enabled: boolean;
   employee_number: string | null;
   ni_number: string | null;
   labour_type: string | null;
