@@ -875,6 +875,71 @@ export default function Technicians() {
                 </div>
               </div>
             </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Allocation *</h3>
+                <Button type="button" size="sm" variant="outline" onClick={() => {
+                  setEditingAllocId(null);
+                  setAllocDraft(emptyAllocation());
+                  setAllocDraftErrors({});
+                  setAllocDialogOpen(true);
+                }}>
+                  <Plus className="w-4 h-4 mr-1" /> Add allocation
+                </Button>
+              </div>
+              {allocMissingError && <p className="text-xs text-destructive">{allocMissingError}</p>}
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Workshop</TableHead>
+                      <TableHead>Start</TableHead>
+                      <TableHead>End</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Revert</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allocations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground text-sm py-4">
+                          No allocations yet. Add at least one to save.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      [...allocations]
+                        .sort((a, b) => (a.allocation_start_date < b.allocation_start_date ? 1 : -1))
+                        .map((a) => (
+                          <TableRow key={a.id}>
+                            <TableCell>{workshopName(a.workshop_id) || "—"}</TableCell>
+                            <TableCell className="whitespace-nowrap">{a.allocation_start_date ? format(new Date(a.allocation_start_date), "dd MMM yyyy") : "—"}</TableCell>
+                            <TableCell className="whitespace-nowrap">{a.allocation_end_date ? format(new Date(a.allocation_end_date), "dd MMM yyyy") : "—"}</TableCell>
+                            <TableCell>{ALLOCATION_TYPE_LABELS[a.allocation_type]}</TableCell>
+                            <TableCell>{a.revert_after_end ? "Yes" : "No"}</TableCell>
+                            <TableCell className="w-24 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                                  setEditingAllocId(a.id);
+                                  setAllocDraft({ ...a });
+                                  setAllocDraftErrors({});
+                                  setAllocDialogOpen(true);
+                                }}>
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setConfirmDeleteAllocId(a.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
           </div>
 
           <DialogFooter className="shrink-0 px-6 py-4 border-t">
