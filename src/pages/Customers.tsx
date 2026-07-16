@@ -770,7 +770,7 @@ export default function Customers() {
                   </TableBody>
                 </Table>
               </div>
-            </section>
+            </CollapsibleCard>
           </div>
 
           <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
