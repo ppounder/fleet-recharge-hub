@@ -23,7 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Trash2, PlusCircle, Sparkles, Loader2, CalendarIcon } from "lucide-react";
+import { Plus, PlusCircle, Sparkles, Loader2, CalendarIcon } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 import { format } from "date-fns";
 
 // ── Work Line Types ──────────────────────────────────────────────
