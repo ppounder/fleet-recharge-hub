@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, Plus, GripVertical } from "lucide-react";
+import { Trash2, Plus, GripVertical, Pencil, Check, X } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTechnicians, useUpsertTechnician, useDeleteTechnician } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,6 +28,37 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
   const [last, setLast] = useState("");
   const [color, setColor] = useState("#f59e0b");
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editFirst, setEditFirst] = useState("");
+  const [editLast, setEditLast] = useState("");
+
+  const startEdit = (t: any) => {
+    setEditingId(t.id);
+    setEditFirst(t.first_name);
+    setEditLast(t.last_name);
+  };
+  const cancelEdit = () => setEditingId(null);
+  const saveEdit = async (t: any) => {
+    const f = editFirst.trim();
+    const l = editLast.trim();
+    if (!f || !l) {
+      toast({ title: "First and last name are required", variant: "destructive" });
+      return;
+    }
+    try {
+      await upsert.mutateAsync({
+        id: t.id,
+        first_name: f,
+        last_name: l,
+        color: t.color,
+        active: t.active,
+        sort_order: t.sort_order,
+      });
+      setEditingId(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e?.message ?? String(e), variant: "destructive" });
+    }
+  };
 
   const sorted = [...techs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
@@ -171,24 +203,27 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
                     }
                     className="w-10 h-8 p-1 shrink-0"
                   />
-                  <Input
-                    defaultValue={fullName}
-                    onBlur={(e) => {
-                      const v = e.target.value.trim();
-                      if (!v || v === fullName) return;
-                      const [f, ...rest] = v.split(/\s+/);
-                      const l = rest.join(" ") || "";
-                      upsert.mutate({
-                        id: t.id,
-                        first_name: f,
-                        last_name: l,
-                        color: t.color,
-                        active: t.active,
-                        sort_order: t.sort_order,
-                      });
-                    }}
-                    className="flex-1"
-                  />
+                  {editingId === t.id ? (
+                    <>
+                      <Input
+                        value={editFirst}
+                        onChange={(e) => setEditFirst(e.target.value)}
+                        placeholder="First name"
+                        className="flex-1"
+                      />
+                      <Input
+                        value={editLast}
+                        onChange={(e) => setEditLast(e.target.value)}
+                        placeholder="Last name"
+                        className="flex-1"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Input value={t.first_name} readOnly className="flex-1 bg-muted/50" />
+                      <Input value={t.last_name} readOnly className="flex-1 bg-muted/50" />
+                    </>
+                  )}
                   <div className="flex items-center gap-2 shrink-0">
                     <Switch
                       checked={t.active}
@@ -203,6 +238,35 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
                         })
                       }
                     />
+                    {editingId === t.id ? (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => saveEdit(t)}>
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Save</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={cancelEdit}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Cancel</TooltipContent>
+                        </Tooltip>
+                      </>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => startEdit(t)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit name</TooltipContent>
+                      </Tooltip>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
