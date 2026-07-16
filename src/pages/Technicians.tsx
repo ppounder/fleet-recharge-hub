@@ -1242,6 +1242,23 @@ export default function Technicians() {
         </DialogContent>
       </Dialog>
 
+      <AlertDialog open={!!tempPasswordDialog} onOpenChange={(o) => !o && setTempPasswordDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Temporary password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Share this password securely with the technician. It won't be shown again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-md border bg-muted p-3 font-mono text-center text-lg select-all">
+            {tempPasswordDialog}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setTempPasswordDialog(null)}>Done</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={!!confirmDeleteAllocId} onOpenChange={(o) => !o && setConfirmDeleteAllocId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
