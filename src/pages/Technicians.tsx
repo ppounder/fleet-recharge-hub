@@ -415,6 +415,7 @@ export default function Technicians() {
       email: t.email ?? "",
       job_title: t.job_title ?? "",
       status: t.status ?? "active",
+      start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       pin: t.pin ?? "",
       employee_number: t.employee_number ?? "",
       ni_number: t.ni_number ?? "",
