@@ -125,7 +125,7 @@ const technicianSchema = z.object({
     .max(255)
     .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
   job_title: z.string().trim().max(100),
-  start_date: z.date({ required_error: "Start date is required" }),
+  start_date: z.string().min(1, { message: "Start date is required" }),
   workshop_id: z.string().min(1, { message: "Workshop is required" }),
   status: z.enum(["active", "account_locked", "deleted"]),
   pin: z
@@ -155,7 +155,7 @@ const emptyForm = (): TechnicianForm => ({
   phone: "",
   email: "",
   job_title: "",
-  start_date: new Date(),
+  start_date: format(new Date(), "yyyy-MM-dd"),
   workshop_id: "",
   status: "active",
   pin: "",
@@ -238,7 +238,7 @@ export default function Technicians() {
         country: payload.country,
         postcode: payload.postcode.trim(),
         job_title: payload.job_title.trim() || null,
-        start_date: payload.start_date.toISOString(),
+        start_date: new Date(payload.start_date).toISOString(),
         workshop_id: payload.workshop_id,
         status: payload.status,
         pin: payload.pin.trim(),
@@ -273,7 +273,7 @@ export default function Technicians() {
         country: payload.country,
         postcode: payload.postcode.trim(),
         job_title: payload.job_title.trim() || null,
-        start_date: payload.start_date.toISOString(),
+        start_date: new Date(payload.start_date).toISOString(),
         workshop_id: payload.workshop_id,
         status: payload.status,
         pin: payload.pin.trim(),
@@ -361,7 +361,7 @@ export default function Technicians() {
       phone: t.phone ?? "",
       email: t.email ?? "",
       job_title: t.job_title ?? "",
-      start_date: t.start_date ? new Date(t.start_date) : new Date(),
+      start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       workshop_id: t.workshop_id ?? "",
       status: t.status ?? "active",
       pin: t.pin ?? "",
@@ -653,7 +653,7 @@ export default function Technicians() {
                   <Label className="text-xs">Start date *</Label>
                   <DatePicker
                     value={form.start_date}
-                    onChange={(d) => updateField("start_date", d ?? new Date())}
+                    onChange={(d) => updateField("start_date", d)}
                     className={cn(errors.start_date && "border-destructive")}
                   />
                   {errors.start_date && <p className="text-xs text-destructive">{errors.start_date as any}</p>}
