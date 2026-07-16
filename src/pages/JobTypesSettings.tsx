@@ -10,7 +10,8 @@ import { useWorkCategories, useCreateWorkCategory, useUpdateWorkCategory, useDel
 import { useVatBands } from "@/hooks/useVatBands";
 import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { Plus, Check, X } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 export default function WorkCategoriesSettings() {
   const { toast } = useToast();
