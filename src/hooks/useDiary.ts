@@ -19,6 +19,7 @@ export type Technician = {
   email: string | null;
   color: string;
   active: boolean;
+  sort_order: number;
 };
 
 export type ShopHour = {
@@ -68,7 +69,7 @@ export function useTechnicians() {
   return useQuery({
     queryKey: ["technicians"],
     queryFn: async () => {
-      const { data, error } = await T.from("technicians").select("*").order("last_name");
+      const { data, error } = await T.from("technicians").select("*").order("sort_order").order("last_name");
       if (error) throw error;
       return data as Technician[];
     },

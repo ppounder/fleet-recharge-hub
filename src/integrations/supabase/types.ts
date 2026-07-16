@@ -1219,6 +1219,7 @@ export type Database = {
           pin: string | null
           pin_hash: string | null
           postcode: string | null
+          sort_order: number
           start_date: string
           status: string
           town_city: string | null
@@ -1253,6 +1254,7 @@ export type Database = {
           pin?: string | null
           pin_hash?: string | null
           postcode?: string | null
+          sort_order?: number
           start_date?: string
           status?: string
           town_city?: string | null
@@ -1287,6 +1289,7 @@ export type Database = {
           pin?: string | null
           pin_hash?: string | null
           postcode?: string | null
+          sort_order?: number
           start_date?: string
           status?: string
           town_city?: string | null
