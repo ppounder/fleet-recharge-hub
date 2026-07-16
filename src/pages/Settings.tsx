@@ -16,7 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, AtSign, Phone, Mail, Bell, LogOut, Pencil } from "lucide-react";
+import { User, AtSign, Phone, Mail, Bell, LogOut } from "lucide-react";
+import { EditActionButton } from "@/components/ui/action-buttons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
