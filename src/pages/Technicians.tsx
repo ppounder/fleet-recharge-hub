@@ -443,13 +443,16 @@ export default function Technicians() {
       postcode: t.postcode ?? "",
       phone: t.phone ?? "",
       email: t.email ?? "",
+      username: t.username ?? "",
+      password: "",
       job_title: t.job_title ?? "",
       status: t.status ?? "active",
       start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      pin: t.pin ?? "",
+      pin: "",
       employee_number: t.employee_number ?? "",
       ni_number: t.ni_number ?? "",
       labour_type: t.labour_type ?? "",
+      auto_unlock_enabled: t.auto_unlock_enabled ?? true,
     });
     setDialogOpen(true);
     setDeletedAllocationIds([]);
