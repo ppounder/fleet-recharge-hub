@@ -671,7 +671,7 @@ export function CreateJobDialog() {
                           <span className="text-xs font-mono text-muted-foreground">
                             Line {idx + 1}{catName ? ` · ${catName}` : ""}{codeName ? ` > ${codeName}` : ""}
                           </span>
-                          <DeleteActionButton label="Remove work line" onClick={() => removeWorkLine(line.id)} loading={workLines.length <= 1} />
+                          <DeleteActionButton label="Remove work line" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1} />
                         </div>
                         <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
                           <div className="space-y-1.5">
