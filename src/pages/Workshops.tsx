@@ -184,6 +184,7 @@ export default function Workshops() {
   const [form, setForm] = useState<WorkshopForm>(emptyForm());
   const [errors, setErrors] = useState<FormErrors>({});
   const [countryOpen, setCountryOpen] = useState(false);
+  const [parentOpen, setParentOpen] = useState(false);
   const [contacts, setContacts] = useState<WorkshopContact[]>([]);
   const [deletedContactIds, setDeletedContactIds] = useState<string[]>([]);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
