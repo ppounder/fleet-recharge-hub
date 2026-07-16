@@ -251,15 +251,37 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>Technician</Label>
-              <Select value={techId} onValueChange={setTechId}>
-                <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>Unassigned</SelectItem>
-                  {techs.filter(t => t.active).map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={techOpen} onOpenChange={setTechOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                    {techId !== NONE ? (() => {
+                      const t = techs.find(x => x.id === techId);
+                      return t ? `${t.first_name} ${t.last_name}` : <span className="text-muted-foreground">Unassigned</span>;
+                    })() : <span className="text-muted-foreground">Unassigned</span>}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search technician..." />
+                    <CommandList>
+                      <CommandEmpty>No technicians found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem value="__unassigned__" onSelect={() => { setTechId(NONE); setTechOpen(false); }}>
+                          <Check className={cn("mr-2 h-4 w-4", techId === NONE ? "opacity-100" : "opacity-0")} />
+                          Unassigned
+                        </CommandItem>
+                        {techs.filter(t => t.active).map(t => (
+                          <CommandItem key={t.id} value={`${t.first_name} ${t.last_name}`} onSelect={() => { setTechId(t.id); setTechOpen(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", techId === t.id ? "opacity-100" : "opacity-0")} />
+                            {t.first_name} {t.last_name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-1">
               <Label>Status</Label>
