@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   ClipboardList,
   Truck,
+  Warehouse,
   Handshake,
   ListChecks,
   Percent,
@@ -63,6 +64,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: "Jobs", href: "/jobs", icon: Wrench, badgeKey: "activeJobs" },
     { label: "Invoicing", href: "/invoicing", icon: FileText },
     { label: "Commercial Terms", href: "/commercial-terms", icon: Handshake },
+    { label: "Workshops", href: "/workshops", icon: Warehouse },
     { label: "Reports", href: "/reports", icon: BarChart3 },
     {
       label: "Settings",
