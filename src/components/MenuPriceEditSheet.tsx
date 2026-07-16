@@ -377,14 +377,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                           </TableCell>
                           <TableCell className="text-right font-mono">£{lineTotal.toFixed(2)}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeleteLabour(ml.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <DeleteActionButton label="Delete labour row" onClick={() => handleDeleteLabour(ml.id)} />
                           </TableCell>
                         </TableRow>
                       );
