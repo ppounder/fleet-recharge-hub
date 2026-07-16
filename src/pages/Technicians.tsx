@@ -650,13 +650,12 @@ export default function Technicians() {
                   <Input value={form.job_title} onChange={(e) => updateField("job_title", e.target.value)} className={errCls("job_title")} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Start date *</Label>
-                  <DatePicker
-                    value={form.start_date}
-                    onChange={(d) => updateField("start_date", d)}
-                    className={cn(errors.start_date && "border-destructive")}
+                  <Label className="text-xs">Status *</Label>
+                  <Input
+                    value={STATUS_LABELS[form.status]}
+                    readOnly
+                    className="bg-muted cursor-not-allowed"
                   />
-                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date as any}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -689,12 +688,13 @@ export default function Technicians() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Status *</Label>
-                  <Input
-                    value={STATUS_LABELS[form.status]}
-                    readOnly
-                    className="bg-muted cursor-not-allowed"
+                  <Label className="text-xs">Start date *</Label>
+                  <DatePicker
+                    value={form.start_date}
+                    onChange={(d) => updateField("start_date", d)}
+                    className={cn(errors.start_date && "border-destructive")}
                   />
+                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date as any}</p>}
                 </div>
 
                 <div className="space-y-1.5">
