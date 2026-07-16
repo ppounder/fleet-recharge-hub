@@ -1028,9 +1028,7 @@ export default function JobDetail() {
                                   <Wrench className="w-3.5 h-3.5" /> Parts
                                 </Button>
                               )}
-                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
+                              <DeleteActionButton label="Remove work line" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1} />
                             </div>
                           </div>
                           <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
