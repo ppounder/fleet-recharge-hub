@@ -827,15 +827,10 @@ export default function Technicians() {
                   <Input value={form.postcode} onChange={(e) => updateField("postcode", e.target.value)} className={errCls("postcode")} />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 col-span-2">
                   <Label className="text-xs">Telephone number</Label>
                   <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} className={errCls("phone")} />
                   {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Email address</Label>
-                  <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} className={errCls("email")} />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
               </div>
             </CollapsibleCard>
