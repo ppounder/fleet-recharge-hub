@@ -32,6 +32,7 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -100,7 +101,7 @@ const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "email", label: "Email", sortable: true },
   { key: "employee_number", label: "Employee #", sortable: true },
   { key: "labour_type", label: "Labour type", sortable: true },
-  { key: "start_date", label: "Start date", sortable: true },
+  { key: "start_date", label: "Allocation start date", sortable: true },
 ];
 const LOCKED_COLS: ColKey[] = ["name"];
 const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
@@ -127,8 +128,6 @@ const technicianSchema = z.object({
     .max(255)
     .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
   job_title: z.string().trim().max(100),
-  start_date: z.string().min(1, { message: "Start date is required" }),
-  workshop_id: z.string().min(1, { message: "Workshop is required" }),
   status: z.enum(["active", "account_locked", "deleted"]),
   pin: z
     .string()
@@ -139,6 +138,43 @@ const technicianSchema = z.object({
   employee_number: z.string().trim().max(50),
   ni_number: z.string().trim().max(20),
   labour_type: z.string().trim().max(50),
+});
+
+export type AllocationType = "permanent" | "temporary_transfer";
+const ALLOCATION_TYPE_LABELS: Record<AllocationType, string> = {
+  permanent: "Permanent",
+  temporary_transfer: "Temporary Transfer",
+};
+
+export type AllocationDraft = {
+  id: string;
+  workshop_id: string;
+  allocation_start_date: string; // yyyy-MM-dd
+  allocation_end_date: string; // yyyy-MM-dd | ""
+  allocation_type: AllocationType;
+  revert_after_end: boolean;
+  _isNew?: boolean;
+};
+
+const allocationSchema = z.object({
+  workshop_id: z.string().min(1, { message: "Workshop is required" }),
+  allocation_start_date: z.string().min(1, { message: "Allocation start date is required" }),
+  allocation_end_date: z.string(),
+  allocation_type: z.enum(["permanent", "temporary_transfer"]),
+  revert_after_end: z.boolean(),
+}).refine((v) => !v.allocation_end_date || v.allocation_end_date >= v.allocation_start_date, {
+  message: "End date must be on or after start date",
+  path: ["allocation_end_date"],
+});
+
+const emptyAllocation = (): AllocationDraft => ({
+  id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+  workshop_id: "",
+  allocation_start_date: format(new Date(), "yyyy-MM-dd"),
+  allocation_end_date: "",
+  allocation_type: "permanent",
+  revert_after_end: false,
+  _isNew: true,
 });
 
 type TechnicianForm = z.infer<typeof technicianSchema>;
@@ -157,8 +193,6 @@ const emptyForm = (): TechnicianForm => ({
   phone: "",
   email: "",
   job_title: "",
-  start_date: format(new Date(), "yyyy-MM-dd"),
-  workshop_id: "",
   status: "active",
   pin: "",
   employee_number: "",
@@ -180,10 +214,22 @@ export default function Technicians() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<TechnicianForm>(emptyForm());
   const [errors, setErrors] = useState<FormErrors>({});
-  const [workshopOpen, setWorkshopOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [labourTypeOpen, setLabourTypeOpen] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
+
+  // Allocations state (per open dialog)
+  const [allocations, setAllocations] = useState<AllocationDraft[]>([]);
+  const [deletedAllocationIds, setDeletedAllocationIds] = useState<string[]>([]);
+  const [allocDialogOpen, setAllocDialogOpen] = useState(false);
+  const [editingAllocId, setEditingAllocId] = useState<string | null>(null);
+  const [allocDraft, setAllocDraft] = useState<AllocationDraft>(emptyAllocation());
+  const [allocDraftErrors, setAllocDraftErrors] = useState<Partial<Record<keyof AllocationDraft, string>>>({});
+  const [allocWorkshopOpen, setAllocWorkshopOpen] = useState(false);
+  const [allocTypeOpen, setAllocTypeOpen] = useState(false);
+  const [confirmDeleteAllocId, setConfirmDeleteAllocId] = useState<string | null>(null);
+  const [allocMissingError, setAllocMissingError] = useState<string | null>(null);
+
 
   const updateField = <K extends keyof TechnicianForm>(key: K, value: TechnicianForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -216,7 +262,7 @@ export default function Technicians() {
   });
 
   const createTech = useMutation({
-    mutationFn: async (payload: TechnicianForm) => {
+    mutationFn: async ({ payload, workshop_id, start_date }: { payload: TechnicianForm; workshop_id: string; start_date: string }) => {
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
       if (!uid) throw new Error("Not signed in");
@@ -241,8 +287,8 @@ export default function Technicians() {
         country: payload.country.trim() || null,
         postcode: payload.postcode.trim() || null,
         job_title: payload.job_title.trim() || null,
-        start_date: new Date(payload.start_date).toISOString(),
-        workshop_id: payload.workshop_id,
+        start_date: new Date(start_date).toISOString(),
+        workshop_id,
         status: payload.status,
         pin: payload.pin.trim(),
         employee_number: payload.employee_number.trim() || null,
@@ -262,7 +308,7 @@ export default function Technicians() {
   });
 
   const updateTech = useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: TechnicianForm }) => {
+    mutationFn: async ({ id, payload, workshop_id, start_date }: { id: string; payload: TechnicianForm; workshop_id: string; start_date: string }) => {
       const updatePayload: any = {
         first_name: payload.first_name.trim(),
         last_name: payload.last_name.trim(),
@@ -276,8 +322,8 @@ export default function Technicians() {
         country: payload.country.trim() || null,
         postcode: payload.postcode.trim() || null,
         job_title: payload.job_title.trim() || null,
-        start_date: new Date(payload.start_date).toISOString(),
-        workshop_id: payload.workshop_id,
+        start_date: new Date(start_date).toISOString(),
+        workshop_id,
         status: payload.status,
         pin: payload.pin.trim(),
         employee_number: payload.employee_number.trim() || null,
@@ -345,12 +391,16 @@ export default function Technicians() {
     setEditingId(null);
     setForm(emptyForm());
     setErrors({});
+    setAllocations([]);
+    setDeletedAllocationIds([]);
+    setAllocMissingError(null);
     setDialogOpen(true);
   };
 
-  const openEdit = (t: Technician) => {
+  const openEdit = async (t: Technician) => {
     setEditingId(t.id);
     setErrors({});
+    setAllocMissingError(null);
     setForm({
       first_name: t.first_name ?? "",
       last_name: t.last_name ?? "",
@@ -364,8 +414,6 @@ export default function Technicians() {
       phone: t.phone ?? "",
       email: t.email ?? "",
       job_title: t.job_title ?? "",
-      start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      workshop_id: t.workshop_id ?? "",
       status: t.status ?? "active",
       pin: t.pin ?? "",
       employee_number: t.employee_number ?? "",
@@ -373,6 +421,83 @@ export default function Technicians() {
       labour_type: t.labour_type ?? "",
     });
     setDialogOpen(true);
+    setDeletedAllocationIds([]);
+    // Fetch allocations
+    const { data, error } = await supabase
+      .from("technician_allocations" as any)
+      .select("*")
+      .eq("technician_id", t.id)
+      .order("allocation_start_date", { ascending: false });
+    if (!error && data) {
+      const rows = (data as any[]).map((a) => ({
+        id: a.id,
+        workshop_id: a.workshop_id,
+        allocation_start_date: a.allocation_start_date ? format(new Date(a.allocation_start_date), "yyyy-MM-dd") : "",
+        allocation_end_date: a.allocation_end_date ? format(new Date(a.allocation_end_date), "yyyy-MM-dd") : "",
+        allocation_type: a.allocation_type,
+        revert_after_end: !!a.revert_after_end,
+      })) as AllocationDraft[];
+      // Seed a default allocation from legacy technician columns if empty
+      if (!rows.length && t.workshop_id) {
+        rows.push({
+          id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+          workshop_id: t.workshop_id,
+          allocation_start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+          allocation_end_date: "",
+          allocation_type: "permanent",
+          revert_after_end: false,
+          _isNew: true,
+        });
+      }
+      setAllocations(rows);
+    } else {
+      setAllocations([]);
+    }
+  };
+
+  const currentAllocation = (list: AllocationDraft[]): AllocationDraft | null => {
+    if (!list.length) return null;
+    // Most recent by start date
+    return [...list].sort((a, b) => (a.allocation_start_date < b.allocation_start_date ? 1 : -1))[0];
+  };
+
+  const persistAllocations = async (technicianId: string) => {
+    if (deletedAllocationIds.length) {
+      const { error } = await supabase
+        .from("technician_allocations" as any)
+        .delete()
+        .in("id", deletedAllocationIds);
+      if (error) throw error;
+    }
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("fleet_id")
+      .eq("id", uid!)
+      .maybeSingle();
+    const fleet_id = profile?.fleet_id;
+    for (const a of allocations) {
+      const payload = {
+        technician_id: technicianId,
+        fleet_id,
+        workshop_id: a.workshop_id,
+        allocation_start_date: new Date(a.allocation_start_date).toISOString(),
+        allocation_end_date: a.allocation_end_date ? new Date(a.allocation_end_date).toISOString() : null,
+        allocation_type: a.allocation_type,
+        revert_after_end: a.revert_after_end,
+      };
+      if (a._isNew) {
+        const { error } = await supabase.from("technician_allocations" as any).insert(payload as any);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("technician_allocations" as any)
+          .update(payload as any)
+          .eq("id", a.id);
+        if (error) throw error;
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -387,21 +512,44 @@ export default function Technicians() {
       toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
       return;
     }
+    const current = currentAllocation(allocations);
+    if (!current) {
+      setAllocMissingError("At least one allocation is required.");
+      toast({ title: "Allocation required", description: "Add at least one workshop allocation.", variant: "destructive" });
+      return;
+    }
+    setAllocMissingError(null);
     try {
+      let techId = editingId;
       if (editingId) {
-        await updateTech.mutateAsync({ id: editingId, payload: result.data });
+        await updateTech.mutateAsync({
+          id: editingId,
+          payload: result.data,
+          workshop_id: current.workshop_id,
+          start_date: current.allocation_start_date,
+        });
       } else {
-        await createTech.mutateAsync(result.data);
+        const created: any = await createTech.mutateAsync({
+          payload: result.data,
+          workshop_id: current.workshop_id,
+          start_date: current.allocation_start_date,
+        });
+        techId = created?.id ?? null;
       }
+      if (techId) await persistAllocations(techId);
+      qc.invalidateQueries({ queryKey: ["technicians-list"] });
       toast({ title: editingId ? "Technician updated" : "Technician added" });
       setDialogOpen(false);
       setEditingId(null);
       setForm(emptyForm());
       setErrors({});
+      setAllocations([]);
+      setDeletedAllocationIds([]);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
+
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -674,44 +822,6 @@ export default function Technicians() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Workshop *</Label>
-                  <Popover open={workshopOpen} onOpenChange={setWorkshopOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.workshop_id && "border-destructive focus-visible:ring-destructive")}>
-                        {form.workshop_id ? workshopName(form.workshop_id) : <span className="text-muted-foreground">Select workshop...</span>}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search workshop..." />
-                        <CommandList>
-                          <CommandEmpty>No workshops found.</CommandEmpty>
-                          <CommandGroup>
-                            {workshops.map((w) => (
-                              <CommandItem key={w.id} value={w.name} onSelect={() => { updateField("workshop_id", w.id); setWorkshopOpen(false); }}>
-                                <Check className={cn("mr-2 h-4 w-4", form.workshop_id === w.id ? "opacity-100" : "opacity-0")} />
-                                {w.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {errors.workshop_id && <p className="text-xs text-destructive">{errors.workshop_id}</p>}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Start date *</Label>
-                  <DatePicker
-                    value={form.start_date}
-                    onChange={(d) => updateField("start_date", d)}
-                    className={cn(errors.start_date && "border-destructive")}
-                  />
-                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date as any}</p>}
-                </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs">PIN *</Label>
@@ -766,6 +876,71 @@ export default function Technicians() {
                 </div>
               </div>
             </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Allocation *</h3>
+                <Button type="button" size="sm" variant="outline" onClick={() => {
+                  setEditingAllocId(null);
+                  setAllocDraft(emptyAllocation());
+                  setAllocDraftErrors({});
+                  setAllocDialogOpen(true);
+                }}>
+                  <Plus className="w-4 h-4 mr-1" /> Add allocation
+                </Button>
+              </div>
+              {allocMissingError && <p className="text-xs text-destructive">{allocMissingError}</p>}
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Workshop</TableHead>
+                      <TableHead>Start</TableHead>
+                      <TableHead>End</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Revert</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allocations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground text-sm py-4">
+                          No allocations yet. Add at least one to save.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      [...allocations]
+                        .sort((a, b) => (a.allocation_start_date < b.allocation_start_date ? 1 : -1))
+                        .map((a) => (
+                          <TableRow key={a.id}>
+                            <TableCell>{workshopName(a.workshop_id) || "—"}</TableCell>
+                            <TableCell className="whitespace-nowrap">{a.allocation_start_date ? format(new Date(a.allocation_start_date), "dd MMM yyyy") : "—"}</TableCell>
+                            <TableCell className="whitespace-nowrap">{a.allocation_end_date ? format(new Date(a.allocation_end_date), "dd MMM yyyy") : "—"}</TableCell>
+                            <TableCell>{ALLOCATION_TYPE_LABELS[a.allocation_type]}</TableCell>
+                            <TableCell>{a.revert_after_end ? "Yes" : "No"}</TableCell>
+                            <TableCell className="w-24 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                                  setEditingAllocId(a.id);
+                                  setAllocDraft({ ...a });
+                                  setAllocDraftErrors({});
+                                  setAllocDialogOpen(true);
+                                }}>
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setConfirmDeleteAllocId(a.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
           </div>
 
           <DialogFooter className="shrink-0 px-6 py-4 border-t">
@@ -778,6 +953,157 @@ export default function Technicians() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Allocation Add/Edit Dialog */}
+      <Dialog open={allocDialogOpen} onOpenChange={setAllocDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingAllocId ? "Edit allocation" : "Add allocation"}</DialogTitle>
+            <DialogDescription>Assign the technician to a workshop for a period.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Workshop *</Label>
+              <Popover open={allocWorkshopOpen} onOpenChange={setAllocWorkshopOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", allocDraftErrors.workshop_id && "border-destructive focus-visible:ring-destructive")}>
+                    {allocDraft.workshop_id ? workshopName(allocDraft.workshop_id) : <span className="text-muted-foreground">Select workshop...</span>}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search workshop..." />
+                    <CommandList>
+                      <CommandEmpty>No workshops found.</CommandEmpty>
+                      <CommandGroup>
+                        {workshops.map((w) => (
+                          <CommandItem key={w.id} value={w.name} onSelect={() => { setAllocDraft((p) => ({ ...p, workshop_id: w.id })); setAllocDraftErrors((p) => ({ ...p, workshop_id: undefined })); setAllocWorkshopOpen(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", allocDraft.workshop_id === w.id ? "opacity-100" : "opacity-0")} />
+                            {w.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {allocDraftErrors.workshop_id && <p className="text-xs text-destructive">{allocDraftErrors.workshop_id}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Allocation start date *</Label>
+                <DatePicker
+                  value={allocDraft.allocation_start_date}
+                  onChange={(d) => { setAllocDraft((p) => ({ ...p, allocation_start_date: d })); setAllocDraftErrors((p) => ({ ...p, allocation_start_date: undefined })); }}
+                  className={cn(allocDraftErrors.allocation_start_date && "border-destructive")}
+                />
+                {allocDraftErrors.allocation_start_date && <p className="text-xs text-destructive">{allocDraftErrors.allocation_start_date}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Allocation end date</Label>
+                <DatePicker
+                  value={allocDraft.allocation_end_date}
+                  onChange={(d) => { setAllocDraft((p) => ({ ...p, allocation_end_date: d })); setAllocDraftErrors((p) => ({ ...p, allocation_end_date: undefined })); }}
+                  className={cn(allocDraftErrors.allocation_end_date && "border-destructive")}
+                />
+                {allocDraftErrors.allocation_end_date && <p className="text-xs text-destructive">{allocDraftErrors.allocation_end_date}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Allocation type *</Label>
+              <Popover open={allocTypeOpen} onOpenChange={setAllocTypeOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                    {ALLOCATION_TYPE_LABELS[allocDraft.allocation_type]}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search..." />
+                    <CommandList>
+                      <CommandEmpty>No results.</CommandEmpty>
+                      <CommandGroup>
+                        {(Object.keys(ALLOCATION_TYPE_LABELS) as AllocationType[]).map((k) => (
+                          <CommandItem key={k} value={ALLOCATION_TYPE_LABELS[k]} onSelect={() => { setAllocDraft((p) => ({ ...p, allocation_type: k })); setAllocTypeOpen(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", allocDraft.allocation_type === k ? "opacity-100" : "opacity-0")} />
+                            {ALLOCATION_TYPE_LABELS[k]}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <div>
+                <Label className="text-sm">Revert to previous after end date</Label>
+                <p className="text-xs text-muted-foreground">When the end date is reached, revert to previous allocation.</p>
+              </div>
+              <Switch checked={allocDraft.revert_after_end} onCheckedChange={(v) => setAllocDraft((p) => ({ ...p, revert_after_end: v }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAllocDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              const res = allocationSchema.safeParse({
+                workshop_id: allocDraft.workshop_id,
+                allocation_start_date: allocDraft.allocation_start_date,
+                allocation_end_date: allocDraft.allocation_end_date,
+                allocation_type: allocDraft.allocation_type,
+                revert_after_end: allocDraft.revert_after_end,
+              });
+              if (!res.success) {
+                const errs: Partial<Record<keyof AllocationDraft, string>> = {};
+                for (const issue of res.error.issues) {
+                  const k = issue.path[0] as keyof AllocationDraft;
+                  if (k && !errs[k]) errs[k] = issue.message;
+                }
+                setAllocDraftErrors(errs);
+                return;
+              }
+              if (editingAllocId) {
+                setAllocations((prev) => prev.map((x) => (x.id === editingAllocId ? { ...allocDraft, id: editingAllocId } : x)));
+              } else {
+                setAllocations((prev) => [...prev, { ...allocDraft }]);
+              }
+              setAllocMissingError(null);
+              setAllocDialogOpen(false);
+            }}>Save allocation</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!confirmDeleteAllocId} onOpenChange={(o) => !o && setConfirmDeleteAllocId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete allocation?</AlertDialogTitle>
+            <AlertDialogDescription>This will remove the allocation when you save the technician.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                const id = confirmDeleteAllocId!;
+                setAllocations((prev) => {
+                  const t = prev.find((c) => c.id === id);
+                  if (t && !t._isNew) setDeletedAllocationIds((d) => [...d, id]);
+                  return prev.filter((c) => c.id !== id);
+                });
+                setConfirmDeleteAllocId(null);
+              }}
+            >Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
