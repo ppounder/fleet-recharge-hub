@@ -978,7 +978,7 @@ export default function Suppliers() {
                   </TableBody>
                 </Table>
               </div>
-            </section>
+            </CollapsibleCard>
           </div>
 
           <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
