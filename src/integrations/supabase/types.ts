@@ -1197,12 +1197,14 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           address_line3: string | null
+          auto_unlock_enabled: boolean
           color: string
           country: string | null
           county: string | null
           created_at: string
           email: string | null
           employee_number: string | null
+          failed_login_attempts: number
           first_name: string
           fleet_id: string
           id: string
@@ -1210,13 +1212,18 @@ export type Database = {
           labour_type: string | null
           last_name: string
           ni_number: string | null
+          password_hash: string | null
+          password_reset_expires_at: string | null
+          password_reset_token: string | null
           phone: string | null
           pin: string | null
+          pin_hash: string | null
           postcode: string | null
           start_date: string
           status: string
           town_city: string | null
           updated_at: string
+          username: string | null
           workshop_id: string | null
         }
         Insert: {
@@ -1224,12 +1231,14 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           address_line3?: string | null
+          auto_unlock_enabled?: boolean
           color?: string
           country?: string | null
           county?: string | null
           created_at?: string
           email?: string | null
           employee_number?: string | null
+          failed_login_attempts?: number
           first_name: string
           fleet_id: string
           id?: string
@@ -1237,13 +1246,18 @@ export type Database = {
           labour_type?: string | null
           last_name: string
           ni_number?: string | null
+          password_hash?: string | null
+          password_reset_expires_at?: string | null
+          password_reset_token?: string | null
           phone?: string | null
           pin?: string | null
+          pin_hash?: string | null
           postcode?: string | null
           start_date?: string
           status?: string
           town_city?: string | null
           updated_at?: string
+          username?: string | null
           workshop_id?: string | null
         }
         Update: {
@@ -1251,12 +1265,14 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           address_line3?: string | null
+          auto_unlock_enabled?: boolean
           color?: string
           country?: string | null
           county?: string | null
           created_at?: string
           email?: string | null
           employee_number?: string | null
+          failed_login_attempts?: number
           first_name?: string
           fleet_id?: string
           id?: string
@@ -1264,13 +1280,18 @@ export type Database = {
           labour_type?: string | null
           last_name?: string
           ni_number?: string | null
+          password_hash?: string | null
+          password_reset_expires_at?: string | null
+          password_reset_token?: string | null
           phone?: string | null
           pin?: string | null
+          pin_hash?: string | null
           postcode?: string | null
           start_date?: string
           status?: string
           town_city?: string | null
           updated_at?: string
+          username?: string | null
           workshop_id?: string | null
         }
         Relationships: [
