@@ -134,6 +134,10 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
             </TableBody>
           </Table>
         </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { cancelEdit(); onOpenChange(false); }}>Cancel</Button>
+          <Button onClick={() => onOpenChange(false)}>Save</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
