@@ -79,7 +79,7 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
                         <>{t.first_name} {t.last_name}</>
                       )}
                     </TableCell>
-                    <TableCell><Switch checked={t.active} onCheckedChange={(v) => upsert.mutate({ id: t.id, active: v })} /></TableCell>
+                    <TableCell><Switch checked={t.active} onCheckedChange={(v) => upsert.mutate({ id: t.id, first_name: t.first_name, last_name: t.last_name, color: t.color, active: v })} /></TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         {isEditing ? (
