@@ -52,6 +52,7 @@ type Workshop = {
   id: string;
   name: string;
   pl_account_number: string | null;
+  reference_number: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
@@ -65,7 +66,7 @@ type Workshop = {
   internal_company: boolean;
 };
 
-type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
+type ColKey = "name" | "pl_account_number" | "reference_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
 
 const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
