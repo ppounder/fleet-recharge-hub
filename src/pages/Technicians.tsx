@@ -127,6 +127,7 @@ const technicianSchema = z.object({
     .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
   job_title: z.string().trim().max(100),
   status: z.enum(["active", "account_locked", "deleted"]),
+  start_date: z.string().min(1, { message: "Start date is required" }),
   pin: z
     .string()
     .trim()
