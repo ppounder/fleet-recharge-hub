@@ -200,6 +200,8 @@ const emptyForm = (): TechnicianForm => ({
   postcode: "",
   phone: "",
   email: "",
+  username: "",
+  password: "",
   job_title: "",
   status: "active",
   start_date: format(new Date(), "yyyy-MM-dd"),
@@ -207,6 +209,7 @@ const emptyForm = (): TechnicianForm => ({
   employee_number: "",
   ni_number: "",
   labour_type: "",
+  auto_unlock_enabled: true,
 });
 
 export default function Technicians() {
