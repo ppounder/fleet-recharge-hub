@@ -841,9 +841,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                         <div className="flex justify-end gap-1">
                           {t ? (
                             <>
-                              <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre" title="Edit">
-                                <Pencil className="h-4 w-4" />
-                              </Button>
+                              <EditActionButton label="Edit tyre" onClick={() => startEditTyre(t)} />
 
                               <Button
                                 size="icon"
@@ -863,18 +861,7 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                               >
                                 <Replace className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))}
-                                className="text-destructive hover:bg-destructive hover:text-white"
-                                aria-label="Dispose tyre"
-                                title="Dispose tyre"
-
-
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <DeleteActionButton label="Dispose tyre" onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))} />
                             </>
                           ) : (
                             <Button
