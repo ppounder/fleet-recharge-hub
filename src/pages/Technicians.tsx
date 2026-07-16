@@ -983,7 +983,7 @@ export default function Technicians() {
                   {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Password {editingId ? "" : "*"}</Label>
+                  <Label className="text-xs">Password *</Label>
                   <Input
                     type="password"
                     value={form.password}
