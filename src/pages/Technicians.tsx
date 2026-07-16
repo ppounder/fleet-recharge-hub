@@ -213,10 +213,22 @@ export default function Technicians() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<TechnicianForm>(emptyForm());
   const [errors, setErrors] = useState<FormErrors>({});
-  const [workshopOpen, setWorkshopOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [labourTypeOpen, setLabourTypeOpen] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
+
+  // Allocations state (per open dialog)
+  const [allocations, setAllocations] = useState<AllocationDraft[]>([]);
+  const [deletedAllocationIds, setDeletedAllocationIds] = useState<string[]>([]);
+  const [allocDialogOpen, setAllocDialogOpen] = useState(false);
+  const [editingAllocId, setEditingAllocId] = useState<string | null>(null);
+  const [allocDraft, setAllocDraft] = useState<AllocationDraft>(emptyAllocation());
+  const [allocDraftErrors, setAllocDraftErrors] = useState<Partial<Record<keyof AllocationDraft, string>>>({});
+  const [allocWorkshopOpen, setAllocWorkshopOpen] = useState(false);
+  const [allocTypeOpen, setAllocTypeOpen] = useState(false);
+  const [confirmDeleteAllocId, setConfirmDeleteAllocId] = useState<string | null>(null);
+  const [allocMissingError, setAllocMissingError] = useState<string | null>(null);
+
 
   const updateField = <K extends keyof TechnicianForm>(key: K, value: TechnicianForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
