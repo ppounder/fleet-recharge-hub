@@ -121,6 +121,8 @@ const emptyForm = (): WorkshopForm => ({
   name: "",
   pl_account_number: "",
   reference_number: "",
+  parent_supplier_id: null,
+  internal_company: true,
   address_line1: "",
   address_line2: "",
   address_line3: "",
