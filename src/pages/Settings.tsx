@@ -77,13 +77,7 @@ function Row({ icon, label, value, onEdit, trailing }: RowProps) {
       )}
       {trailing}
       {onEdit && (
-        <button
-          onClick={onEdit}
-          className="p-1 ml-2 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label={`Edit ${label}`}
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
+        <EditActionButton label={`Edit ${label}`} onClick={onEdit} className="ml-2" />
       )}
     </div>
   );
