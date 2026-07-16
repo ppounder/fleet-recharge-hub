@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
+import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -692,8 +693,7 @@ export default function Suppliers() {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Supplier details</h3>
+            <CollapsibleCard title="Supplier details">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5 col-span-2">
                   <Label htmlFor="name" className="text-xs">Company name *</Label>
@@ -899,10 +899,9 @@ export default function Suppliers() {
                 </div>
 
               </div>
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Services provided *</h3>
+            <CollapsibleCard title="Services provided *">
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { key: "provides_parts", label: "Parts supplier" },
@@ -922,15 +921,16 @@ export default function Suppliers() {
                 ))}
               </div>
               {errors.provides_parts && <p className="text-xs text-destructive">{errors.provides_parts}</p>}
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Contacts</h3>
+            <CollapsibleCard
+              title="Contacts"
+              action={
                 <Button type="button" variant="outline" size="sm" onClick={openAddContact}>
                   <Plus className="w-4 h-4 mr-1" /> Add contact
                 </Button>
-              </div>
+              }
+            >
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -978,7 +978,7 @@ export default function Suppliers() {
                   </TableBody>
                 </Table>
               </div>
-            </section>
+            </CollapsibleCard>
           </div>
 
           <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>

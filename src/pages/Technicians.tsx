@@ -706,8 +706,7 @@ export default function Technicians() {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Personal details</h3>
+            <CollapsibleCard title="Personal details">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">First name *</Label>
@@ -720,7 +719,7 @@ export default function Technicians() {
                   {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
                 </div>
               </div>
-            </section>
+            </CollapsibleCard>
 
             <CollapsibleCard title="Address details" defaultOpen={addressOpen}>
               <div className="grid grid-cols-2 gap-3">
@@ -792,8 +791,7 @@ export default function Technicians() {
               </div>
             </CollapsibleCard>
 
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Employment</h3>
+            <CollapsibleCard title="Employment">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Job title</Label>
@@ -861,11 +859,11 @@ export default function Technicians() {
                   </Popover>
                 </div>
               </div>
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Allocation *</h3>
+            <CollapsibleCard
+              title="Allocation *"
+              action={
                 <Button type="button" size="sm" variant="outline" onClick={() => {
                   setEditingAllocId(null);
                   setAllocDraft(emptyAllocation());
@@ -874,7 +872,8 @@ export default function Technicians() {
                 }}>
                   <Plus className="w-4 h-4 mr-1" /> Add allocation
                 </Button>
-              </div>
+              }
+            >
               {allocMissingError && <p className="text-xs text-destructive">{allocMissingError}</p>}
               <div className="rounded-md border">
                 <Table>
@@ -926,7 +925,7 @@ export default function Technicians() {
                   </TableBody>
                 </Table>
               </div>
-            </section>
+            </CollapsibleCard>
           </div>
 
           <DialogFooter className="shrink-0 px-6 py-4 border-t">
