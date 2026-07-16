@@ -285,7 +285,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
         <DialogFooter className="flex items-center justify-between sm:justify-between">
           <div>
             {editing && (
-              <Button variant="ghost" size="sm" onClick={handleDelete} className="text-destructive hover:text-destructive">
+              <Button variant="ghost" size="sm" onClick={handleDelete} className={cn("bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground")}>
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
             )}
