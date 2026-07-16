@@ -26,7 +26,8 @@ import {
 import { useWorkCategories } from "@/hooks/useWorkCategories";
 import { useWorkCodes } from "@/hooks/useWorkCodes";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Save, Wrench, Package } from "lucide-react";
+import { Plus, Save, Wrench, Package } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 
 interface MenuPriceEditSheetProps {
   open: boolean;
