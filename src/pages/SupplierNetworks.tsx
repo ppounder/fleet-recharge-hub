@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Network } from "lucide-react";
+import { Plus, Network } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 
 export default function SupplierNetworks() {
   const { toast } = useToast();
