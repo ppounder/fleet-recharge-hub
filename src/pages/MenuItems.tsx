@@ -253,22 +253,8 @@ export default function MenuItems() {
                               </>
                             ) : (
                               <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0"
-                                  onClick={() => { setEditingId(item.id); setEditPrice(String(item.unit_price)); }}
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                                  onClick={() => deleteItem.mutate(item.id)}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
+                                <EditActionButton label="Edit menu item" onClick={() => { setEditingId(item.id); setEditPrice(String(item.unit_price)); }} />
+                                <DeleteActionButton label="Delete menu item" onClick={() => deleteItem.mutate(item.id)} />
                               </>
                             )}
                           </div>
