@@ -72,6 +72,7 @@ const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "customer_type", label: "Customer type", sortable: true },
   { key: "sl_account_number", label: "S/L Account", sortable: true },
+  { key: "reference_number", label: "Reference", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
   { key: "county", label: "County", sortable: true },
   { key: "country", label: "Country", sortable: true },
@@ -88,6 +89,7 @@ const customerSchema = z.object({
   name: z.string().trim().min(1, { message: "Company name is required" }).max(150),
   parent_customer_id: z.string().nullable(),
   sl_account_number: z.string().trim().max(50, { message: "S/L Account must be less than 50 characters" }),
+  reference_number: z.string().trim().max(50, { message: "Reference number must be less than 50 characters" }),
   customer_type: z.enum(["broker", "corporate", "internal", "public_sector", "retail"], {
     errorMap: () => ({ message: "Customer type is required" }),
   }),
