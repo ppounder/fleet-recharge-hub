@@ -10,7 +10,8 @@ import { useParts, useCreatePart, useUpdatePart, useDeletePart } from "@/hooks/u
 import { useVatBands } from "@/hooks/useVatBands";
 import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, X, Save, Package } from "lucide-react";
+import { Plus, X, Save, Package } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 export default function PartsSettings() {
   const { toast } = useToast();
