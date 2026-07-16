@@ -390,12 +390,16 @@ export default function Technicians() {
     setEditingId(null);
     setForm(emptyForm());
     setErrors({});
+    setAllocations([]);
+    setDeletedAllocationIds([]);
+    setAllocMissingError(null);
     setDialogOpen(true);
   };
 
-  const openEdit = (t: Technician) => {
+  const openEdit = async (t: Technician) => {
     setEditingId(t.id);
     setErrors({});
+    setAllocMissingError(null);
     setForm({
       first_name: t.first_name ?? "",
       last_name: t.last_name ?? "",
@@ -409,8 +413,6 @@ export default function Technicians() {
       phone: t.phone ?? "",
       email: t.email ?? "",
       job_title: t.job_title ?? "",
-      start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      workshop_id: t.workshop_id ?? "",
       status: t.status ?? "active",
       pin: t.pin ?? "",
       employee_number: t.employee_number ?? "",
@@ -418,6 +420,83 @@ export default function Technicians() {
       labour_type: t.labour_type ?? "",
     });
     setDialogOpen(true);
+    setDeletedAllocationIds([]);
+    // Fetch allocations
+    const { data, error } = await supabase
+      .from("technician_allocations" as any)
+      .select("*")
+      .eq("technician_id", t.id)
+      .order("allocation_start_date", { ascending: false });
+    if (!error && data) {
+      const rows = (data as any[]).map((a) => ({
+        id: a.id,
+        workshop_id: a.workshop_id,
+        allocation_start_date: a.allocation_start_date ? format(new Date(a.allocation_start_date), "yyyy-MM-dd") : "",
+        allocation_end_date: a.allocation_end_date ? format(new Date(a.allocation_end_date), "yyyy-MM-dd") : "",
+        allocation_type: a.allocation_type,
+        revert_after_end: !!a.revert_after_end,
+      })) as AllocationDraft[];
+      // Seed a default allocation from legacy technician columns if empty
+      if (!rows.length && t.workshop_id) {
+        rows.push({
+          id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+          workshop_id: t.workshop_id,
+          allocation_start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+          allocation_end_date: "",
+          allocation_type: "permanent",
+          revert_after_end: false,
+          _isNew: true,
+        });
+      }
+      setAllocations(rows);
+    } else {
+      setAllocations([]);
+    }
+  };
+
+  const currentAllocation = (list: AllocationDraft[]): AllocationDraft | null => {
+    if (!list.length) return null;
+    // Most recent by start date
+    return [...list].sort((a, b) => (a.allocation_start_date < b.allocation_start_date ? 1 : -1))[0];
+  };
+
+  const persistAllocations = async (technicianId: string) => {
+    if (deletedAllocationIds.length) {
+      const { error } = await supabase
+        .from("technician_allocations" as any)
+        .delete()
+        .in("id", deletedAllocationIds);
+      if (error) throw error;
+    }
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("fleet_id")
+      .eq("id", uid!)
+      .maybeSingle();
+    const fleet_id = profile?.fleet_id;
+    for (const a of allocations) {
+      const payload = {
+        technician_id: technicianId,
+        fleet_id,
+        workshop_id: a.workshop_id,
+        allocation_start_date: new Date(a.allocation_start_date).toISOString(),
+        allocation_end_date: a.allocation_end_date ? new Date(a.allocation_end_date).toISOString() : null,
+        allocation_type: a.allocation_type,
+        revert_after_end: a.revert_after_end,
+      };
+      if (a._isNew) {
+        const { error } = await supabase.from("technician_allocations" as any).insert(payload as any);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("technician_allocations" as any)
+          .update(payload as any)
+          .eq("id", a.id);
+        if (error) throw error;
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -432,21 +511,44 @@ export default function Technicians() {
       toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
       return;
     }
+    const current = currentAllocation(allocations);
+    if (!current) {
+      setAllocMissingError("At least one allocation is required.");
+      toast({ title: "Allocation required", description: "Add at least one workshop allocation.", variant: "destructive" });
+      return;
+    }
+    setAllocMissingError(null);
     try {
+      let techId = editingId;
       if (editingId) {
-        await updateTech.mutateAsync({ id: editingId, payload: result.data });
+        await updateTech.mutateAsync({
+          id: editingId,
+          payload: result.data,
+          workshop_id: current.workshop_id,
+          start_date: current.allocation_start_date,
+        });
       } else {
-        await createTech.mutateAsync(result.data);
+        const created: any = await createTech.mutateAsync({
+          payload: result.data,
+          workshop_id: current.workshop_id,
+          start_date: current.allocation_start_date,
+        });
+        techId = created?.id ?? null;
       }
+      if (techId) await persistAllocations(techId);
+      qc.invalidateQueries({ queryKey: ["technicians-list"] });
       toast({ title: editingId ? "Technician updated" : "Technician added" });
       setDialogOpen(false);
       setEditingId(null);
       setForm(emptyForm());
       setErrors({});
+      setAllocations([]);
+      setDeletedAllocationIds([]);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
+
 
   const handleDelete = async () => {
     if (!deleteId) return;
