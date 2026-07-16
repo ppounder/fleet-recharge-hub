@@ -233,17 +233,8 @@ export function MaintenanceMessageDialog({ vehicleId, vehicleStatus, fleetId, ch
                     </TableCell>
                     <TableCell className="align-middle">
                       <div className="flex justify-end gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => { setEditingId(h.id); setDraft(h.maintenance_message ?? ""); }}
-                          disabled={isBusy}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => setConfirmDeleteId(h.id)} disabled={isBusy} className={cn("text-destructive hover:bg-destructive hover:text-white")}>
-                          {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                        </Button>
+                        <EditActionButton label="Edit note" onClick={() => { setEditingId(h.id); setDraft(h.maintenance_message ?? ""); }} loading={isBusy} />
+                        <DeleteActionButton label="Delete note" onClick={() => setConfirmDeleteId(h.id)} loading={isBusy} />
                       </div>
                     </TableCell>
                   </TableRow>
