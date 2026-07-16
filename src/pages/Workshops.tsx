@@ -881,7 +881,7 @@ export default function Workshops() {
             </AlertDialogContent>
           </AlertDialog>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0 px-6 py-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={createWorkshop.isPending || updateWorkshop.isPending}>
               {createWorkshop.isPending || updateWorkshop.isPending
