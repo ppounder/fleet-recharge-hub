@@ -1106,9 +1106,7 @@ export default function JobDetail() {
                                   <span className="text-sm font-semibold whitespace-nowrap ml-auto">
                                     £{charge.total.toFixed(2)}
                                   </span>
-                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeLabourCharge(line.id, charge.id)}>
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
+                                  <DeleteActionButton label="Remove labour charge" onClick={() => removeLabourCharge(line.id, charge.id)} />
                                 </div>
                               ))}
                             </div>
