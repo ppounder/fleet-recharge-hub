@@ -566,24 +566,6 @@ export default function Customers() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Customer type *</Label>
-                  <Select
-                    value={form.customer_type as any || undefined}
-                    onValueChange={(v) => updateField("customer_type", v as any)}
-                  >
-                    <SelectTrigger className={cn("bg-card", errors.customer_type && "border-destructive focus:ring-destructive")}>
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CUSTOMER_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.customer_type && <p className="text-xs text-destructive">{errors.customer_type}</p>}
-                </div>
-
-                <div className="space-y-1.5">
                   <Label className="text-xs">Parent company</Label>
                   <Popover open={parentOpen} onOpenChange={setParentOpen}>
                     <PopoverTrigger asChild>
@@ -613,6 +595,24 @@ export default function Customers() {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Customer type *</Label>
+                  <Select
+                    value={form.customer_type as any || undefined}
+                    onValueChange={(v) => updateField("customer_type", v as any)}
+                  >
+                    <SelectTrigger className={cn("bg-card", errors.customer_type && "border-destructive focus:ring-destructive")}>
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CUSTOMER_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.customer_type && <p className="text-xs text-destructive">{errors.customer_type}</p>}
                 </div>
 
                 <div className="space-y-1.5">
