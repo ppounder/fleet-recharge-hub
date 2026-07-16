@@ -28,6 +28,37 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
   const [last, setLast] = useState("");
   const [color, setColor] = useState("#f59e0b");
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editFirst, setEditFirst] = useState("");
+  const [editLast, setEditLast] = useState("");
+
+  const startEdit = (t: any) => {
+    setEditingId(t.id);
+    setEditFirst(t.first_name);
+    setEditLast(t.last_name);
+  };
+  const cancelEdit = () => setEditingId(null);
+  const saveEdit = async (t: any) => {
+    const f = editFirst.trim();
+    const l = editLast.trim();
+    if (!f || !l) {
+      toast({ title: "First and last name are required", variant: "destructive" });
+      return;
+    }
+    try {
+      await upsert.mutateAsync({
+        id: t.id,
+        first_name: f,
+        last_name: l,
+        color: t.color,
+        active: t.active,
+        sort_order: t.sort_order,
+      });
+      setEditingId(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e?.message ?? String(e), variant: "destructive" });
+    }
+  };
 
   const sorted = [...techs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
