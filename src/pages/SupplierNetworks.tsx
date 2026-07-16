@@ -143,14 +143,7 @@ export default function SupplierNetworks() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => setDeleteId(n.id)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <DeleteActionButton label="Delete network" onClick={() => setDeleteId(n.id)} />
                       </TableCell>
                     </TableRow>
                   ))}
