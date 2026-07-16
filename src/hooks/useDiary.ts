@@ -19,6 +19,7 @@ export type Technician = {
   email: string | null;
   color: string;
   active: boolean;
+  sort_order: number;
 };
 
 export type ShopHour = {
