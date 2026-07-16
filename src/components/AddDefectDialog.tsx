@@ -298,9 +298,7 @@ function DefectCard({
       <div className="mb-3 flex items-center justify-between">
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Defect {index + 1}</div>
         {canDelete && (
-          <button type="button" onClick={onDelete} className="text-muted-foreground hover:text-destructive">
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <DeleteActionButton label="Delete defect" onClick={onDelete} />
         )}
       </div>
       <div className="space-y-4">
