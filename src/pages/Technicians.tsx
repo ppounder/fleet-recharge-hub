@@ -811,6 +811,15 @@ export default function Technicians() {
 
 
                 <div className="space-y-1.5">
+                  <Label className="text-xs">Start date *</Label>
+                  <DatePicker
+                    value={form.start_date}
+                    onChange={(v) => updateField("start_date", v)}
+                    className={errCls("start_date")}
+                  />
+                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date}</p>}
+                </div>
+                <div className="space-y-1.5">
                   <Label className="text-xs">PIN *</Label>
                   <Input
                     inputMode="numeric"
