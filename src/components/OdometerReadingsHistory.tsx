@@ -237,7 +237,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="odo_source">Source</Label>
+              <Label htmlFor="odo_source">Source *</Label>
               <Select
                 value={source}
                 onValueChange={(v) => {
@@ -260,7 +260,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
             </div>
             <div className="grid grid-cols-[1fr_140px] gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="odo_reading">Odometer reading</Label>
+                <Label htmlFor="odo_reading">Odometer reading *</Label>
                 <Input
                   id="odo_reading"
                   type="text"
@@ -279,7 +279,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
                 {errors.reading && <p className="text-xs text-destructive">{errors.reading}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="odo_unit">Unit</Label>
+                <Label htmlFor="odo_unit">Unit *</Label>
                 <Select
                   value={unit}
                   onValueChange={(v) => {
@@ -303,7 +303,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
             </div>
             <div className="grid grid-cols-[1fr_140px] gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="odo_date">Date</Label>
+                <Label htmlFor="odo_date">Date *</Label>
                 <DatePicker
                   id="odo_date"
                   value={date}
@@ -315,7 +315,7 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
                 {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="odo_time">Time</Label>
+                <Label htmlFor="odo_time">Time *</Label>
                 <Input
                   id="odo_time"
                   type="time"
