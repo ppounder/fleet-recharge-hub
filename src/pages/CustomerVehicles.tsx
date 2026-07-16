@@ -705,26 +705,10 @@ export default function CustomerVehicles() {
                                 </div>
                                 <div className="text-sm whitespace-pre-wrap break-words">{n.maintenance_message}</div>
                               </div>
-                              <TooltipProvider delayDuration={150}>
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setMsgDialogOpen(true)} aria-label="Edit note">
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Edit</TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setDeleteNoteId(n.id)} aria-label="Delete note">
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Delete</TooltipContent>
-                                  </Tooltip>
-                                </div>
-                              </TooltipProvider>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <EditActionButton label="Edit note" onClick={() => setMsgDialogOpen(true)} />
+                                <DeleteActionButton label="Delete note" onClick={() => setDeleteNoteId(n.id)} />
+                              </div>
                             </li>
                           ))}
                         </ul>
