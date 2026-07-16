@@ -403,7 +403,7 @@ export default function Technicians() {
     return [...rows].sort((a, b) => {
       let av: any = "", bv: any = "";
       switch (sortKey) {
-        case "name": av = `${a.last_name} ${a.first_name}`; bv = `${b.last_name} ${b.first_name}`; break;
+        case "name": av = `${a.first_name} ${a.last_name}`; bv = `${b.first_name} ${b.last_name}`; break;
         case "workshop": av = workshopName(a.workshop_id); bv = workshopName(b.workshop_id); break;
         default: av = (a as any)[sortKey] ?? ""; bv = (b as any)[sortKey] ?? "";
       }
