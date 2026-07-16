@@ -21,6 +21,7 @@ import {
   Network,
   Plug,
   CalendarDays,
+  HardHat,
 } from "lucide-react";
 
 export type UserRole = "fleet-manager" | "supplier" | "customer";

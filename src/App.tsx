@@ -30,6 +30,7 @@ import NotFound from "./pages/NotFound";
 import SupplierNetworks from "./pages/SupplierNetworks";
 import Suppliers from "./pages/Suppliers";
 import Workshops from "./pages/Workshops";
+import Technicians from "./pages/Technicians";
 import Customers from "./pages/Customers";
 import AdminPasswordReset from "./pages/AdminPasswordReset";
 
@@ -74,6 +75,7 @@ const AppRoutes = () => (
      <Route path="/history" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
     <Route path="/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
     <Route path="/workshops" element={<ProtectedRoute><Workshops /></ProtectedRoute>} />
+    <Route path="/technicians" element={<ProtectedRoute><Technicians /></ProtectedRoute>} />
     <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
     <Route path="/compliance" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
