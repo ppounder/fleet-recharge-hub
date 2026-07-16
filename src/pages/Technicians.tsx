@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  import { CollapsibleCard } from "@/components/ui/collapsible-card";
-} from "@/components/ui/collapsible";
+import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
