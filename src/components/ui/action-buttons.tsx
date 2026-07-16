@@ -11,6 +11,7 @@ interface EditActionButtonProps {
   label?: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   loading?: boolean;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export function EditActionButton({
   label = "Edit",
   onClick,
   loading,
+  disabled,
   className,
 }: EditActionButtonProps) {
   return (
