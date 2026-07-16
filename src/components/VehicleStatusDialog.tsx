@@ -303,14 +303,11 @@ export function VehicleStatusDialog({ vehicle, open, onOpenChange, onStatusChang
                   onClick={() => setMsgDialogOpen(true)}
                   className="pr-9 cursor-pointer"
                 />
-                <button
-                  type="button"
+                <EditActionButton
+                  label="Edit notes"
                   onClick={() => setMsgDialogOpen(true)}
-                  className="absolute right-2 top-2 p-1 rounded hover:bg-muted text-muted-foreground"
-                  aria-label="Edit notes"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
+                  className="absolute right-2 top-2"
+                />
               </div>
             </div>
           </div>
