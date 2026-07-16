@@ -298,7 +298,7 @@ export default function Workshops() {
     const q = search.trim().toLowerCase();
     const rows = q
       ? workshops.filter((s) =>
-          [s.name, s.pl_account_number, s.town_city, s.county, s.country, s.postcode, s.contact_email, s.contact_phone]
+          [s.name, s.pl_account_number, s.reference_number, s.town_city, s.county, s.country, s.postcode, s.contact_email, s.contact_phone]
             .some((v) => v?.toLowerCase().includes(q))
         )
       : workshops;
