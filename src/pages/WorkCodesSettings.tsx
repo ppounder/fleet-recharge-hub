@@ -194,12 +194,8 @@ export default function WorkCodesSettings() {
                               </>
                             ) : (
                               <>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(wc)}>
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => deleteCode.mutate(wc.id)}>
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
+                                <EditActionButton label="Edit work code" onClick={() => startEdit(wc)} />
+                                <DeleteActionButton label="Delete work code" onClick={() => deleteCode.mutate(wc.id)} />
                               </>
                             )}
                           </div>
