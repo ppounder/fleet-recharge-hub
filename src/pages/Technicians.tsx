@@ -996,7 +996,7 @@ export default function Technicians() {
                   <p className="text-xs text-muted-foreground">Stored securely as a bcrypt hash.</p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">PIN {editingId ? "" : "*"}</Label>
+                  <Label className="text-xs">PIN *</Label>
                   <Input
                     type="password"
                     inputMode="numeric"
