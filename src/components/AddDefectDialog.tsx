@@ -400,7 +400,7 @@ function DefectCard({
         {defect.rectified && (
           <>
             <div className="space-y-1.5">
-              <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
+              <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details *</Label>
               <Textarea
                 id={`defect-${defect.id}-rectified`}
                 rows={2}
