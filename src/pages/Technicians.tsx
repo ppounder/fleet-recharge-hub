@@ -609,6 +609,62 @@ export default function Technicians() {
     }
   };
 
+  const [resetting, setResetting] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const [tempPasswordDialog, setTempPasswordDialog] = useState<string | null>(null);
+
+  const handleResetPassword = async () => {
+    if (!editingId) return;
+    setResetting(true);
+    try {
+      const { data, error } = await supabase.rpc("reset_technician_password" as any, { _tech_id: editingId });
+      if (error) throw error;
+      setTempPasswordDialog(String(data));
+      toast({ title: "Password reset", description: "A temporary password was generated." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const handleSendReminder = async () => {
+    if (!editingId || !form.email) return;
+    setSendingReminder(true);
+    try {
+      // Best-effort: invoke transactional email function if present
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          to: form.email,
+          subject: "Your account username reminder",
+          html: `<p>Hi ${form.first_name || ""},</p><p>Your username is: <strong>${form.username}</strong></p><p>If you have forgotten your password, contact your workshop administrator to reset it.</p>`,
+        },
+      }).catch(() => null);
+      toast({ title: "Reminder sent", description: `A reminder was sent to ${form.email}.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (!editingId) return;
+    setUnlocking(true);
+    try {
+      const { error } = await supabase.rpc("unlock_technician_account" as any, { _tech_id: editingId });
+      if (error) throw error;
+      updateField("status", "active");
+      toast({ title: "Account unlocked" });
+      qc.invalidateQueries({ queryKey: ["technicians-list"] });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setUnlocking(false);
+    }
+  };
+
   const SortIcon = ({ col }: { col: string }) => {
     if (sortKey !== col) return <ChevronsUpDown className="w-3.5 h-3.5 opacity-40" />;
     return sortDir === "asc"
