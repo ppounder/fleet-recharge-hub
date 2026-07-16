@@ -952,29 +952,8 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                       <div className="flex justify-end gap-1">
                         {latest ? (
                           <>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => startEdit(latest)}
-                              disabled={remove.isPending}
-                              aria-label="Edit latest reading"
-                              title="Edit"
-
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))}
-                              disabled={remove.isPending}
-                              className={cn("text-destructive hover:bg-destructive hover:text-white")}
-                              aria-label="Delete latest reading"
-                              title="Delete"
-
-                            >
-                              {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            </Button>
+                            <EditActionButton label="Edit latest reading" onClick={() => startEdit(latest)} loading={remove.isPending} />
+                            <DeleteActionButton label="Delete latest reading" onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))} loading={remove.isPending} />
                           </>
                         ) : (
                           <Button
