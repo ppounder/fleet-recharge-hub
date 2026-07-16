@@ -763,6 +763,18 @@ export default function Suppliers() {
                   {errors.pl_account_number && <p className="text-xs text-destructive">{errors.pl_account_number}</p>}
                 </div>
 
+                <div className="space-y-1.5">
+                  <Label htmlFor="reference_number" className="text-xs">Reference number</Label>
+                  <Input
+                    id="reference_number"
+                    value={form.reference_number}
+                    onChange={(e) => updateField("reference_number", e.target.value)}
+                    aria-invalid={!!errors.reference_number}
+                    className={errCls("reference_number")}
+                  />
+                  {errors.reference_number && <p className="text-xs text-destructive">{errors.reference_number}</p>}
+                </div>
+
                 <div className="space-y-1.5 col-span-2">
                   <Label htmlFor="address_line1" className="text-xs">Address line 1 *</Label>
                   <Input
