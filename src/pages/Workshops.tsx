@@ -91,6 +91,8 @@ const workshopSchema = z.object({
   name: z.string().trim().min(1, { message: "Company name is required" }).max(150),
   pl_account_number: z.string().trim().max(50),
   reference_number: z.string().trim().max(50),
+  parent_supplier_id: z.string().uuid().nullable(),
+  internal_company: z.boolean(),
   address_line1: z.string().trim().min(1, { message: "Address line 1 is required" }).max(150),
   address_line2: z.string().trim().max(150),
   address_line3: z.string().trim().max(150),
