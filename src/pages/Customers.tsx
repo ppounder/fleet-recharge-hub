@@ -513,24 +513,8 @@ export default function Customers() {
                         })}
                         <TableCell className="w-24 text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8"
-                                  onClick={(e) => { e.stopPropagation(); openEdit(s); }}>
-                                  <Pencil className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit customer</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"
-                                  onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }}>
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete customer</TooltipContent>
-                            </Tooltip>
+                            <EditActionButton label="Edit customer" onClick={(e) => { e.stopPropagation(); openEdit(s); }} />
+                            <DeleteActionButton label="Delete customer" onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} />
                           </div>
                         </TableCell>
                       </TableRow>
