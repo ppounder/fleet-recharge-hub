@@ -617,11 +617,11 @@ export default function Suppliers() {
                               return <TableCell key={k}>{s.contact_email || "—"}</TableCell>;
                             case "services":
                               return (
-                                <TableCell key={k}>
-                                  <div className="flex flex-wrap gap-1">
-                                    {s.provides_parts && <Badge variant="secondary">Parts</Badge>}
-                                    {s.provides_tyres && <Badge variant="secondary">Tyres</Badge>}
-                                    {s.provides_workshop && <Badge variant="secondary">Workshop</Badge>}
+                                <TableCell key={k} className="max-w-[260px]">
+                                  <div className="flex flex-nowrap gap-1 overflow-hidden">
+                                    {s.provides_parts && <Badge variant="secondary" className="whitespace-nowrap shrink-0">Parts</Badge>}
+                                    {s.provides_tyres && <Badge variant="secondary" className="whitespace-nowrap shrink-0">Tyres</Badge>}
+                                    {s.provides_workshop && <Badge variant="secondary" className="whitespace-nowrap shrink-0">Workshop</Badge>}
                                     {!s.provides_parts && !s.provides_tyres && !s.provides_workshop && (
                                       <span className="text-muted-foreground">—</span>
                                     )}
