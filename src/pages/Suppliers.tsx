@@ -899,7 +899,7 @@ export default function Suppliers() {
                 </div>
 
               </div>
-            </section>
+            </CollapsibleCard>
 
             <section className="space-y-3">
               <h3 className="text-sm font-semibold">Services provided *</h3>
