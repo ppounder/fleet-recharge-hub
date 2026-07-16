@@ -12,7 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useSuppliers } from "@/hooks/useSuppliers";
-import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { Plus, Check, X } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 const JOB_TYPES = [
   { value: "mot", label: "MOT" },
