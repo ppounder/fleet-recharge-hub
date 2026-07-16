@@ -183,6 +183,7 @@ export default function Technicians() {
   const [workshopOpen, setWorkshopOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [labourTypeOpen, setLabourTypeOpen] = useState(false);
+  const [addressOpen, setAddressOpen] = useState(false);
 
   const updateField = <K extends keyof TechnicianForm>(key: K, value: TechnicianForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
