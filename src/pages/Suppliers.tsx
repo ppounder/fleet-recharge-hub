@@ -93,6 +93,10 @@ const supplierSchema = z
       .string()
       .trim()
       .max(50, { message: "P/L Account must be less than 50 characters" }),
+    reference_number: z
+      .string()
+      .trim()
+      .max(50, { message: "Reference number must be less than 50 characters" }),
     address_line1: z
       .string()
       .trim()
