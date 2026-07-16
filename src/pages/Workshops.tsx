@@ -334,6 +334,7 @@ export default function Workshops() {
     setForm({
       name: s.name ?? "",
       pl_account_number: s.pl_account_number ?? "",
+      reference_number: s.reference_number ?? "",
       address_line1: s.address_line1 ?? "",
       address_line2: s.address_line2 ?? "",
       address_line3: s.address_line3 ?? "",
