@@ -42,6 +42,7 @@ type Customer = {
   name: string;
   parent_customer_id: string | null;
   sl_account_number: string | null;
+  reference_number: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
@@ -54,7 +55,7 @@ type Customer = {
   customer_type: string | null;
 };
 
-type ColKey = "name" | "customer_type" | "sl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email";
+type ColKey = "name" | "customer_type" | "sl_account_number" | "reference_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email";
 
 const CUSTOMER_TYPES: { value: string; label: string }[] = [
   { value: "broker", label: "Broker" },
