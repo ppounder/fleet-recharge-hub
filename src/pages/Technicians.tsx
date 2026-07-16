@@ -99,7 +99,7 @@ const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "email", label: "Email", sortable: true },
   { key: "employee_number", label: "Employee #", sortable: true },
   { key: "labour_type", label: "Labour type", sortable: true },
-  { key: "start_date", label: "Allocation start date", sortable: true },
+  { key: "start_date", label: "Start date", sortable: true },
 ];
 const LOCKED_COLS: ColKey[] = ["name"];
 const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
@@ -127,6 +127,7 @@ const technicianSchema = z.object({
     .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
   job_title: z.string().trim().max(100),
   status: z.enum(["active", "account_locked", "deleted"]),
+  start_date: z.string().min(1, { message: "Start date is required" }),
   pin: z
     .string()
     .trim()
@@ -192,6 +193,7 @@ const emptyForm = (): TechnicianForm => ({
   email: "",
   job_title: "",
   status: "active",
+  start_date: format(new Date(), "yyyy-MM-dd"),
   pin: "",
   employee_number: "",
   ni_number: "",
@@ -413,6 +415,7 @@ export default function Technicians() {
       email: t.email ?? "",
       job_title: t.job_title ?? "",
       status: t.status ?? "active",
+      start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       pin: t.pin ?? "",
       employee_number: t.employee_number ?? "",
       ni_number: t.ni_number ?? "",
@@ -524,13 +527,13 @@ export default function Technicians() {
           id: editingId,
           payload: result.data,
           workshop_id: current.workshop_id,
-          start_date: current.allocation_start_date,
+          start_date: result.data.start_date,
         });
       } else {
         const created: any = await createTech.mutateAsync({
           payload: result.data,
           workshop_id: current.workshop_id,
-          start_date: current.allocation_start_date,
+          start_date: result.data.start_date,
         });
         techId = created?.id ?? null;
       }
@@ -807,6 +810,15 @@ export default function Technicians() {
                 </div>
 
 
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Start date *</Label>
+                  <DatePicker
+                    value={form.start_date}
+                    onChange={(v) => updateField("start_date", v)}
+                    className={errCls("start_date")}
+                  />
+                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date}</p>}
+                </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">PIN *</Label>
                   <Input
