@@ -176,16 +176,16 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
           {/* Date / In / Out / Bay */}
           <div className="grid grid-cols-4 gap-3">
             <div className="space-y-1">
-              <Label>Date</Label>
+              <Label>Date *</Label>
               <DatePicker value={date} onChange={setDate} />
               {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
             </div>
             <div className="space-y-1">
-              <Label>In</Label>
+              <Label>In *</Label>
               <Input type="time" value={startTime} onChange={(e) => { setStartTime(e.target.value); setErrors(p => ({ ...p, time: "" })); }} disabled={allDay} aria-invalid={!!errors.time} className={errors.time ? "border-destructive" : ""} />
             </div>
             <div className="space-y-1">
-              <Label>Out</Label>
+              <Label>Out *</Label>
               <Input type="time" value={endTime} onChange={(e) => { setEndTime(e.target.value); setErrors(p => ({ ...p, time: "" })); }} disabled={allDay} aria-invalid={!!errors.time} className={errors.time ? "border-destructive" : ""} />
             </div>
 
@@ -300,7 +300,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
           </div>
 
           <div className="space-y-1">
-            <Label>Details</Label>
+            <Label>Details *</Label>
             <Textarea value={details} onChange={(e) => { setDetails(e.target.value); setErrors(p => ({ ...p, details: "" })); }} rows={2} aria-invalid={!!errors.details} className={errors.details ? "border-destructive" : ""} />
             {errors.details && <p className="text-xs text-destructive">{errors.details}</p>}
           </div>
