@@ -42,6 +42,7 @@ type Customer = {
   name: string;
   parent_customer_id: string | null;
   sl_account_number: string | null;
+  reference_number: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
@@ -54,7 +55,7 @@ type Customer = {
   customer_type: string | null;
 };
 
-type ColKey = "name" | "customer_type" | "sl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email";
+type ColKey = "name" | "customer_type" | "sl_account_number" | "reference_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email";
 
 const CUSTOMER_TYPES: { value: string; label: string }[] = [
   { value: "broker", label: "Broker" },
@@ -71,6 +72,7 @@ const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "customer_type", label: "Customer type", sortable: true },
   { key: "sl_account_number", label: "S/L Account", sortable: true },
+  { key: "reference_number", label: "Reference", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
   { key: "county", label: "County", sortable: true },
   { key: "country", label: "Country", sortable: true },
@@ -87,6 +89,7 @@ const customerSchema = z.object({
   name: z.string().trim().min(1, { message: "Company name is required" }).max(150),
   parent_customer_id: z.string().nullable(),
   sl_account_number: z.string().trim().max(50, { message: "S/L Account must be less than 50 characters" }),
+  reference_number: z.string().trim().max(50, { message: "Reference number must be less than 50 characters" }),
   customer_type: z.enum(["broker", "corporate", "internal", "public_sector", "retail"], {
     errorMap: () => ({ message: "Customer type is required" }),
   }),
@@ -117,6 +120,7 @@ const emptyForm: CustomerForm = {
   name: "",
   parent_customer_id: null,
   sl_account_number: "",
+  reference_number: "",
   customer_type: undefined as any,
   address_line1: "",
   address_line2: "",
@@ -317,6 +321,7 @@ export default function Customers() {
       name: s.name ?? "",
       parent_customer_id: s.parent_customer_id,
       sl_account_number: s.sl_account_number ?? "",
+      reference_number: s.reference_number ?? "",
       customer_type: (s.customer_type as any) ?? (undefined as any),
       address_line1: s.address_line1 ?? "",
       address_line2: s.address_line2 ?? "",
@@ -616,6 +621,14 @@ export default function Customers() {
                     onChange={(e) => updateField("sl_account_number", e.target.value)}
                     aria-invalid={!!errors.sl_account_number} className={errCls("sl_account_number")} />
                   {errors.sl_account_number && <p className="text-xs text-destructive">{errors.sl_account_number}</p>}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reference_number" className="text-xs">Reference number</Label>
+                  <Input id="reference_number" value={form.reference_number}
+                    onChange={(e) => updateField("reference_number", e.target.value)}
+                    aria-invalid={!!errors.reference_number} className={errCls("reference_number")} />
+                  {errors.reference_number && <p className="text-xs text-destructive">{errors.reference_number}</p>}
                 </div>
 
                 <div className="space-y-1.5 col-span-2">
