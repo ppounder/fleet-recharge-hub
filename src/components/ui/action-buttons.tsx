@@ -66,7 +66,7 @@ export function DeleteActionButton({
           size="icon"
           className={`h-8 w-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground ${className ?? ""}`}
           onClick={onClick}
-          disabled={loading}
+          disabled={loading || disabled}
           aria-label={label}
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
