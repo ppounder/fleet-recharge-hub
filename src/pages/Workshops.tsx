@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -53,6 +54,7 @@ type Workshop = {
   name: string;
   pl_account_number: string | null;
   reference_number: string | null;
+  parent_supplier_id: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
@@ -89,6 +91,8 @@ const workshopSchema = z.object({
   name: z.string().trim().min(1, { message: "Company name is required" }).max(150),
   pl_account_number: z.string().trim().max(50),
   reference_number: z.string().trim().max(50),
+  parent_supplier_id: z.string().uuid().nullable(),
+  internal_company: z.boolean(),
   address_line1: z.string().trim().min(1, { message: "Address line 1 is required" }).max(150),
   address_line2: z.string().trim().max(150),
   address_line3: z.string().trim().max(150),
@@ -117,6 +121,8 @@ const emptyForm = (): WorkshopForm => ({
   name: "",
   pl_account_number: "",
   reference_number: "",
+  parent_supplier_id: null,
+  internal_company: true,
   address_line1: "",
   address_line2: "",
   address_line3: "",
@@ -178,6 +184,7 @@ export default function Workshops() {
   const [form, setForm] = useState<WorkshopForm>(emptyForm());
   const [errors, setErrors] = useState<FormErrors>({});
   const [countryOpen, setCountryOpen] = useState(false);
+  const [parentOpen, setParentOpen] = useState(false);
   const [contacts, setContacts] = useState<WorkshopContact[]>([]);
   const [deletedContactIds, setDeletedContactIds] = useState<string[]>([]);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
@@ -232,6 +239,18 @@ export default function Workshops() {
         .order("name");
       if (error) throw error;
       return (data ?? []) as unknown as Workshop[];
+    },
+  });
+
+  const { data: parentSuppliers = [] } = useQuery({
+    queryKey: ["suppliers-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers" as any)
+        .select("id, name")
+        .order("name");
+      if (error) throw error;
+      return ((data ?? []) as unknown) as { id: string; name: string }[];
     },
   });
 
@@ -316,6 +335,7 @@ export default function Workshops() {
   };
 
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
+  const parentName = (id: string | null) => parentSuppliers.find((s) => s.id === id)?.name ?? "";
 
   const openAdd = () => {
     setEditingId(null);
@@ -335,6 +355,8 @@ export default function Workshops() {
       name: s.name ?? "",
       pl_account_number: s.pl_account_number ?? "",
       reference_number: s.reference_number ?? "",
+      parent_supplier_id: s.parent_supplier_id ?? null,
+      internal_company: s.internal_company ?? true,
       address_line1: s.address_line1 ?? "",
       address_line2: s.address_line2 ?? "",
       address_line3: s.address_line3 ?? "",
@@ -604,6 +626,51 @@ export default function Workshops() {
                   <Label htmlFor="name" className="text-xs">Company name *</Label>
                   <Input id="name" value={form.name} onChange={(e) => updateField("name", e.target.value)} className={errCls("name")} />
                   {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Parent company</Label>
+                  <Popover open={parentOpen} onOpenChange={setParentOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                        {form.parent_supplier_id ? parentName(form.parent_supplier_id) : <span className="text-muted-foreground">Select...</span>}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search supplier..." />
+                        <CommandList>
+                          <CommandEmpty>No suppliers found.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem onSelect={() => { updateField("parent_supplier_id", null); setParentOpen(false); }}>
+                              <Check className={cn("mr-2 h-4 w-4", !form.parent_supplier_id ? "opacity-100" : "opacity-0")} />
+                              None
+                            </CommandItem>
+                            {parentSuppliers.map((s) => (
+                              <CommandItem key={s.id} value={s.name} onSelect={() => { updateField("parent_supplier_id", s.id); setParentOpen(false); }}>
+                                <Check className={cn("mr-2 h-4 w-4", form.parent_supplier_id === s.id ? "opacity-100" : "opacity-0")} />
+                                {s.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Internal company</Label>
+                  <div className="flex items-center gap-3 rounded-md border border-input bg-card px-3 h-10 w-fit">
+                    <span className={cn("text-sm font-medium", !form.internal_company && "text-muted-foreground")}>No</span>
+                    <Switch
+                      checked={form.internal_company}
+                      onCheckedChange={(v) => updateField("internal_company", !!v)}
+                      aria-label="Internal company"
+                    />
+                    <span className={cn("text-sm font-medium", form.internal_company && "text-primary")}>Yes</span>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
