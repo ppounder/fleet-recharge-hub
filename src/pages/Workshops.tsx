@@ -54,6 +54,7 @@ type Workshop = {
   name: string;
   pl_account_number: string | null;
   reference_number: string | null;
+  parent_supplier_id: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
