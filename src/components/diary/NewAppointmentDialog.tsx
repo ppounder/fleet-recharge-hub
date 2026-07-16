@@ -12,6 +12,7 @@ import { useBays, useTechnicians, useUpsertAppointment, useDeleteAppointment, Ap
 import { useToast } from "@/hooks/use-toast";
 import { format, addMinutes } from "date-fns";
 import { Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CustomerPicker, VehiclePicker } from "./CustomerVehiclePickers";
 
 interface Props {
