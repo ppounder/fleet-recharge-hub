@@ -321,6 +321,7 @@ export default function Customers() {
       name: s.name ?? "",
       parent_customer_id: s.parent_customer_id,
       sl_account_number: s.sl_account_number ?? "",
+      reference_number: s.reference_number ?? "",
       customer_type: (s.customer_type as any) ?? (undefined as any),
       address_line1: s.address_line1 ?? "",
       address_line2: s.address_line2 ?? "",
