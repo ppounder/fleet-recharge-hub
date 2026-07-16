@@ -305,7 +305,7 @@ function DefectCard({
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor={`defect-${defect.id}-date`}>Date reported</Label>
+            <Label htmlFor={`defect-${defect.id}-date`}>Date reported *</Label>
             <DatePicker
               id={`defect-${defect.id}-date`}
               value={defect.reportedAt}
@@ -317,7 +317,7 @@ function DefectCard({
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`defect-${defect.id}-reporter`}>Reported by</Label>
+            <Label htmlFor={`defect-${defect.id}-reporter`}>Reported by *</Label>
             <Input
               id={`defect-${defect.id}-reporter`}
               value={defect.reportedBy}
@@ -332,7 +332,7 @@ function DefectCard({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`defect-${defect.id}-type`}>Defect type</Label>
+          <Label htmlFor={`defect-${defect.id}-type`}>Defect type *</Label>
           <Select value={PRESETS.includes(defect.type) ? defect.type : ""} onValueChange={(v) => onChange({ ...defect, type: v })}>
             <SelectTrigger
               id={`defect-${defect.id}-type`}
@@ -400,7 +400,7 @@ function DefectCard({
         {defect.rectified && (
           <>
             <div className="space-y-1.5">
-              <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details</Label>
+              <Label htmlFor={`defect-${defect.id}-rectified`}>Rectified details *</Label>
               <Textarea
                 id={`defect-${defect.id}-rectified`}
                 rows={2}

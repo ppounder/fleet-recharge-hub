@@ -250,7 +250,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Work Category</Label>
+                  <Label className="text-xs">Work Category *</Label>
                   <Select value={jobType} onValueChange={(v) => { setJobType(v); setWorkCodeId(""); }}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -279,7 +279,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                   <Input value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Price £</Label>
+                  <Label className="text-xs">Price £ *</Label>
                   <Input type="number" min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} />
                 </div>
               </div>
@@ -308,7 +308,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
               {/* Add new labour row */}
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-1.5">
-                  <Label className="text-xs">Labour Rate</Label>
+                  <Label className="text-xs">Labour Rate *</Label>
                   <Select value={newLabourRateId} onValueChange={setNewLabourRateId}>
                     <SelectTrigger><SelectValue placeholder="Select rate" /></SelectTrigger>
                     <SelectContent>
@@ -324,7 +324,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                   </Select>
                 </div>
                 <div className="w-24 space-y-1.5">
-                  <Label className="text-xs">Units/Hrs</Label>
+                  <Label className="text-xs">Units/Hrs *</Label>
                   <Input
                     type="number"
                     min={0.1}
@@ -414,7 +414,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
               {/* Add new part row */}
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-1.5">
-                  <Label className="text-xs">Part</Label>
+                  <Label className="text-xs">Part *</Label>
                   <Select value={newPartId} onValueChange={setNewPartId}>
                     <SelectTrigger><SelectValue placeholder="Select part" /></SelectTrigger>
                     <SelectContent>
@@ -430,7 +430,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                   </Select>
                 </div>
                 <div className="w-24 space-y-1.5">
-                  <Label className="text-xs">Unit £</Label>
+                  <Label className="text-xs">Unit £ *</Label>
                   <Input
                     type="number"
                     min={0}
@@ -441,7 +441,7 @@ export function MenuPriceEditSheet({ open, onOpenChange, item, providerId, fleet
                   />
                 </div>
                 <div className="w-20 space-y-1.5">
-                  <Label className="text-xs">Qty</Label>
+                  <Label className="text-xs">Qty *</Label>
                   <Input
                     type="number"
                     min={1}

@@ -133,9 +133,9 @@ export function ChangePasswordDialog({ open, onOpenChange, email }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {field("currentPassword", "Current password", "Enter current password")}
-          {field("newPassword", "New password", "Enter new password")}
-          {field("confirmPassword", "Confirm new password", "Confirm new password")}
+          {field("currentPassword", "Current password *", "Enter current password")}
+          {field("newPassword", "New password *", "Enter new password")}
+          {field("confirmPassword", "Confirm new password *", "Confirm new password")}
         </div>
 
         <DialogFooter>

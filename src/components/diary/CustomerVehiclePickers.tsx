@@ -57,7 +57,7 @@ export function CustomerPicker({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-semibold">Customer</Label>
+      <Label className="text-sm font-semibold">Customer *</Label>
       <div className="flex gap-2">
         <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-1" /> New
@@ -184,7 +184,7 @@ export function VehiclePicker({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-semibold">Vehicle</Label>
+      <Label className="text-sm font-semibold">Vehicle *</Label>
       <div className="flex gap-2">
         <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-1" /> New
