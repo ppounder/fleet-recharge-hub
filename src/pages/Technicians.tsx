@@ -537,13 +537,14 @@ export default function Technicians() {
   const handleSave = async () => {
     const result = technicianSchema.safeParse(form);
     const extra: FormErrors = {};
-    // Conditional validation for password + pin
+    // Password + PIN are mandatory
     const pw = form.password ?? "";
     const pin = form.pin ?? "";
     if (!editingId) {
       if (pw.length < 8) extra.password = "Password must be at least 8 characters";
       if (!/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
     } else {
+      // On edit, allow blank to keep current, but if provided validate
       if (pw && pw.length < 8) extra.password = "Password must be at least 8 characters";
       if (pin && !/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
     }
