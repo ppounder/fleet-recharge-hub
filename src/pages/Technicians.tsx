@@ -537,13 +537,14 @@ export default function Technicians() {
   const handleSave = async () => {
     const result = technicianSchema.safeParse(form);
     const extra: FormErrors = {};
-    // Conditional validation for password + pin
+    // Password + PIN are mandatory
     const pw = form.password ?? "";
     const pin = form.pin ?? "";
     if (!editingId) {
       if (pw.length < 8) extra.password = "Password must be at least 8 characters";
       if (!/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
     } else {
+      // On edit, allow blank to keep current, but if provided validate
       if (pw && pw.length < 8) extra.password = "Password must be at least 8 characters";
       if (pin && !/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
     }
@@ -982,7 +983,7 @@ export default function Technicians() {
                   {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Password {editingId ? "" : "*"}</Label>
+                  <Label className="text-xs">Password *</Label>
                   <Input
                     type="password"
                     value={form.password}
@@ -995,7 +996,7 @@ export default function Technicians() {
                   <p className="text-xs text-muted-foreground">Stored securely as a bcrypt hash.</p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">PIN {editingId ? "" : "*"}</Label>
+                  <Label className="text-xs">PIN *</Label>
                   <Input
                     type="password"
                     inputMode="numeric"
