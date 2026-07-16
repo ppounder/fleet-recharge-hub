@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useLabourRates, useCreateLabourRate, useUpdateLabourRate, useDeleteLabourRate } from "@/hooks/useLabourRates";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Check, X } from "lucide-react";
+import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
 
 interface LabourRatesPanelProps {
   providerId: string;
