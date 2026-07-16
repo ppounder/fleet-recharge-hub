@@ -548,13 +548,13 @@ export default function Customers() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setErrors({}); } }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
             <DialogTitle>{editingId ? "Edit customer" : "Add customer"}</DialogTitle>
             <DialogDescription>Enter the customer details below.</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
             <section className="space-y-3">
               <h3 className="text-sm font-semibold">Customer details</h3>
               <div className="grid grid-cols-2 gap-3">
@@ -829,7 +829,7 @@ export default function Customers() {
             </AlertDialogContent>
           </AlertDialog>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0 px-6 py-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={createCustomer.isPending || updateCustomer.isPending}>
               {createCustomer.isPending || updateCustomer.isPending
