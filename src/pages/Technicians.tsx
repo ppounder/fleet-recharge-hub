@@ -128,20 +128,24 @@ const technicianSchema = z.object({
   email: z
     .string()
     .trim()
+    .min(1, { message: "Email is required" })
     .max(255)
-    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
+    .refine((v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
+  username: z
+    .string()
+    .trim()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(50)
+    .refine((v) => /^[A-Za-z0-9._-]+$/.test(v), { message: "Only letters, numbers, dot, dash, underscore" }),
+  password: z.string(), // validated conditionally on save
   job_title: z.string().trim().max(100),
   status: z.enum(["active", "account_locked", "deleted"]),
   start_date: z.string().min(1, { message: "Start date is required" }),
-  pin: z
-    .string()
-    .trim()
-    .min(4, { message: "PIN must be at least 4 digits" })
-    .max(10, { message: "PIN must be 10 digits or fewer" })
-    .refine((v) => /^\d+$/.test(v), { message: "PIN must be numeric" }),
+  pin: z.string(), // validated conditionally on save
   employee_number: z.string().trim().max(50),
   ni_number: z.string().trim().max(20),
   labour_type: z.string().trim().max(50),
+  auto_unlock_enabled: z.boolean(),
 });
 
 export type AllocationType = "permanent" | "temporary_transfer";
