@@ -289,7 +289,8 @@ export default function Technicians() {
         fleet_id,
         first_name: payload.first_name.trim(),
         last_name: payload.last_name.trim(),
-        email: payload.email.trim() || null,
+        email: payload.email.trim(),
+        username: payload.username.trim(),
         phone: payload.phone.trim() || null,
         address_line1: payload.address_line1.trim() || null,
         address_line2: payload.address_line2.trim() || null,
@@ -302,7 +303,7 @@ export default function Technicians() {
         start_date: new Date(start_date).toISOString(),
         workshop_id,
         status: payload.status,
-        pin: payload.pin.trim(),
+        auto_unlock_enabled: payload.auto_unlock_enabled,
         employee_number: payload.employee_number.trim() || null,
         ni_number: payload.ni_number.trim() || null,
         labour_type: payload.labour_type.trim() || null,
@@ -311,6 +312,14 @@ export default function Technicians() {
       };
       const { data, error } = await supabase.from("technicians" as any).insert(insertPayload as any).select().single();
       if (error) throw error;
+      // Hash and store credentials via SECURITY DEFINER RPC
+      const { error: credErr } = await supabase.rpc("set_technician_credentials" as any, {
+        _tech_id: (data as any).id,
+        _username: payload.username.trim(),
+        _password: payload.password,
+        _pin: payload.pin,
+      });
+      if (credErr) throw credErr;
       return data;
     },
     onSuccess: () => {
@@ -324,7 +333,7 @@ export default function Technicians() {
       const updatePayload: any = {
         first_name: payload.first_name.trim(),
         last_name: payload.last_name.trim(),
-        email: payload.email.trim() || null,
+        email: payload.email.trim(),
         phone: payload.phone.trim() || null,
         address_line1: payload.address_line1.trim() || null,
         address_line2: payload.address_line2.trim() || null,
@@ -337,7 +346,7 @@ export default function Technicians() {
         start_date: new Date(start_date).toISOString(),
         workshop_id,
         status: payload.status,
-        pin: payload.pin.trim(),
+        auto_unlock_enabled: payload.auto_unlock_enabled,
         employee_number: payload.employee_number.trim() || null,
         ni_number: payload.ni_number.trim() || null,
         labour_type: payload.labour_type.trim() || null,
@@ -350,6 +359,14 @@ export default function Technicians() {
         .select()
         .single();
       if (error) throw error;
+      // Update credentials (only fields provided)
+      const { error: credErr } = await supabase.rpc("set_technician_credentials" as any, {
+        _tech_id: id,
+        _username: payload.username.trim(),
+        _password: payload.password ? payload.password : null,
+        _pin: payload.pin ? payload.pin : null,
+      });
+      if (credErr) throw credErr;
       return data;
     },
     onSuccess: () => {
@@ -357,6 +374,7 @@ export default function Technicians() {
       qc.invalidateQueries({ queryKey: ["technicians"] });
     },
   });
+
 
   const deleteTech = useMutation({
     mutationFn: async (id: string) => {
