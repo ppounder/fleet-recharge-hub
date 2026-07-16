@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,6 +134,10 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
             </TableBody>
           </Table>
         </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { cancelEdit(); onOpenChange(false); }}>Cancel</Button>
+          <Button onClick={() => onOpenChange(false)}>Save</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
