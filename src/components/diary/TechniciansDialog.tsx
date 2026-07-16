@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 import { useTechnicians, useUpsertTechnician, useDeleteTechnician } from "@/hooks/useDiary";
 
 export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
