@@ -536,11 +536,24 @@ export default function Technicians() {
 
   const handleSave = async () => {
     const result = technicianSchema.safeParse(form);
-    if (!result.success) {
-      const fieldErrors: FormErrors = {};
-      for (const issue of result.error.issues) {
-        const key = issue.path[0] as keyof FormErrors;
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+    const extra: FormErrors = {};
+    // Conditional validation for password + pin
+    const pw = form.password ?? "";
+    const pin = form.pin ?? "";
+    if (!editingId) {
+      if (pw.length < 8) extra.password = "Password must be at least 8 characters";
+      if (!/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
+    } else {
+      if (pw && pw.length < 8) extra.password = "Password must be at least 8 characters";
+      if (pin && !/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
+    }
+    if (!result.success || Object.keys(extra).length) {
+      const fieldErrors: FormErrors = { ...extra };
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          const key = issue.path[0] as keyof FormErrors;
+          if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+        }
       }
       setErrors(fieldErrors);
       toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
