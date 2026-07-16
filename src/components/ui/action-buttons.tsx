@@ -31,7 +31,7 @@ export function EditActionButton({
           size="icon"
           className={`h-8 w-8 text-muted-foreground hover:text-foreground ${className ?? ""}`}
           onClick={onClick}
-          disabled={loading}
+          disabled={loading || disabled}
           aria-label={label}
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
