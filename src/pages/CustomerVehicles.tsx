@@ -1614,25 +1614,8 @@ function DefectHistory({ vehicleId, vehicleLabel }: { vehicleId: string; vehicle
                   <Camera className="h-4 w-4" />
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Edit defect"
-                title="Edit"
-                onClick={(e) => { e.stopPropagation(); setEditDefect(d); }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Delete defect"
-                title="Delete"
-                className="text-destructive hover:bg-destructive hover:text-white"
-                onClick={(e) => { e.stopPropagation(); setDeleteDefect(d); }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <EditActionButton label="Edit defect" onClick={(e) => { e.stopPropagation(); setEditDefect(d); }} />
+              <DeleteActionButton label="Delete defect" onClick={(e) => { e.stopPropagation(); setDeleteDefect(d); }} />
             </div>
           </TableCell>
         );
