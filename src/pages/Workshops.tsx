@@ -242,6 +242,18 @@ export default function Workshops() {
     },
   });
 
+  const { data: parentSuppliers = [] } = useQuery({
+    queryKey: ["suppliers-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers" as any)
+        .select("id, name")
+        .order("name");
+      if (error) throw error;
+      return (data ?? []) as { id: string; name: string }[];
+    },
+  });
+
   const createWorkshop = useMutation({
     mutationFn: async (payload: WorkshopForm) => {
       const { data, error } = await supabase
