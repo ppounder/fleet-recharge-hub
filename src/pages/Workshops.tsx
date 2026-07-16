@@ -753,10 +753,9 @@ export default function Workshops() {
                   {errors.contact_email && <p className="text-xs text-destructive">{errors.contact_email}</p>}
                 </div>
               </div>
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Services provided *</h3>
+            <CollapsibleCard title="Services provided *">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {WORKSHOP_SERVICES.map((svc) => {
                   const checked = form.services.includes(svc.key);
@@ -769,15 +768,16 @@ export default function Workshops() {
                 })}
               </div>
               {errors.services && <p className="text-xs text-destructive">{errors.services}</p>}
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Contacts</h3>
+            <CollapsibleCard
+              title="Contacts"
+              action={
                 <Button type="button" variant="outline" size="sm" onClick={openAddContact}>
                   <Plus className="w-4 h-4 mr-1" /> Add contact
                 </Button>
-              </div>
+              }
+            >
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader>
