@@ -8,10 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useBays, useTechnicians, useUpsertAppointment, useDeleteAppointment, Appointment } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 import { format, addMinutes } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CustomerPicker, VehiclePicker } from "./CustomerVehiclePickers";
 
 interface Props {
