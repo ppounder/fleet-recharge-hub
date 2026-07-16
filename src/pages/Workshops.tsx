@@ -116,6 +116,7 @@ type FormErrors = Partial<Record<keyof WorkshopForm, string>>;
 const emptyForm = (): WorkshopForm => ({
   name: "",
   pl_account_number: "",
+  reference_number: "",
   address_line1: "",
   address_line2: "",
   address_line3: "",
