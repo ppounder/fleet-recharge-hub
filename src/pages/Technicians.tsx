@@ -261,7 +261,7 @@ export default function Technicians() {
   });
 
   const createTech = useMutation({
-    mutationFn: async (payload: TechnicianForm) => {
+    mutationFn: async ({ payload, workshop_id, start_date }: { payload: TechnicianForm; workshop_id: string; start_date: string }) => {
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
       if (!uid) throw new Error("Not signed in");
@@ -286,8 +286,8 @@ export default function Technicians() {
         country: payload.country.trim() || null,
         postcode: payload.postcode.trim() || null,
         job_title: payload.job_title.trim() || null,
-        start_date: new Date(payload.start_date).toISOString(),
-        workshop_id: payload.workshop_id,
+        start_date: new Date(start_date).toISOString(),
+        workshop_id,
         status: payload.status,
         pin: payload.pin.trim(),
         employee_number: payload.employee_number.trim() || null,
@@ -307,7 +307,7 @@ export default function Technicians() {
   });
 
   const updateTech = useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: TechnicianForm }) => {
+    mutationFn: async ({ id, payload, workshop_id, start_date }: { id: string; payload: TechnicianForm; workshop_id: string; start_date: string }) => {
       const updatePayload: any = {
         first_name: payload.first_name.trim(),
         last_name: payload.last_name.trim(),
@@ -321,8 +321,8 @@ export default function Technicians() {
         country: payload.country.trim() || null,
         postcode: payload.postcode.trim() || null,
         job_title: payload.job_title.trim() || null,
-        start_date: new Date(payload.start_date).toISOString(),
-        workshop_id: payload.workshop_id,
+        start_date: new Date(start_date).toISOString(),
+        workshop_id,
         status: payload.status,
         pin: payload.pin.trim(),
         employee_number: payload.employee_number.trim() || null,
@@ -338,6 +338,17 @@ export default function Technicians() {
         .single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["technicians-list"] });
+      qc.invalidateQueries({ queryKey: ["technicians"] });
+    },
+  });
+
+  const deleteTech = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("technicians" as any).delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["technicians-list"] });
