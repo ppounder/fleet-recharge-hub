@@ -820,26 +820,6 @@ export default function Technicians() {
                   {errors.start_date && <p className="text-xs text-destructive">{errors.start_date}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">PIN *</Label>
-                  <Input
-                    inputMode="numeric"
-                    value={form.pin}
-                    onChange={(e) => updateField("pin", e.target.value.replace(/\D/g, ""))}
-                    className={errCls("pin")}
-                    placeholder="Minimum 4 digits"
-                  />
-                  {errors.pin && <p className="text-xs text-destructive">{errors.pin}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Employee number</Label>
-                  <Input value={form.employee_number} onChange={(e) => updateField("employee_number", e.target.value)} className={errCls("employee_number")} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">N.I. number</Label>
-                  <Input value={form.ni_number} onChange={(e) => updateField("ni_number", e.target.value.toUpperCase())} className={errCls("ni_number")} />
-                </div>
-                <div className="space-y-1.5">
                   <Label className="text-xs">Labour type</Label>
                   <Popover open={labourTypeOpen} onOpenChange={setLabourTypeOpen}>
                     <PopoverTrigger asChild>
@@ -869,6 +849,26 @@ export default function Technicians() {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Employee number</Label>
+                  <Input value={form.employee_number} onChange={(e) => updateField("employee_number", e.target.value)} className={errCls("employee_number")} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">N.I. number</Label>
+                  <Input value={form.ni_number} onChange={(e) => updateField("ni_number", e.target.value.toUpperCase())} className={errCls("ni_number")} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">PIN *</Label>
+                  <Input
+                    inputMode="numeric"
+                    value={form.pin}
+                    onChange={(e) => updateField("pin", e.target.value.replace(/\D/g, ""))}
+                    className={errCls("pin")}
+                    placeholder="Minimum 4 digits"
+                  />
+                  {errors.pin && <p className="text-xs text-destructive">{errors.pin}</p>}
                 </div>
               </div>
             </CollapsibleCard>
