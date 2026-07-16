@@ -46,6 +46,7 @@ interface DeleteActionButtonProps {
   label?: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   loading?: boolean;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -53,6 +54,7 @@ export function DeleteActionButton({
   label = "Delete",
   onClick,
   loading,
+  disabled,
   className,
 }: DeleteActionButtonProps) {
   return (
