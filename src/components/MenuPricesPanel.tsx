@@ -238,22 +238,8 @@ export function MenuPricesPanel({ providerId, fleetId }: MenuPricesPanelProps) {
                       <TableCell className="text-right font-mono">£{getTotalPrice(item).toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={(e) => { e.stopPropagation(); openEdit(item); }}
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                            onClick={(e) => { e.stopPropagation(); deleteItem.mutate(item.id); }}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
+                          <EditActionButton label="Edit menu price" onClick={(e) => { e.stopPropagation(); openEdit(item); }} />
+                          <DeleteActionButton label="Delete menu price" onClick={(e) => { e.stopPropagation(); deleteItem.mutate(item.id); }} />
                         </div>
                       </TableCell>
                     </TableRow>
