@@ -821,7 +821,7 @@ export default function Workshops() {
                   </TableBody>
                 </Table>
               </div>
-            </section>
+            </CollapsibleCard>
           </div>
 
           <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
