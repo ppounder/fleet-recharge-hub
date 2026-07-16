@@ -52,6 +52,7 @@ export function NewAppointmentDialog({ open, onOpenChange, initialStart, initial
   const [reminderWhen, setReminderWhen] = useState("1d");
   const [reminderText, setReminderText] = useState(false);
   const [reminderEmail, setReminderEmail] = useState(false);
+  const [techOpen, setTechOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
