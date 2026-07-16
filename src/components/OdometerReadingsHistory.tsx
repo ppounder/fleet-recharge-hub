@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Plus } from "lucide-react";
-import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { formatDateTime, cn } from "@/lib/utils";
 
@@ -203,8 +202,25 @@ export function OdometerReadingsHistory({ vehicleId }: Props) {
                   <TableCell>{formatDateTime(r.recorded_at)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <EditActionButton label="Edit reading" onClick={() => openEdit(r)} />
-                      <DeleteActionButton label="Delete reading" onClick={() => setDeleting(r)} />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEdit(r)}
+                        aria-label="Edit reading"
+                        title="Edit"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleting(r)}
+                        className="text-destructive hover:bg-destructive hover:text-white"
+                        aria-label="Delete reading"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

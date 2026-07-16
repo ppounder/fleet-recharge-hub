@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Calendar as CalendarIcon, Loader2, Wrench, ArrowLeftRight, Replace } from "lucide-react";
-import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Loader2, Wrench, ArrowLeftRight, Replace } from "lucide-react";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -841,7 +840,9 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                         <div className="flex justify-end gap-1">
                           {t ? (
                             <>
-                              <EditActionButton label="Edit tyre" onClick={() => startEditTyre(t)} />
+                              <Button size="icon" variant="ghost" onClick={() => startEditTyre(t)} aria-label="Edit tyre" title="Edit">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
 
                               <Button
                                 size="icon"
@@ -861,7 +862,18 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                               >
                                 <Replace className="h-4 w-4" />
                               </Button>
-                              <DeleteActionButton label="Dispose tyre" onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))} />
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => askConfirm("Are you sure you want to delete?", () => startDispose(t.position))}
+                                className="text-destructive hover:bg-destructive hover:text-white"
+                                aria-label="Dispose tyre"
+                                title="Dispose tyre"
+
+
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </>
                           ) : (
                             <Button
@@ -952,8 +964,29 @@ export function TyreReadingsHistory({ vehicleId, wheelPlan, assetType, section =
                       <div className="flex justify-end gap-1">
                         {latest ? (
                           <>
-                            <EditActionButton label="Edit latest reading" onClick={() => startEdit(latest)} loading={remove.isPending} />
-                            <DeleteActionButton label="Delete latest reading" onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))} loading={remove.isPending} />
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => startEdit(latest)}
+                              disabled={remove.isPending}
+                              aria-label="Edit latest reading"
+                              title="Edit"
+
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => askConfirm("Are you sure you want to delete?", () => remove.mutate(latest.id))}
+                              disabled={remove.isPending}
+                              className={cn("text-destructive hover:bg-destructive hover:text-white")}
+                              aria-label="Delete latest reading"
+                              title="Delete"
+
+                            >
+                              {remove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
                           </>
                         ) : (
                           <Button

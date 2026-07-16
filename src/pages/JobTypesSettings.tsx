@@ -10,8 +10,7 @@ import { useWorkCategories, useCreateWorkCategory, useUpdateWorkCategory, useDel
 import { useVatBands } from "@/hooks/useVatBands";
 import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Check, X } from "lucide-react";
-import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
+import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 export default function WorkCategoriesSettings() {
   const { toast } = useToast();
@@ -157,8 +156,12 @@ export default function WorkCategoriesSettings() {
                               </>
                             ) : (
                               <>
-                                <EditActionButton label="Edit job type" onClick={() => startEdit(wc)} />
-                                <DeleteActionButton label="Delete job type" onClick={() => deleteCategory.mutate(wc.id)} />
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(wc)}>
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => deleteCategory.mutate(wc.id)}>
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
                               </>
                             )}
                           </div>

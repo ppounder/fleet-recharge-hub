@@ -10,8 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Plus, Camera, X, Upload, Undo2, Trash } from "lucide-react";
-import { DeleteActionButton } from "@/components/ui/action-buttons";
+import { Plus, Trash2, Camera, X, Upload, Undo2, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -298,7 +297,9 @@ function DefectCard({
       <div className="mb-3 flex items-center justify-between">
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Defect {index + 1}</div>
         {canDelete && (
-          <DeleteActionButton label="Delete defect" onClick={onDelete} />
+          <button type="button" onClick={onDelete} className="text-muted-foreground hover:text-destructive">
+            <Trash2 className="h-4 w-4" />
+          </button>
         )}
       </div>
       <div className="space-y-4">

@@ -12,8 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useSuppliers } from "@/hooks/useSuppliers";
-import { Plus, Check, X } from "lucide-react";
-import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
+import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 const JOB_TYPES = [
   { value: "mot", label: "MOT" },
@@ -253,8 +252,22 @@ export default function MenuItems() {
                               </>
                             ) : (
                               <>
-                                <EditActionButton label="Edit menu item" onClick={() => { setEditingId(item.id); setEditPrice(String(item.unit_price)); }} />
-                                <DeleteActionButton label="Delete menu item" onClick={() => deleteItem.mutate(item.id)} />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => { setEditingId(item.id); setEditPrice(String(item.unit_price)); }}
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                                  onClick={() => deleteItem.mutate(item.id)}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
                               </>
                             )}
                           </div>

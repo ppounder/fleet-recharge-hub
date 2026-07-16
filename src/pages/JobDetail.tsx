@@ -25,8 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle, Wrench, CreditCard } from "lucide-react";
-import { DeleteActionButton } from "@/components/ui/action-buttons";
+import { ArrowLeft, Plus, Trash2, Loader2, CheckCircle, Send, PlusCircle, Sparkles, Clock, ShieldCheck, XCircle, MessageCircle, Wrench, CreditCard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLogJobActivity } from "@/hooks/useJobActivityLog";
 import { JobHistory } from "@/components/JobHistory";
@@ -1028,7 +1027,9 @@ export default function JobDetail() {
                                   <Wrench className="w-3.5 h-3.5" /> Parts
                                 </Button>
                               )}
-                              <DeleteActionButton label="Remove work line" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1} />
+                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeWorkLine(line.id)} disabled={workLines.length <= 1}>
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
                           </div>
                           <div className="grid grid-cols-[1fr_140px_140px_60px_90px_90px_90px] gap-3 items-end">
@@ -1106,7 +1107,9 @@ export default function JobDetail() {
                                   <span className="text-sm font-semibold whitespace-nowrap ml-auto">
                                     £{charge.total.toFixed(2)}
                                   </span>
-                                  <DeleteActionButton label="Remove labour charge" onClick={() => removeLabourCharge(line.id, charge.id)} />
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeLabourCharge(line.id, charge.id)}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
                                 </div>
                               ))}
                             </div>
@@ -1146,7 +1149,9 @@ export default function JobDetail() {
                                   <span className="text-sm font-semibold whitespace-nowrap ml-auto">
                                     £{charge.total.toFixed(2)}
                                   </span>
-                                  <DeleteActionButton label="Remove part charge" onClick={() => removePartCharge(line.id, charge.id)} />
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removePartCharge(line.id, charge.id)}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
                                 </div>
                               ))}
                             </div>

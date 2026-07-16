@@ -8,8 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useVatBands, useCreateVatBand, useUpdateVatBand, useDeleteVatBand } from "@/hooks/useVatBands";
 import { useCurrentSupplier } from "@/hooks/useCurrentSupplier";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Check, X } from "lucide-react";
-import { EditActionButton, DeleteActionButton } from "@/components/ui/action-buttons";
+import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 export default function VatBandsSettings() {
   const { toast } = useToast();
@@ -120,8 +119,12 @@ export default function VatBandsSettings() {
                               </>
                             ) : (
                               <>
-                                <EditActionButton label="Edit VAT band" onClick={() => { setEditingId(vb.id); setEditName(vb.name); setEditPercentage(String(vb.percentage)); }} />
-                                <DeleteActionButton label="Delete VAT band" onClick={() => deleteVatBand.mutate(vb.id)} />
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setEditingId(vb.id); setEditName(vb.name); setEditPercentage(String(vb.percentage)); }}>
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => deleteVatBand.mutate(vb.id)}>
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
                               </>
                             )}
                           </div>

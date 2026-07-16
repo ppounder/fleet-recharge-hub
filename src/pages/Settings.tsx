@@ -16,8 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, AtSign, Phone, Mail, Bell, LogOut } from "lucide-react";
-import { EditActionButton } from "@/components/ui/action-buttons";
+import { User, AtSign, Phone, Mail, Bell, LogOut, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -77,7 +76,13 @@ function Row({ icon, label, value, onEdit, trailing }: RowProps) {
       )}
       {trailing}
       {onEdit && (
-        <EditActionButton label={`Edit ${label}`} onClick={onEdit} className="ml-2" />
+        <button
+          onClick={onEdit}
+          className="p-1 ml-2 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={`Edit ${label}`}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
       )}
     </div>
   );

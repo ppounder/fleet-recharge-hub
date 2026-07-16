@@ -11,8 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Network } from "lucide-react";
-import { DeleteActionButton } from "@/components/ui/action-buttons";
+import { Plus, Trash2, Network } from "lucide-react";
 
 export default function SupplierNetworks() {
   const { toast } = useToast();
@@ -143,7 +142,14 @@ export default function SupplierNetworks() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <DeleteActionButton label="Delete network" onClick={() => setDeleteId(n.id)} />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleteId(n.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
