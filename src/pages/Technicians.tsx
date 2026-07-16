@@ -356,17 +356,6 @@ export default function Technicians() {
     },
   });
 
-  const deleteTech = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("technicians" as any).delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["technicians-list"] });
-      qc.invalidateQueries({ queryKey: ["technicians"] });
-    },
-  });
-
   const workshopName = (id: string | null) => workshops.find((w) => w.id === id)?.name ?? "";
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
 
