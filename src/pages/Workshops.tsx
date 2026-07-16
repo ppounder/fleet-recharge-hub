@@ -335,6 +335,7 @@ export default function Workshops() {
   };
 
   const countryName = (code: string) => ISO_COUNTRIES.find((c) => c.code === code)?.name ?? code;
+  const parentName = (id: string | null) => parentSuppliers.find((s) => s.id === id)?.name ?? "";
 
   const openAdd = () => {
     setEditingId(null);
