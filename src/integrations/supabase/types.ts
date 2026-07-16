@@ -1059,6 +1059,7 @@ export type Database = {
           provides_parts: boolean
           provides_tyres: boolean
           provides_workshop: boolean
+          services: string[]
           town_city: string | null
           updated_at: string
           user_id: string | null
@@ -1083,6 +1084,7 @@ export type Database = {
           provides_parts?: boolean
           provides_tyres?: boolean
           provides_workshop?: boolean
+          services?: string[]
           town_city?: string | null
           updated_at?: string
           user_id?: string | null
@@ -1107,6 +1109,7 @@ export type Database = {
           provides_parts?: boolean
           provides_tyres?: boolean
           provides_workshop?: boolean
+          services?: string[]
           town_city?: string | null
           updated_at?: string
           user_id?: string | null
