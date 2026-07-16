@@ -122,7 +122,7 @@ const emptyForm = (): WorkshopForm => ({
   postcode: "",
   contact_phone: "",
   contact_email: "",
-  services: [...ALL_SERVICE_KEYS],
+  services: ["workshop"],
 });
 
 type WorkshopContact = {
