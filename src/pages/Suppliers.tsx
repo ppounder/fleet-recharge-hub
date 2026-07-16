@@ -45,6 +45,7 @@ type Supplier = {
   name: string;
   parent_supplier_id: string | null;
   pl_account_number: string | null;
+  reference_number: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
@@ -60,11 +61,12 @@ type Supplier = {
   internal_company: boolean;
 };
 
-type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
+type ColKey = "name" | "pl_account_number" | "reference_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
 
 const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "pl_account_number", label: "P/L Account", sortable: true },
+  { key: "reference_number", label: "Reference", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
   { key: "county", label: "County", sortable: true },
   { key: "country", label: "Country", sortable: true },
