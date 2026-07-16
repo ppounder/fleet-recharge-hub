@@ -495,7 +495,7 @@ export default function Customers() {
                   </TableHeader>
                   <TableBody>
                     {filtered.map((s) => (
-                      <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openEdit(s)}>
+                      <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap" onClick={() => openEdit(s)}>
                         {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
                           switch (k) {
                             case "name": return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
