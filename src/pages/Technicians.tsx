@@ -719,7 +719,7 @@ export default function Technicians() {
                   {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
                 </div>
               </div>
-            </section>
+            </CollapsibleCard>
 
             <CollapsibleCard title="Address details" defaultOpen={addressOpen}>
               <div className="grid grid-cols-2 gap-3">
