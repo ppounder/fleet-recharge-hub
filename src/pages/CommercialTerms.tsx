@@ -18,7 +18,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { MenuPricesPanel } from "@/components/MenuPricesPanel";
 import { LabourRatesPanel } from "@/components/LabourRatesPanel";
-import { Plus, Trash2, ArrowLeft, Handshake, Calendar } from "lucide-react";
+import { Plus, ArrowLeft, Handshake, Calendar } from "lucide-react";
+import { DeleteActionButton } from "@/components/ui/action-buttons";
 import { format } from "date-fns";
 
 export default function CommercialTerms() {
