@@ -527,13 +527,13 @@ export default function Technicians() {
           id: editingId,
           payload: result.data,
           workshop_id: current.workshop_id,
-          start_date: current.allocation_start_date,
+          start_date: result.data.start_date,
         });
       } else {
         const created: any = await createTech.mutateAsync({
           payload: result.data,
           workshop_id: current.workshop_id,
-          start_date: current.allocation_start_date,
+          start_date: result.data.start_date,
         });
         techId = created?.id ?? null;
       }
