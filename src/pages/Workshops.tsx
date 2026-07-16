@@ -629,6 +629,51 @@ export default function Workshops() {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label className="text-xs">Parent company</Label>
+                  <Popover open={parentOpen} onOpenChange={setParentOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between h-10 bg-card font-normal">
+                        {form.parent_supplier_id ? parentName(form.parent_supplier_id) : <span className="text-muted-foreground">Select...</span>}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search supplier..." />
+                        <CommandList>
+                          <CommandEmpty>No suppliers found.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem onSelect={() => { updateField("parent_supplier_id", null); setParentOpen(false); }}>
+                              <Check className={cn("mr-2 h-4 w-4", !form.parent_supplier_id ? "opacity-100" : "opacity-0")} />
+                              None
+                            </CommandItem>
+                            {parentSuppliers.map((s) => (
+                              <CommandItem key={s.id} value={s.name} onSelect={() => { updateField("parent_supplier_id", s.id); setParentOpen(false); }}>
+                                <Check className={cn("mr-2 h-4 w-4", form.parent_supplier_id === s.id ? "opacity-100" : "opacity-0")} />
+                                {s.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Internal company</Label>
+                  <div className="flex items-center gap-3 rounded-md border border-input bg-card px-3 h-10 w-fit">
+                    <span className={cn("text-sm font-medium", !form.internal_company && "text-muted-foreground")}>No</span>
+                    <Switch
+                      checked={form.internal_company}
+                      onCheckedChange={(v) => updateField("internal_company", !!v)}
+                      aria-label="Internal company"
+                    />
+                    <span className={cn("text-sm font-medium", form.internal_company && "text-primary")}>Yes</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="pl_account_number" className="text-xs">P/L Account number</Label>
                   <Input id="pl_account_number" value={form.pl_account_number} onChange={(e) => updateField("pl_account_number", e.target.value)} className={errCls("pl_account_number")} />
                   {errors.pl_account_number && <p className="text-xs text-destructive">{errors.pl_account_number}</p>}
