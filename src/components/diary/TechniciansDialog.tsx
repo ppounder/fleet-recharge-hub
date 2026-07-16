@@ -267,14 +267,19 @@ export function TechniciansDialog({ open, onOpenChange }: { open: boolean; onOpe
                         <TooltipContent>Edit name</TooltipContent>
                       </Tooltip>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setConfirmDelete({ id: t.id, name: fullName })}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setConfirmDelete({ id: t.id, name: fullName })}
+                          className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete technician</TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               );
