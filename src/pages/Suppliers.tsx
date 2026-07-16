@@ -730,6 +730,17 @@ export default function Suppliers() {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label className="text-xs">Internal company</Label>
+                  <label className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 cursor-pointer w-fit h-10">
+                    <Checkbox
+                      checked={form.internal_company}
+                      onCheckedChange={(v) => updateField("internal_company", !!v)}
+                    />
+                    <span className="text-sm">Internal company</span>
+                  </label>
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="pl_account_number" className="text-xs">P/L Account number</Label>
                   <Input
                     id="pl_account_number"
