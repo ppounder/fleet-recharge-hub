@@ -901,8 +901,7 @@ export default function Suppliers() {
               </div>
             </CollapsibleCard>
 
-            <section className="space-y-3">
-              <h3 className="text-sm font-semibold">Services provided *</h3>
+            <CollapsibleCard title="Services provided *">
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { key: "provides_parts", label: "Parts supplier" },
