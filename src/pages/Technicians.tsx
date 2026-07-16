@@ -859,11 +859,11 @@ export default function Technicians() {
                   </Popover>
                 </div>
               </div>
-            </section>
+            </CollapsibleCard>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Allocation *</h3>
+            <CollapsibleCard
+              title="Allocation *"
+              action={
                 <Button type="button" size="sm" variant="outline" onClick={() => {
                   setEditingAllocId(null);
                   setAllocDraft(emptyAllocation());
@@ -872,7 +872,8 @@ export default function Technicians() {
                 }}>
                   <Plus className="w-4 h-4 mr-1" /> Add allocation
                 </Button>
-              </div>
+              }
+            >
               {allocMissingError && <p className="text-xs text-destructive">{allocMissingError}</p>}
               <div className="rounded-md border">
                 <Table>
