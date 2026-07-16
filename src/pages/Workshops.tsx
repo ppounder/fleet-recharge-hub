@@ -536,11 +536,11 @@ export default function Workshops() {
                             case "contact_email": return <TableCell key={k}>{s.contact_email || "—"}</TableCell>;
                             case "services":
                               return (
-                                <TableCell key={k}>
-                                  <div className="flex flex-wrap gap-1">
+                                <TableCell key={k} className="max-w-[260px]">
+                                  <div className="flex flex-nowrap gap-1 overflow-hidden">
                                     {(s.services && s.services.length > 0) ? (
                                       s.services.map((sv) => (
-                                        <Badge key={sv} variant="secondary">{serviceLabel(sv)}</Badge>
+                                        <Badge key={sv} variant="secondary" className="whitespace-nowrap shrink-0">{serviceLabel(sv)}</Badge>
                                       ))
                                     ) : (
                                       <span className="text-muted-foreground">—</span>
