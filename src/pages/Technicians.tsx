@@ -821,44 +821,6 @@ export default function Technicians() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Workshop *</Label>
-                  <Popover open={workshopOpen} onOpenChange={setWorkshopOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.workshop_id && "border-destructive focus-visible:ring-destructive")}>
-                        {form.workshop_id ? workshopName(form.workshop_id) : <span className="text-muted-foreground">Select workshop...</span>}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search workshop..." />
-                        <CommandList>
-                          <CommandEmpty>No workshops found.</CommandEmpty>
-                          <CommandGroup>
-                            {workshops.map((w) => (
-                              <CommandItem key={w.id} value={w.name} onSelect={() => { updateField("workshop_id", w.id); setWorkshopOpen(false); }}>
-                                <Check className={cn("mr-2 h-4 w-4", form.workshop_id === w.id ? "opacity-100" : "opacity-0")} />
-                                {w.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {errors.workshop_id && <p className="text-xs text-destructive">{errors.workshop_id}</p>}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Start date *</Label>
-                  <DatePicker
-                    value={form.start_date}
-                    onChange={(d) => updateField("start_date", d)}
-                    className={cn(errors.start_date && "border-destructive")}
-                  />
-                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date as any}</p>}
-                </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs">PIN *</Label>
