@@ -120,12 +120,8 @@ export default function VatBandsSettings() {
                               </>
                             ) : (
                               <>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setEditingId(vb.id); setEditName(vb.name); setEditPercentage(String(vb.percentage)); }}>
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => deleteVatBand.mutate(vb.id)}>
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
+                                <EditActionButton label="Edit VAT band" onClick={() => { setEditingId(vb.id); setEditName(vb.name); setEditPercentage(String(vb.percentage)); }} />
+                                <DeleteActionButton label="Delete VAT band" onClick={() => deleteVatBand.mutate(vb.id)} />
                               </>
                             )}
                           </div>
