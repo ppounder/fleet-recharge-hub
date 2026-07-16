@@ -1140,38 +1140,94 @@ export type Database = {
       technicians: {
         Row: {
           active: boolean
+          address_line1: string | null
+          address_line2: string | null
+          address_line3: string | null
           color: string
+          country: string | null
+          county: string | null
           created_at: string
           email: string | null
+          employee_number: string | null
           first_name: string
           fleet_id: string
           id: string
+          job_title: string | null
+          labour_type: string | null
           last_name: string
+          ni_number: string | null
+          phone: string | null
+          pin: string | null
+          postcode: string | null
+          start_date: string
+          status: string
+          town_city: string | null
           updated_at: string
+          workshop_id: string | null
         }
         Insert: {
           active?: boolean
+          address_line1?: string | null
+          address_line2?: string | null
+          address_line3?: string | null
           color?: string
+          country?: string | null
+          county?: string | null
           created_at?: string
           email?: string | null
+          employee_number?: string | null
           first_name: string
           fleet_id: string
           id?: string
+          job_title?: string | null
+          labour_type?: string | null
           last_name: string
+          ni_number?: string | null
+          phone?: string | null
+          pin?: string | null
+          postcode?: string | null
+          start_date?: string
+          status?: string
+          town_city?: string | null
           updated_at?: string
+          workshop_id?: string | null
         }
         Update: {
           active?: boolean
+          address_line1?: string | null
+          address_line2?: string | null
+          address_line3?: string | null
           color?: string
+          country?: string | null
+          county?: string | null
           created_at?: string
           email?: string | null
+          employee_number?: string | null
           first_name?: string
           fleet_id?: string
           id?: string
+          job_title?: string | null
+          labour_type?: string | null
           last_name?: string
+          ni_number?: string | null
+          phone?: string | null
+          pin?: string | null
+          postcode?: string | null
+          start_date?: string
+          status?: string
+          town_city?: string | null
           updated_at?: string
+          workshop_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "technicians_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tyre_disposals: {
         Row: {
