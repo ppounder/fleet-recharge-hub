@@ -127,8 +127,6 @@ const technicianSchema = z.object({
     .max(255)
     .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
   job_title: z.string().trim().max(100),
-  start_date: z.string().min(1, { message: "Start date is required" }),
-  workshop_id: z.string().min(1, { message: "Workshop is required" }),
   status: z.enum(["active", "account_locked", "deleted"]),
   pin: z
     .string()
@@ -139,6 +137,43 @@ const technicianSchema = z.object({
   employee_number: z.string().trim().max(50),
   ni_number: z.string().trim().max(20),
   labour_type: z.string().trim().max(50),
+});
+
+export type AllocationType = "permanent" | "temporary_transfer";
+const ALLOCATION_TYPE_LABELS: Record<AllocationType, string> = {
+  permanent: "Permanent",
+  temporary_transfer: "Temporary Transfer",
+};
+
+export type AllocationDraft = {
+  id: string;
+  workshop_id: string;
+  allocation_start_date: string; // yyyy-MM-dd
+  allocation_end_date: string; // yyyy-MM-dd | ""
+  allocation_type: AllocationType;
+  revert_after_end: boolean;
+  _isNew?: boolean;
+};
+
+const allocationSchema = z.object({
+  workshop_id: z.string().min(1, { message: "Workshop is required" }),
+  allocation_start_date: z.string().min(1, { message: "Allocation start date is required" }),
+  allocation_end_date: z.string(),
+  allocation_type: z.enum(["permanent", "temporary_transfer"]),
+  revert_after_end: z.boolean(),
+}).refine((v) => !v.allocation_end_date || v.allocation_end_date >= v.allocation_start_date, {
+  message: "End date must be on or after start date",
+  path: ["allocation_end_date"],
+});
+
+const emptyAllocation = (): AllocationDraft => ({
+  id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+  workshop_id: "",
+  allocation_start_date: format(new Date(), "yyyy-MM-dd"),
+  allocation_end_date: "",
+  allocation_type: "permanent",
+  revert_after_end: false,
+  _isNew: true,
 });
 
 type TechnicianForm = z.infer<typeof technicianSchema>;
