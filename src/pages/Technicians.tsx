@@ -62,6 +62,11 @@ type Technician = {
   workshop_id: string | null;
   status: "active" | "account_locked" | "deleted";
   pin: string | null;
+  username: string | null;
+  password_hash: string | null;
+  pin_hash: string | null;
+  failed_login_attempts: number;
+  auto_unlock_enabled: boolean;
   employee_number: string | null;
   ni_number: string | null;
   labour_type: string | null;
@@ -123,20 +128,24 @@ const technicianSchema = z.object({
   email: z
     .string()
     .trim()
+    .min(1, { message: "Email is required" })
     .max(255)
-    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
+    .refine((v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Enter a valid email address" }),
+  username: z
+    .string()
+    .trim()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(50)
+    .refine((v) => /^[A-Za-z0-9._-]+$/.test(v), { message: "Only letters, numbers, dot, dash, underscore" }),
+  password: z.string(), // validated conditionally on save
   job_title: z.string().trim().max(100),
   status: z.enum(["active", "account_locked", "deleted"]),
   start_date: z.string().min(1, { message: "Start date is required" }),
-  pin: z
-    .string()
-    .trim()
-    .min(4, { message: "PIN must be at least 4 digits" })
-    .max(10, { message: "PIN must be 10 digits or fewer" })
-    .refine((v) => /^\d+$/.test(v), { message: "PIN must be numeric" }),
+  pin: z.string(), // validated conditionally on save
   employee_number: z.string().trim().max(50),
   ni_number: z.string().trim().max(20),
   labour_type: z.string().trim().max(50),
+  auto_unlock_enabled: z.boolean(),
 });
 
 export type AllocationType = "permanent" | "temporary_transfer";
@@ -191,6 +200,8 @@ const emptyForm = (): TechnicianForm => ({
   postcode: "",
   phone: "",
   email: "",
+  username: "",
+  password: "",
   job_title: "",
   status: "active",
   start_date: format(new Date(), "yyyy-MM-dd"),
@@ -198,6 +209,7 @@ const emptyForm = (): TechnicianForm => ({
   employee_number: "",
   ni_number: "",
   labour_type: "",
+  auto_unlock_enabled: true,
 });
 
 export default function Technicians() {
@@ -277,7 +289,8 @@ export default function Technicians() {
         fleet_id,
         first_name: payload.first_name.trim(),
         last_name: payload.last_name.trim(),
-        email: payload.email.trim() || null,
+        email: payload.email.trim(),
+        username: payload.username.trim(),
         phone: payload.phone.trim() || null,
         address_line1: payload.address_line1.trim() || null,
         address_line2: payload.address_line2.trim() || null,
@@ -290,7 +303,7 @@ export default function Technicians() {
         start_date: new Date(start_date).toISOString(),
         workshop_id,
         status: payload.status,
-        pin: payload.pin.trim(),
+        auto_unlock_enabled: payload.auto_unlock_enabled,
         employee_number: payload.employee_number.trim() || null,
         ni_number: payload.ni_number.trim() || null,
         labour_type: payload.labour_type.trim() || null,
@@ -299,6 +312,14 @@ export default function Technicians() {
       };
       const { data, error } = await supabase.from("technicians" as any).insert(insertPayload as any).select().single();
       if (error) throw error;
+      // Hash and store credentials via SECURITY DEFINER RPC
+      const { error: credErr } = await supabase.rpc("set_technician_credentials" as any, {
+        _tech_id: (data as any).id,
+        _username: payload.username.trim(),
+        _password: payload.password,
+        _pin: payload.pin,
+      });
+      if (credErr) throw credErr;
       return data;
     },
     onSuccess: () => {
@@ -312,7 +333,7 @@ export default function Technicians() {
       const updatePayload: any = {
         first_name: payload.first_name.trim(),
         last_name: payload.last_name.trim(),
-        email: payload.email.trim() || null,
+        email: payload.email.trim(),
         phone: payload.phone.trim() || null,
         address_line1: payload.address_line1.trim() || null,
         address_line2: payload.address_line2.trim() || null,
@@ -325,7 +346,7 @@ export default function Technicians() {
         start_date: new Date(start_date).toISOString(),
         workshop_id,
         status: payload.status,
-        pin: payload.pin.trim(),
+        auto_unlock_enabled: payload.auto_unlock_enabled,
         employee_number: payload.employee_number.trim() || null,
         ni_number: payload.ni_number.trim() || null,
         labour_type: payload.labour_type.trim() || null,
@@ -338,6 +359,14 @@ export default function Technicians() {
         .select()
         .single();
       if (error) throw error;
+      // Update credentials (only fields provided)
+      const { error: credErr } = await supabase.rpc("set_technician_credentials" as any, {
+        _tech_id: id,
+        _username: payload.username.trim(),
+        _password: payload.password ? payload.password : null,
+        _pin: payload.pin ? payload.pin : null,
+      });
+      if (credErr) throw credErr;
       return data;
     },
     onSuccess: () => {
@@ -345,6 +374,7 @@ export default function Technicians() {
       qc.invalidateQueries({ queryKey: ["technicians"] });
     },
   });
+
 
   const deleteTech = useMutation({
     mutationFn: async (id: string) => {
@@ -413,13 +443,16 @@ export default function Technicians() {
       postcode: t.postcode ?? "",
       phone: t.phone ?? "",
       email: t.email ?? "",
+      username: t.username ?? "",
+      password: "",
       job_title: t.job_title ?? "",
       status: t.status ?? "active",
       start_date: t.start_date ? format(new Date(t.start_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      pin: t.pin ?? "",
+      pin: "",
       employee_number: t.employee_number ?? "",
       ni_number: t.ni_number ?? "",
       labour_type: t.labour_type ?? "",
+      auto_unlock_enabled: t.auto_unlock_enabled ?? true,
     });
     setDialogOpen(true);
     setDeletedAllocationIds([]);
@@ -503,11 +536,24 @@ export default function Technicians() {
 
   const handleSave = async () => {
     const result = technicianSchema.safeParse(form);
-    if (!result.success) {
-      const fieldErrors: FormErrors = {};
-      for (const issue of result.error.issues) {
-        const key = issue.path[0] as keyof FormErrors;
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+    const extra: FormErrors = {};
+    // Conditional validation for password + pin
+    const pw = form.password ?? "";
+    const pin = form.pin ?? "";
+    if (!editingId) {
+      if (pw.length < 8) extra.password = "Password must be at least 8 characters";
+      if (!/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
+    } else {
+      if (pw && pw.length < 8) extra.password = "Password must be at least 8 characters";
+      if (pin && !/^\d{4,10}$/.test(pin)) extra.pin = "PIN must be 4-10 digits";
+    }
+    if (!result.success || Object.keys(extra).length) {
+      const fieldErrors: FormErrors = { ...extra };
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          const key = issue.path[0] as keyof FormErrors;
+          if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+        }
       }
       setErrors(fieldErrors);
       toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
@@ -560,6 +606,62 @@ export default function Technicians() {
       setDeleteId(null);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const [resetting, setResetting] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const [tempPasswordDialog, setTempPasswordDialog] = useState<string | null>(null);
+
+  const handleResetPassword = async () => {
+    if (!editingId) return;
+    setResetting(true);
+    try {
+      const { data, error } = await supabase.rpc("reset_technician_password" as any, { _tech_id: editingId });
+      if (error) throw error;
+      setTempPasswordDialog(String(data));
+      toast({ title: "Password reset", description: "A temporary password was generated." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const handleSendReminder = async () => {
+    if (!editingId || !form.email) return;
+    setSendingReminder(true);
+    try {
+      // Best-effort: invoke transactional email function if present
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          to: form.email,
+          subject: "Your account username reminder",
+          html: `<p>Hi ${form.first_name || ""},</p><p>Your username is: <strong>${form.username}</strong></p><p>If you have forgotten your password, contact your workshop administrator to reset it.</p>`,
+        },
+      }).catch(() => null);
+      toast({ title: "Reminder sent", description: `A reminder was sent to ${form.email}.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (!editingId) return;
+    setUnlocking(true);
+    try {
+      const { error } = await supabase.rpc("unlock_technician_account" as any, { _tech_id: editingId });
+      if (error) throw error;
+      updateField("status", "active");
+      toast({ title: "Account unlocked" });
+      qc.invalidateQueries({ queryKey: ["technicians-list"] });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -781,15 +883,10 @@ export default function Technicians() {
                   <Input value={form.postcode} onChange={(e) => updateField("postcode", e.target.value)} className={errCls("postcode")} />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 col-span-2">
                   <Label className="text-xs">Telephone number</Label>
                   <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} className={errCls("phone")} />
                   {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Email address</Label>
-                  <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} className={errCls("email")} />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
               </div>
             </CollapsibleCard>
@@ -859,19 +956,88 @@ export default function Technicians() {
                   <Label className="text-xs">N.I. number</Label>
                   <Input value={form.ni_number} onChange={(e) => updateField("ni_number", e.target.value.toUpperCase())} className={errCls("ni_number")} />
                 </div>
+              </div>
+            </CollapsibleCard>
+
+            <CollapsibleCard title="Login details">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">PIN *</Label>
+                  <Label className="text-xs">Username *</Label>
                   <Input
+                    value={form.username}
+                    onChange={(e) => updateField("username", e.target.value.trim())}
+                    className={errCls("username")}
+                    autoComplete="off"
+                  />
+                  {errors.username && <p className="text-xs text-destructive">{errors.username}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email *</Label>
+                  <Input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => updateField("email", e.target.value)}
+                    className={errCls("email")}
+                  />
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Password {editingId ? "" : "*"}</Label>
+                  <Input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => updateField("password", e.target.value)}
+                    className={errCls("password")}
+                    placeholder={editingId ? "Leave blank to keep current" : "Minimum 8 characters"}
+                    autoComplete="new-password"
+                  />
+                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  <p className="text-xs text-muted-foreground">Stored securely as a bcrypt hash.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">PIN {editingId ? "" : "*"}</Label>
+                  <Input
+                    type="password"
                     inputMode="numeric"
                     value={form.pin}
                     onChange={(e) => updateField("pin", e.target.value.replace(/\D/g, ""))}
                     className={errCls("pin")}
-                    placeholder="Minimum 4 digits"
+                    placeholder={editingId ? "Leave blank to keep current" : "Minimum 4 digits"}
+                    autoComplete="off"
                   />
                   {errors.pin && <p className="text-xs text-destructive">{errors.pin}</p>}
+                  <p className="text-xs text-muted-foreground">Stored securely as a bcrypt hash.</p>
                 </div>
+
+                <div className="col-span-2 flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <Label className="text-sm">Auto-unlock account after failed login attempts</Label>
+                    <p className="text-xs text-muted-foreground">When on, the account unlocks automatically once the lockout period expires.</p>
+                  </div>
+                  <Switch
+                    checked={form.auto_unlock_enabled}
+                    onCheckedChange={(v) => updateField("auto_unlock_enabled", v)}
+                  />
+                </div>
+
+                {editingId && (
+                  <div className="col-span-2 flex flex-wrap items-center gap-2 pt-1">
+                    <Button type="button" variant="outline" size="sm" onClick={handleResetPassword} disabled={resetting}>
+                      {resetting ? "Resetting..." : "Reset password"}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={handleSendReminder} disabled={sendingReminder}>
+                      {sendingReminder ? "Sending..." : "Send password reminder"}
+                    </Button>
+                    {form.status === "account_locked" && (
+                      <Button type="button" variant="outline" size="sm" onClick={handleUnlock} disabled={unlocking}>
+                        {unlocking ? "Unlocking..." : "Unlock account"}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </CollapsibleCard>
+
 
             <CollapsibleCard
               title="Allocation *"
@@ -1075,6 +1241,23 @@ export default function Technicians() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!tempPasswordDialog} onOpenChange={(o) => !o && setTempPasswordDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Temporary password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Share this password securely with the technician. It won't be shown again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-md border bg-muted p-3 font-mono text-center text-lg select-all">
+            {tempPasswordDialog}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setTempPasswordDialog(null)}>Done</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!confirmDeleteAllocId} onOpenChange={(o) => !o && setConfirmDeleteAllocId(null)}>
         <AlertDialogContent>
