@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Collapsible, CollapsibleContent, CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
@@ -33,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Search, Columns3, ArrowUp, ArrowDown, ChevronsUpDown, Check, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ISO_COUNTRIES } from "@/lib/iso-countries";
 import { cn } from "@/lib/utils";
@@ -106,19 +109,18 @@ const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
 const technicianSchema = z.object({
   first_name: z.string().trim().min(1, { message: "First name is required" }).max(80),
   last_name: z.string().trim().min(1, { message: "Last name is required" }).max(80),
-  address_line1: z.string().trim().min(1, { message: "Address line 1 is required" }).max(150),
+  address_line1: z.string().trim().max(150),
   address_line2: z.string().trim().max(150),
   address_line3: z.string().trim().max(150),
-  town_city: z.string().trim().min(1, { message: "Town/City is required" }).max(100),
+  town_city: z.string().trim().max(100),
   county: z.string().trim().max(100),
-  country: z.string().trim().min(1, { message: "Country is required" }).max(2),
-  postcode: z.string().trim().min(1, { message: "Postcode is required" }).max(20),
+  country: z.string().trim().max(2),
+  postcode: z.string().trim().max(20),
   phone: z
     .string()
     .trim()
-    .min(1, { message: "Telephone number is required" })
     .max(20)
-    .refine((v) => /^\+?[0-9\s()-]{7,}$/.test(v), { message: "Enter a valid telephone number" }),
+    .refine((v) => v === "" || /^\+?[0-9\s()-]{7,}$/.test(v), { message: "Enter a valid telephone number" }),
   email: z
     .string()
     .trim()
@@ -181,6 +183,7 @@ export default function Technicians() {
   const [workshopOpen, setWorkshopOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [labourTypeOpen, setLabourTypeOpen] = useState(false);
+  const [addressOpen, setAddressOpen] = useState(false);
 
   const updateField = <K extends keyof TechnicianForm>(key: K, value: TechnicianForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -230,13 +233,13 @@ export default function Technicians() {
         last_name: payload.last_name.trim(),
         email: payload.email.trim() || null,
         phone: payload.phone.trim() || null,
-        address_line1: payload.address_line1.trim(),
+        address_line1: payload.address_line1.trim() || null,
         address_line2: payload.address_line2.trim() || null,
         address_line3: payload.address_line3.trim() || null,
-        town_city: payload.town_city.trim(),
+        town_city: payload.town_city.trim() || null,
         county: payload.county.trim() || null,
-        country: payload.country,
-        postcode: payload.postcode.trim(),
+        country: payload.country.trim() || null,
+        postcode: payload.postcode.trim() || null,
         job_title: payload.job_title.trim() || null,
         start_date: new Date(payload.start_date).toISOString(),
         workshop_id: payload.workshop_id,
@@ -265,13 +268,13 @@ export default function Technicians() {
         last_name: payload.last_name.trim(),
         email: payload.email.trim() || null,
         phone: payload.phone.trim() || null,
-        address_line1: payload.address_line1.trim(),
+        address_line1: payload.address_line1.trim() || null,
         address_line2: payload.address_line2.trim() || null,
         address_line3: payload.address_line3.trim() || null,
-        town_city: payload.town_city.trim(),
+        town_city: payload.town_city.trim() || null,
         county: payload.county.trim() || null,
-        country: payload.country,
-        postcode: payload.postcode.trim(),
+        country: payload.country.trim() || null,
+        postcode: payload.postcode.trim() || null,
         job_title: payload.job_title.trim() || null,
         start_date: new Date(payload.start_date).toISOString(),
         workshop_id: payload.workshop_id,
@@ -570,77 +573,90 @@ export default function Technicians() {
                   <Input value={form.last_name} onChange={(e) => updateField("last_name", e.target.value)} className={errCls("last_name")} />
                   {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
                 </div>
-
-                <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Address line 1 *</Label>
-                  <Input value={form.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} className={errCls("address_line1")} />
-                  {errors.address_line1 && <p className="text-xs text-destructive">{errors.address_line1}</p>}
-                </div>
-                <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Address line 2</Label>
-                  <Input value={form.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} className={errCls("address_line2")} />
-                </div>
-                <div className="space-y-1.5 col-span-2">
-                  <Label className="text-xs">Address line 3</Label>
-                  <Input value={form.address_line3} onChange={(e) => updateField("address_line3", e.target.value)} className={errCls("address_line3")} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Town/City *</Label>
-                  <Input value={form.town_city} onChange={(e) => updateField("town_city", e.target.value)} className={errCls("town_city")} />
-                  {errors.town_city && <p className="text-xs text-destructive">{errors.town_city}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">County</Label>
-                  <Input value={form.county} onChange={(e) => updateField("county", e.target.value)} className={errCls("county")} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Country *</Label>
-                  <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.country && "border-destructive focus-visible:ring-destructive")}>
-                        {form.country ? countryName(form.country) : <span className="text-muted-foreground">Select country...</span>}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search country..." />
-                        <CommandList>
-                          <CommandEmpty>No country found.</CommandEmpty>
-                          <CommandGroup>
-                            {ISO_COUNTRIES.map((c) => (
-                              <CommandItem key={c.code} value={`${c.name} ${c.code}`} onSelect={() => { updateField("country", c.code); setCountryOpen(false); }}>
-                                <Check className={cn("mr-2 h-4 w-4", form.country === c.code ? "opacity-100" : "opacity-0")} />
-                                {c.name} <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Postcode *</Label>
-                  <Input value={form.postcode} onChange={(e) => updateField("postcode", e.target.value)} className={errCls("postcode")} />
-                  {errors.postcode && <p className="text-xs text-destructive">{errors.postcode}</p>}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Telephone number *</Label>
-                  <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} className={errCls("phone")} />
-                  {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Email address</Label>
-                  <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} className={errCls("email")} />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                </div>
               </div>
             </section>
+
+            <Collapsible open={addressOpen} onOpenChange={setAddressOpen}>
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center justify-between w-full text-left group">
+                  <h3 className="text-sm font-semibold">Address details</h3>
+                  {addressOpen ? (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  )}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid grid-cols-2 gap-3 pt-3">
+                  <div className="space-y-1.5 col-span-2">
+                    <Label className="text-xs">Address line 1</Label>
+                    <Input value={form.address_line1} onChange={(e) => updateField("address_line1", e.target.value)} className={errCls("address_line1")} />
+                  </div>
+                  <div className="space-y-1.5 col-span-2">
+                    <Label className="text-xs">Address line 2</Label>
+                    <Input value={form.address_line2} onChange={(e) => updateField("address_line2", e.target.value)} className={errCls("address_line2")} />
+                  </div>
+                  <div className="space-y-1.5 col-span-2">
+                    <Label className="text-xs">Address line 3</Label>
+                    <Input value={form.address_line3} onChange={(e) => updateField("address_line3", e.target.value)} className={errCls("address_line3")} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Town/City</Label>
+                    <Input value={form.town_city} onChange={(e) => updateField("town_city", e.target.value)} className={errCls("town_city")} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">County</Label>
+                    <Input value={form.county} onChange={(e) => updateField("county", e.target.value)} className={errCls("county")} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Country</Label>
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className={cn("w-full justify-between h-10 bg-card font-normal", errors.country && "border-destructive focus-visible:ring-destructive")}>
+                          {form.country ? countryName(form.country) : <span className="text-muted-foreground">Select country...</span>}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search country..." />
+                          <CommandList>
+                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandGroup>
+                              {ISO_COUNTRIES.map((c) => (
+                                <CommandItem key={c.code} value={`${c.name} ${c.code}`} onSelect={() => { updateField("country", c.code); setCountryOpen(false); }}>
+                                  <Check className={cn("mr-2 h-4 w-4", form.country === c.code ? "opacity-100" : "opacity-0")} />
+                                  {c.name} <span className="ml-auto text-xs text-muted-foreground">{c.code}</span>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {errors.country && <p className="text-xs text-destructive">{errors.country}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Postcode</Label>
+                    <Input value={form.postcode} onChange={(e) => updateField("postcode", e.target.value)} className={errCls("postcode")} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Telephone number</Label>
+                    <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} className={errCls("phone")} />
+                    {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Email address</Label>
+                    <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} className={errCls("email")} />
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <section className="space-y-3">
               <h3 className="text-sm font-semibold">Employment</h3>
