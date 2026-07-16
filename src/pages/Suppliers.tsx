@@ -45,6 +45,7 @@ type Supplier = {
   name: string;
   parent_supplier_id: string | null;
   pl_account_number: string | null;
+  reference_number: string | null;
   address_line1: string | null;
   address_line2: string | null;
   address_line3: string | null;
@@ -60,11 +61,12 @@ type Supplier = {
   internal_company: boolean;
 };
 
-type ColKey = "name" | "pl_account_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
+type ColKey = "name" | "pl_account_number" | "reference_number" | "town_city" | "county" | "country" | "postcode" | "contact_phone" | "contact_email" | "services";
 
 const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
   { key: "name", label: "Company name", sortable: true },
   { key: "pl_account_number", label: "P/L Account", sortable: true },
+  { key: "reference_number", label: "Reference", sortable: true },
   { key: "town_city", label: "Town/City", sortable: true },
   { key: "county", label: "County", sortable: true },
   { key: "country", label: "Country", sortable: true },
@@ -91,6 +93,10 @@ const supplierSchema = z
       .string()
       .trim()
       .max(50, { message: "P/L Account must be less than 50 characters" }),
+    reference_number: z
+      .string()
+      .trim()
+      .max(50, { message: "Reference number must be less than 50 characters" }),
     address_line1: z
       .string()
       .trim()
@@ -146,6 +152,7 @@ const emptyForm: SupplierForm = {
   name: "",
   parent_supplier_id: null,
   pl_account_number: "",
+  reference_number: "",
   address_line1: "",
   address_line2: "",
   address_line3: "",
@@ -327,7 +334,7 @@ export default function Suppliers() {
     const q = search.trim().toLowerCase();
     const rows = q
       ? suppliers.filter((s) =>
-          [s.name, s.pl_account_number, s.town_city, s.county, s.country, s.postcode, s.contact_email, s.contact_phone]
+          [s.name, s.pl_account_number, s.reference_number, s.town_city, s.county, s.country, s.postcode, s.contact_email, s.contact_phone]
             .some((v) => v?.toLowerCase().includes(q))
         )
       : suppliers;
@@ -369,6 +376,7 @@ export default function Suppliers() {
       name: s.name ?? "",
       parent_supplier_id: s.parent_supplier_id,
       pl_account_number: s.pl_account_number ?? "",
+      reference_number: s.reference_number ?? "",
       address_line1: s.address_line1 ?? "",
       address_line2: s.address_line2 ?? "",
       address_line3: s.address_line3 ?? "",
@@ -604,6 +612,8 @@ export default function Suppliers() {
                               return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
                             case "pl_account_number":
                               return <TableCell key={k}>{s.pl_account_number || "—"}</TableCell>;
+                            case "reference_number":
+                              return <TableCell key={k}>{s.reference_number || "—"}</TableCell>;
                             case "town_city":
                               return <TableCell key={k}>{s.town_city || "—"}</TableCell>;
                             case "county":
@@ -753,6 +763,18 @@ export default function Suppliers() {
                     className={errCls("pl_account_number")}
                   />
                   {errors.pl_account_number && <p className="text-xs text-destructive">{errors.pl_account_number}</p>}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reference_number" className="text-xs">Reference number</Label>
+                  <Input
+                    id="reference_number"
+                    value={form.reference_number}
+                    onChange={(e) => updateField("reference_number", e.target.value)}
+                    aria-invalid={!!errors.reference_number}
+                    className={errCls("reference_number")}
+                  />
+                  {errors.reference_number && <p className="text-xs text-destructive">{errors.reference_number}</p>}
                 </div>
 
                 <div className="space-y-1.5 col-span-2">
