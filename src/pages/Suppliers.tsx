@@ -152,6 +152,7 @@ const emptyForm: SupplierForm = {
   name: "",
   parent_supplier_id: null,
   pl_account_number: "",
+  reference_number: "",
   address_line1: "",
   address_line2: "",
   address_line3: "",
