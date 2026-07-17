@@ -433,6 +433,8 @@ export default function SMR() {
         const { error } = await supabase.from("smr_work_details").delete().in("id", deletedWdIds);
         if (error) throw error;
       }
+      // Map local WorkDetail.id -> real db id for wiring parts
+      const wdLocalToDb: Record<string, string> = {};
       for (let i = 0; i < workDetails.length; i++) {
         const wd = workDetails[i];
         const body: any = {
@@ -450,10 +452,38 @@ export default function SMR() {
           sort_order: i,
         };
         if (wd._isNew) {
-          const { error } = await supabase.from("smr_work_details").insert(body);
+          const { data: inserted, error } = await supabase.from("smr_work_details").insert(body).select().single();
           if (error) throw error;
+          wdLocalToDb[wd.id] = inserted.id;
         } else {
           const { error } = await supabase.from("smr_work_details").update(body).eq("id", wd.id);
+          if (error) throw error;
+          wdLocalToDb[wd.id] = wd.id;
+        }
+      }
+
+      // Parts
+      if (deletedPartIds.length) {
+        const { error } = await supabase.from("smr_part_details").delete().in("id", deletedPartIds);
+        if (error) throw error;
+      }
+      for (let i = 0; i < partDetails.length; i++) {
+        const p = partDetails[i];
+        const wdDbId = wdLocalToDb[p.smr_work_detail_local_id];
+        if (!wdDbId) continue; // work detail was removed
+        const body: any = {
+          smr_item_id: itemId,
+          smr_work_detail_id: wdDbId,
+          part_id: p.part_id,
+          quantity: p.quantity,
+          vat_band_id: p.vat_band_id,
+          sort_order: i,
+        };
+        if (p.db_id) {
+          const { error } = await supabase.from("smr_part_details").update(body).eq("id", p.db_id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("smr_part_details").insert(body);
           if (error) throw error;
         }
       }
