@@ -743,15 +743,11 @@ export default function Suppliers() {
 
                 <div className="space-y-1.5">
                   <Label className="text-xs">Internal company</Label>
-                  <div className="flex items-center gap-3 rounded-md border border-input bg-card px-3 h-10 w-fit">
-                    <span className={cn("text-sm font-medium", !form.internal_company && "text-muted-foreground")}>No</span>
-                    <Switch
-                      checked={form.internal_company}
-                      onCheckedChange={(v) => updateField("internal_company", !!v)}
-                      aria-label="Internal company"
-                    />
-                    <span className={cn("text-sm font-medium", form.internal_company && "text-primary")}>Yes</span>
-                  </div>
+                  <LabeledSwitch
+                    checked={form.internal_company}
+                    onCheckedChange={(v) => updateField("internal_company", !!v)}
+                    aria-label="Internal company"
+                  />
                 </div>
 
                 <div className="space-y-1.5">
