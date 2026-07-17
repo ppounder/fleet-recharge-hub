@@ -1026,6 +1026,7 @@ export default function SMR() {
                     ))}
                   </SelectContent>
                 </Select>
+                {partDraftErrors.smr_work_detail_local_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.smr_work_detail_local_id}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
