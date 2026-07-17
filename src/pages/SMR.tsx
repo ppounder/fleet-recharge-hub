@@ -703,9 +703,12 @@ export default function SMR() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-end gap-3">
-                  <Switch checked={wdDraft.document_required} onCheckedChange={(v) => setWdDraft((d) => ({ ...d, document_required: v }))} />
-                  <Label className="mb-2">Document upload required</Label>
+                <div>
+                  <Label className="text-base font-semibold">Document upload required</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Switch checked={wdDraft.document_required} onCheckedChange={(v) => setWdDraft((d) => ({ ...d, document_required: v }))} />
+                    <span className="text-sm text-muted-foreground">{wdDraft.document_required ? "Yes" : "No"}</span>
+                  </div>
                 </div>
                 <div>
                   <Label>Reason for work *</Label>
