@@ -929,12 +929,14 @@ export default function SMR() {
                       {WORK_TYPES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {wdDraftErrors.work_type && <p className="text-xs text-destructive mt-1">{wdDraftErrors.work_type}</p>}
                 </div>
                 {wdDraft.work_type === "Other" && (
                   <div className="col-span-2">
                     <Label>Specify work type *</Label>
                     <Input value={wdDraft.work_type_other} onChange={(e) => setWdDraft((d) => ({ ...d, work_type_other: e.target.value }))}
                       className={cn(wdDraftErrors.work_type_other && "border-destructive")} />
+                    {wdDraftErrors.work_type_other && <p className="text-xs text-destructive mt-1">{wdDraftErrors.work_type_other}</p>}
                   </div>
                 )}
                 <div>
