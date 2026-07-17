@@ -569,16 +569,14 @@ export default function SMR() {
 
               <CollapsibleCard title="Applicable Vehicles" defaultOpen>
                 <ApplicableVehiclesEditor
-                  assetTypeOptions={assetTypeOptions}
-                  makeOptions={makeOptions}
-                  modelOptions={modelOptions}
-                  derivativeOptions={derivativeOptions}
+                  vehicles={vehicles}
                   weightBandOptions={weightBandOptions}
                   axleOptions={axleOptions}
                   form={form}
                   setForm={setForm}
                 />
               </CollapsibleCard>
+
 
 
               <CollapsibleCard title="Fixed Price Details" defaultOpen>
