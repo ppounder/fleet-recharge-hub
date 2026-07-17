@@ -173,13 +173,53 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                     <GripVertical className="h-4 w-4" />
                   </button>
                   <span className="inline-block w-5 h-5 rounded shrink-0" style={{ background: b.color }} />
-                  <Input
-                    defaultValue={b.name}
-                    onBlur={(e) => e.target.value !== b.name && upsert.mutate({ ...b, name: e.target.value })}
-                    className="flex-1"
-                  />
+                  {editingId === b.id ? (
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Bay name"
+                      className="flex-1"
+                    />
+                  ) : (
+                    <Input value={b.name} readOnly className="flex-1 bg-muted/50" />
+                  )}
                   <div className="flex items-center gap-2 shrink-0">
                     <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ ...b, active: v })} />
+                    {editingId === b.id ? (
+                      <>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => saveEdit(b)}>
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Save</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={cancelEdit}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Cancel</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </>
+                    ) : (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => startEdit(b)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit name</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
                         <TooltipTrigger asChild>
