@@ -471,10 +471,15 @@ export default function Parts() {
       cost: 0, rrp: 0, stock_category: "Own stock", vat_band_id: null,
       bin_number: "", bin_location: "", posting_definition_id: null, _isNew: true,
     });
+    setStockCostStr("0.00");
+    setStockRrpStr("0.00");
     setStockDialog({ open: true, index: null });
   };
   const openEditStock = (i: number) => {
-    setStockDraft({ ...stockItems[i] });
+    const item = stockItems[i];
+    setStockDraft({ ...item });
+    setStockCostStr(Number(item.cost || 0).toFixed(2));
+    setStockRrpStr(Number(item.rrp || 0).toFixed(2));
     setStockDialog({ open: true, index: i });
   };
   const saveStockDraft = () => {
