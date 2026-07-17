@@ -568,21 +568,18 @@ export default function SMR() {
               </CollapsibleCard>
 
               <CollapsibleCard title="Applicable Vehicles" defaultOpen>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <MultiCheckField label="Asset type" options={assetTypeOptions} value={form.applicable_asset_types}
-                    onChange={(v) => setForm((f) => ({ ...f, applicable_asset_types: v }))} />
-                  <MultiCheckField label="Make" options={makeOptions} value={form.applicable_makes}
-                    onChange={(v) => setForm((f) => ({ ...f, applicable_makes: v }))} />
-                  <MultiCheckField label="Model" options={modelOptions} value={form.applicable_models}
-                    onChange={(v) => setForm((f) => ({ ...f, applicable_models: v }))} />
-                  <MultiCheckField label="Derivative" options={derivativeOptions} value={form.applicable_derivatives}
-                    onChange={(v) => setForm((f) => ({ ...f, applicable_derivatives: v }))} />
-                  <MultiCheckField label="Weight band" options={weightBandOptions} value={form.applicable_weight_bands}
-                    onChange={(v) => setForm((f) => ({ ...f, applicable_weight_bands: v }))} />
-                  <MultiCheckField label="No of axles" options={axleOptions} value={form.applicable_axles}
-                    onChange={(v) => setForm((f) => ({ ...f, applicable_axles: v }))} />
-                </div>
+                <ApplicableVehiclesEditor
+                  assetTypeOptions={assetTypeOptions}
+                  makeOptions={makeOptions}
+                  modelOptions={modelOptions}
+                  derivativeOptions={derivativeOptions}
+                  weightBandOptions={weightBandOptions}
+                  axleOptions={axleOptions}
+                  form={form}
+                  setForm={setForm}
+                />
               </CollapsibleCard>
+
 
               <CollapsibleCard title="Fixed Price Details" defaultOpen>
                 <div className="space-y-1.5 mb-4">
