@@ -535,13 +535,13 @@ export default function SMR() {
 
         {/* Add/Edit dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-4xl max-h-[90vh] !grid-rows-[auto_1fr_auto] grid-cols-1 p-0 gap-0">
             <DialogHeader className="px-6 pt-6 pb-2">
               <DialogTitle>{editingId ? "Edit SMR" : "Add SMR"}</DialogTitle>
               <DialogDescription>Configure a Service, Maintenance & Repair work item.</DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="min-h-0 overflow-y-auto px-6 py-4 space-y-4">
               <CollapsibleCard title="SMR Details" defaultOpen>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
@@ -676,11 +676,11 @@ export default function SMR() {
 
         {/* Work detail draft dialog */}
         <Dialog open={wdDialogOpen} onOpenChange={setWdDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-2xl max-h-[90vh] !grid-rows-[auto_1fr_auto] grid-cols-1 p-0 gap-0">
             <DialogHeader className="px-6 pt-6">
               <DialogTitle>{editingWdId ? "Edit work item" : "Add work item"}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-2 px-6 overflow-y-auto flex-1">
+            <div className="space-y-4 py-2 px-6 overflow-y-auto min-h-0">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Work item name *</Label>
