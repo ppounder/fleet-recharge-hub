@@ -1049,6 +1049,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {partDraftErrors.part_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.part_id}</p>}
                 </div>
                 <div>
                   <Label>Part description *</Label>
