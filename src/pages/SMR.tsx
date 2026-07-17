@@ -951,6 +951,7 @@ export default function SMR() {
                 <div>
                   <Label>Labour hours *</Label>
                   <Input type="text" inputMode="decimal" value={wdLabourHoursText}
+                    className={cn(wdDraftErrors.labour_hours && "border-destructive")}
                     onChange={(e) => {
                       const v = e.target.value;
                       if (/^[0-9]*\.?[0-9]{0,2}$/.test(v)) {
@@ -963,6 +964,7 @@ export default function SMR() {
                       setWdLabourHoursText(n.toFixed(2));
                       setWdDraft((d) => ({ ...d, labour_hours: n }));
                     }} />
+                  {wdDraftErrors.labour_hours && <p className="text-xs text-destructive mt-1">{wdDraftErrors.labour_hours}</p>}
                 </div>
                 <div>
                   <Label>VAT Band *</Label>
@@ -977,6 +979,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {wdDraftErrors.vat_band_id && <p className="text-xs text-destructive mt-1">{wdDraftErrors.vat_band_id}</p>}
                 </div>
               </div>
             </div>
