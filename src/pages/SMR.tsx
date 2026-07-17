@@ -598,7 +598,6 @@ export default function SMR() {
             <h1 className="text-2xl font-bold">SMR</h1>
             <p className="text-sm text-muted-foreground">Service, Maintenance and Repair work items</p>
           </div>
-          <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add SMR</Button>
         </div>
 
         <Card>
@@ -608,39 +607,60 @@ export default function SMR() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search SMR..." className="pl-9" />
               </div>
+              <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add SMR</Button>
+              <ManageColumnsDialog
+                visibleCols={visibleCols}
+                columnOrder={columnOrder}
+                onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+              />
             </div>
 
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("name")}>
-                      <div className="flex items-center gap-1">Name <SortIcon col="name" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("valid_from")}>
-                      <div className="flex items-center gap-1">Valid from <SortIcon col="valid_from" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("valid_to")}>
-                      <div className="flex items-center gap-1">Valid to <SortIcon col="valid_to" /></div>
-                    </TableHead>
-                    <TableHead>Fixed price</TableHead>
-                    <TableHead>Total</TableHead>
+                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                      const c = COLUMNS.find((col) => col.key === k)!;
+                      return (
+                        <TableHead
+                          key={k}
+                          className={c.sortable ? "cursor-pointer" : ""}
+                          onClick={c.sortable ? () => toggleSort(k) : undefined}
+                        >
+                          <div className="flex items-center gap-1">
+                            {c.label}
+                            {c.sortable && <SortIcon col={k} />}
+                          </div>
+                        </TableHead>
+                      );
+                    })}
                     <TableHead className="w-24 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={visibleCols.length + 1} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                   ) : filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No SMR items</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={visibleCols.length + 1} className="text-center py-8 text-muted-foreground">No SMR items</TableCell></TableRow>
                   ) : (
                     filtered.map((s) => (
                       <TableRow key={s.id} className="cursor-pointer h-11" onClick={() => openEdit(s)}>
-                        <TableCell className="font-medium">{s.name}</TableCell>
-                        <TableCell>{dispDate(s.valid_from)}</TableCell>
-                        <TableCell>{dispDate(s.valid_to)}</TableCell>
-                        <TableCell>{s.fixed_price ? <Badge>Yes</Badge> : <Badge variant="outline">No</Badge>}</TableCell>
-                        <TableCell>{s.fixed_price && s.total != null ? `£${Number(s.total).toFixed(2)}` : "—"}</TableCell>
+                        {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                          switch (k) {
+                            case "name":
+                              return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
+                            case "valid_from":
+                              return <TableCell key={k}>{dispDate(s.valid_from)}</TableCell>;
+                            case "valid_to":
+                              return <TableCell key={k}>{dispDate(s.valid_to)}</TableCell>;
+                            case "fixed_price":
+                              return <TableCell key={k}>{s.fixed_price ? <Badge>Yes</Badge> : <Badge variant="outline">No</Badge>}</TableCell>;
+                            case "total":
+                              return <TableCell key={k}>{s.fixed_price && s.total != null ? `£${Number(s.total).toFixed(2)}` : "—"}</TableCell>;
+                            default:
+                              return null;
+                          }
+                        })}
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
                             <Tooltip>
