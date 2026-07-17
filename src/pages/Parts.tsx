@@ -866,16 +866,16 @@ export default function Parts() {
               )}
               <div className="space-y-1.5">
                 <Label>Cost *</Label>
-                <Input type="text" inputMode="decimal" value={String(stockDraft.cost)}
-                  onChange={(e) => setStockDraft({ ...stockDraft, cost: parseFloat(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
-                  onBlur={(e) => setStockDraft({ ...stockDraft, cost: Number(parseFloat(e.target.value || "0").toFixed(2)) })}
+                <Input type="text" inputMode="decimal" value={stockCostStr}
+                  onChange={(e) => { const v = e.target.value.replace(/[^0-9.]/g, ""); setStockCostStr(v); setStockDraft({ ...stockDraft, cost: parseFloat(v) || 0 }); }}
+                  onBlur={() => { const n = Number(parseFloat(stockCostStr || "0").toFixed(2)); setStockCostStr(n.toFixed(2)); setStockDraft({ ...stockDraft, cost: n }); }}
                   className="h-10" />
               </div>
               <div className="space-y-1.5">
                 <Label>RRP *</Label>
-                <Input type="text" inputMode="decimal" value={String(stockDraft.rrp)}
-                  onChange={(e) => setStockDraft({ ...stockDraft, rrp: parseFloat(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
-                  onBlur={(e) => setStockDraft({ ...stockDraft, rrp: Number(parseFloat(e.target.value || "0").toFixed(2)) })}
+                <Input type="text" inputMode="decimal" value={stockRrpStr}
+                  onChange={(e) => { const v = e.target.value.replace(/[^0-9.]/g, ""); setStockRrpStr(v); setStockDraft({ ...stockDraft, rrp: parseFloat(v) || 0 }); }}
+                  onBlur={() => { const n = Number(parseFloat(stockRrpStr || "0").toFixed(2)); setStockRrpStr(n.toFixed(2)); setStockDraft({ ...stockDraft, rrp: n }); }}
                   className="h-10" />
               </div>
               <div className="space-y-1.5">
