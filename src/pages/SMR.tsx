@@ -211,6 +211,18 @@ export default function SMR() {
     },
   });
 
+  const { data: partsCatalogue = [] } = useQuery({
+    queryKey: ["all_parts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("id, description, part_number, vat_band_id")
+        .order("description");
+      if (error) throw error;
+      return data as { id: string; description: string; part_number: string; vat_band_id: string | null }[];
+    },
+  });
+
   const { data: dbVehicles = [] } = useQuery({
     queryKey: ["vehicles_for_smr"],
     queryFn: async () => {
