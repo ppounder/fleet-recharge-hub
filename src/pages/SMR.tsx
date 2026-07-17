@@ -585,6 +585,8 @@ export default function SMR() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["smr_items"] });
+      qc.invalidateQueries({ queryKey: ["all_smr_work_details"] });
+      qc.invalidateQueries({ queryKey: ["all_smr_part_details"] });
       toast({ title: editingId ? "SMR updated" : "SMR added" });
       setDialogOpen(false);
     },
