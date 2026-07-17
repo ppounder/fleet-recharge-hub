@@ -545,10 +545,12 @@ export default function SMR() {
       const errs: Record<string, string> = {};
       for (const i of res.error.issues) errs[i.path[0] as string] = i.message || "Required";
       setWdDraftErrors(errs);
+      toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
       return;
     }
     if (wdDraft.work_type === "Other" && !wdDraft.work_type_other.trim()) {
       setWdDraftErrors({ work_type_other: "Please specify" });
+      toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
       return;
     }
     if (editingWdId) {
