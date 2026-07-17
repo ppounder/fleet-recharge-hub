@@ -746,8 +746,19 @@ export default function SMR() {
                 </div>
                 <div>
                   <Label>Labour hours *</Label>
-                  <Input type="text" inputMode="decimal" value={Number(wdDraft.labour_hours).toFixed(2)}
-                    onChange={(e) => /^[0-9]*\.?[0-9]{0,2}$/.test(e.target.value) && setWdDraft((d) => ({ ...d, labour_hours: parseFloat(e.target.value) || 0 }))} />
+                  <Input type="text" inputMode="decimal" value={wdLabourHoursText}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (/^[0-9]*\.?[0-9]{0,2}$/.test(v)) {
+                        setWdLabourHoursText(v);
+                        setWdDraft((d) => ({ ...d, labour_hours: parseFloat(v) || 0 }));
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const n = parseFloat(e.target.value) || 0;
+                      setWdLabourHoursText(n.toFixed(2));
+                      setWdDraft((d) => ({ ...d, labour_hours: n }));
+                    }} />
                 </div>
                 <div>
                   <Label>VAT Band *</Label>
