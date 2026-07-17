@@ -164,6 +164,7 @@ export default function SMR() {
   const [wdDraftErrors, setWdDraftErrors] = useState<Record<string, string>>({});
   const [editingWdId, setEditingWdId] = useState<string | null>(null);
   const [confirmDeleteWdId, setConfirmDeleteWdId] = useState<string | null>(null);
+  const [wdLabourHoursText, setWdLabourHoursText] = useState("0.00");
 
   // Data
   const { data: smrItems = [], isLoading } = useQuery({
