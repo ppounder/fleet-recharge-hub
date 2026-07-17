@@ -257,6 +257,57 @@ export default function SMR() {
     },
   });
 
+  const { data: allWorkDetails = [] } = useQuery({
+    queryKey: ["all_smr_work_details"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("smr_work_details")
+        .select("id, smr_item_id, name, work_type, reason_for_work, labour_hours, sort_order")
+        .order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as { id: string; smr_item_id: string; name: string; work_type: string; reason_for_work: string; labour_hours: number; sort_order: number }[];
+    },
+  });
+
+  const { data: allPartDetails = [] } = useQuery({
+    queryKey: ["all_smr_part_details"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("smr_part_details")
+        .select("id, smr_item_id, smr_work_detail_id, part_id, quantity, sort_order")
+        .order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as { id: string; smr_item_id: string; smr_work_detail_id: string | null; part_id: string; quantity: number; sort_order: number }[];
+    },
+  });
+
+  const workDetailsBySmr = useMemo(() => {
+    const m = new Map<string, typeof allWorkDetails>();
+    for (const w of allWorkDetails) {
+      const arr = m.get(w.smr_item_id) ?? [];
+      arr.push(w);
+      m.set(w.smr_item_id, arr);
+    }
+    return m;
+  }, [allWorkDetails]);
+
+  const partDetailsBySmr = useMemo(() => {
+    const m = new Map<string, typeof allPartDetails>();
+    for (const p of allPartDetails) {
+      const arr = m.get(p.smr_item_id) ?? [];
+      arr.push(p);
+      m.set(p.smr_item_id, arr);
+    }
+    return m;
+  }, [allPartDetails]);
+
+  const partById = useMemo(() => {
+    const m = new Map<string, { description: string; part_number: string }>();
+    for (const p of partsCatalogue) m.set(p.id, { description: p.description, part_number: p.part_number });
+    return m;
+  }, [partsCatalogue]);
+
+
   const { data: dbVehicles = [] } = useQuery({
     queryKey: ["vehicles_for_smr"],
     queryFn: async () => {
