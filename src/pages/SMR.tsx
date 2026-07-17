@@ -569,16 +569,14 @@ export default function SMR() {
 
               <CollapsibleCard title="Applicable Vehicles" defaultOpen>
                 <ApplicableVehiclesEditor
-                  assetTypeOptions={assetTypeOptions}
-                  makeOptions={makeOptions}
-                  modelOptions={modelOptions}
-                  derivativeOptions={derivativeOptions}
+                  vehicles={vehicles}
                   weightBandOptions={weightBandOptions}
                   axleOptions={axleOptions}
                   form={form}
                   setForm={setForm}
                 />
               </CollapsibleCard>
+
 
 
               <CollapsibleCard title="Fixed Price Details" defaultOpen>
@@ -927,42 +925,71 @@ function MultiSelectChips({
 }
 
 function ApplicableVehiclesEditor({
-  assetTypeOptions, makeOptions, modelOptions, derivativeOptions, weightBandOptions, axleOptions,
+  vehicles, weightBandOptions, axleOptions,
   form, setForm,
 }: {
-  assetTypeOptions: string[];
-  makeOptions: string[];
-  modelOptions: string[];
-  derivativeOptions: string[];
+  vehicles: any[];
   weightBandOptions: string[];
   axleOptions: string[];
   form: SMRForm;
   setForm: React.Dispatch<React.SetStateAction<SMRForm>>;
 }) {
+  const uniqSorted = (arr: string[]) => Array.from(new Set(arr.filter((x) => x != null && String(x).trim() !== ""))).sort();
+
+  const assetTypeOptions = useMemo(
+    () => uniqSorted(vehicles.map((v) => String(v.asset_type ?? ""))),
+    [vehicles]
+  );
+  // Cascading: filter by parent selections (empty selection = no filter)
+  const makeOptions = useMemo(() => {
+    const src = form.applicable_asset_types.length
+      ? vehicles.filter((v) => form.applicable_asset_types.includes(String(v.asset_type ?? "")))
+      : vehicles;
+    return uniqSorted(src.map((v) => String(v.make ?? "")));
+  }, [vehicles, form.applicable_asset_types]);
+  const modelOptions = useMemo(() => {
+    const src = vehicles.filter((v) =>
+      (!form.applicable_asset_types.length || form.applicable_asset_types.includes(String(v.asset_type ?? ""))) &&
+      (!form.applicable_makes.length || form.applicable_makes.includes(String(v.make ?? "")))
+    );
+    return uniqSorted(src.map((v) => String(v.model ?? "")));
+  }, [vehicles, form.applicable_asset_types, form.applicable_makes]);
+  const derivativeOptions = useMemo(() => {
+    const src = vehicles.filter((v) =>
+      (!form.applicable_asset_types.length || form.applicable_asset_types.includes(String(v.asset_type ?? ""))) &&
+      (!form.applicable_makes.length || form.applicable_makes.includes(String(v.make ?? ""))) &&
+      (!form.applicable_models.length || form.applicable_models.includes(String(v.model ?? "")))
+    );
+    return uniqSorted(src.map((v) => String(v.derivative ?? "")));
+  }, [vehicles, form.applicable_asset_types, form.applicable_makes, form.applicable_models]);
+
+  // Prune child selections that are no longer valid after parent changes
+  useEffect(() => {
+    setForm((f) => {
+      const makes = f.applicable_makes.filter((x) => makeOptions.includes(x));
+      const models = f.applicable_models.filter((x) => modelOptions.includes(x));
+      const derivs = f.applicable_derivatives.filter((x) => derivativeOptions.includes(x));
+      if (
+        makes.length === f.applicable_makes.length &&
+        models.length === f.applicable_models.length &&
+        derivs.length === f.applicable_derivatives.length
+      ) return f;
+      return { ...f, applicable_makes: makes, applicable_models: models, applicable_derivatives: derivs };
+    });
+  }, [makeOptions, modelOptions, derivativeOptions, setForm]);
+
+  const [applyAllOverride, setApplyAllOverride] = useState<boolean | null>(null);
   const isAllOf = (val: string[], opts: string[]) => opts.length === 0 || val.length === opts.length;
   const derivedApplyAll =
     isAllOf(form.applicable_asset_types, assetTypeOptions) &&
-    isAllOf(form.applicable_makes, makeOptions) &&
-    isAllOf(form.applicable_models, modelOptions) &&
-    isAllOf(form.applicable_derivatives, derivativeOptions) &&
     isAllOf(form.applicable_weight_bands, weightBandOptions) &&
     isAllOf(form.applicable_axles, axleOptions);
-  const [applyAllOverride, setApplyAllOverride] = useState<boolean | null>(null);
   const applyAll = applyAllOverride ?? derivedApplyAll;
 
   const setApplyAll = (on: boolean) => {
     setApplyAllOverride(on);
     if (on) {
-      setForm((f) => ({
-        ...f,
-        applicable_asset_types: [...assetTypeOptions],
-        applicable_makes: [...makeOptions],
-        applicable_models: [...modelOptions],
-        applicable_derivatives: [...derivativeOptions],
-        applicable_weight_bands: [...weightBandOptions],
-        applicable_axles: [...axleOptions],
-      }));
-    } else {
+      // "Apply to all" = no filters at any level (blank = matches everything)
       setForm((f) => ({
         ...f,
         applicable_asset_types: [],
@@ -975,6 +1002,37 @@ function ApplicableVehiclesEditor({
     }
   };
 
+  const CascadeField = ({
+    label, step, options, value, onChange, parentEmpty, parentLabel,
+  }: {
+    label: string;
+    step: number;
+    options: string[];
+    value: string[];
+    onChange: (v: string[]) => void;
+    parentEmpty?: boolean;
+    parentLabel?: string;
+  }) => (
+    <div className="relative">
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold">
+          {step}
+        </span>
+        <Label className="text-xs font-medium">{label}</Label>
+        {value.length > 0 && (
+          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{value.length}</Badge>
+        )}
+      </div>
+      <MultiSelectChips
+        label={label}
+        options={options}
+        value={value}
+        onChange={onChange}
+        placeholder={parentEmpty ? `Select ${parentLabel?.toLowerCase()} first (optional)` : `All ${label.toLowerCase()}`}
+      />
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 rounded-md border bg-muted/30 px-3 py-2">
@@ -983,35 +1041,55 @@ function ApplicableVehiclesEditor({
           <p className="text-xs text-muted-foreground">
             {applyAll
               ? "This SMR applies to every vehicle in the fleet."
-              : "Narrow down which vehicles this SMR applies to."}
+              : "Narrow down by asset type, then make, model, and derivative."}
           </p>
         </div>
         <LabeledSwitch checked={applyAll} onCheckedChange={setApplyAll} aria-label="Apply to all vehicles" />
       </div>
 
       {!applyAll && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
-          <MultiSelectChips label="Asset type" options={assetTypeOptions}
-            value={form.applicable_asset_types}
-            onChange={(v) => setForm((f) => ({ ...f, applicable_asset_types: v }))} />
-          <MultiSelectChips label="Make" options={makeOptions}
-            value={form.applicable_makes}
-            onChange={(v) => setForm((f) => ({ ...f, applicable_makes: v }))} />
-          <MultiSelectChips label="Model" options={modelOptions}
-            value={form.applicable_models}
-            onChange={(v) => setForm((f) => ({ ...f, applicable_models: v }))} />
-          <MultiSelectChips label="Derivative" options={derivativeOptions}
-            value={form.applicable_derivatives}
-            onChange={(v) => setForm((f) => ({ ...f, applicable_derivatives: v }))} />
-          <MultiSelectChips label="Weight band" options={weightBandOptions}
-            value={form.applicable_weight_bands}
-            onChange={(v) => setForm((f) => ({ ...f, applicable_weight_bands: v }))} />
-          <MultiSelectChips label="No of axles" options={axleOptions}
-            value={form.applicable_axles}
-            onChange={(v) => setForm((f) => ({ ...f, applicable_axles: v }))} />
-        </div>
+        <>
+          <div className="rounded-md border bg-card p-3">
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-sm font-semibold">Vehicle scope</Label>
+              <span className="text-[11px] text-muted-foreground">Leave a level empty to include all</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <CascadeField
+                step={1} label="Asset type" options={assetTypeOptions}
+                value={form.applicable_asset_types}
+                onChange={(v) => setForm((f) => ({ ...f, applicable_asset_types: v }))}
+              />
+              <CascadeField
+                step={2} label="Make" options={makeOptions}
+                value={form.applicable_makes}
+                onChange={(v) => setForm((f) => ({ ...f, applicable_makes: v }))}
+              />
+              <CascadeField
+                step={3} label="Model" options={modelOptions}
+                value={form.applicable_models}
+                onChange={(v) => setForm((f) => ({ ...f, applicable_models: v }))}
+              />
+              <CascadeField
+                step={4} label="Derivative" options={derivativeOptions}
+                value={form.applicable_derivatives}
+                onChange={(v) => setForm((f) => ({ ...f, applicable_derivatives: v }))}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <MultiSelectChips label="Weight band" options={weightBandOptions}
+              value={form.applicable_weight_bands}
+              onChange={(v) => setForm((f) => ({ ...f, applicable_weight_bands: v }))} />
+            <MultiSelectChips label="No of axles" options={axleOptions}
+              value={form.applicable_axles}
+              onChange={(v) => setForm((f) => ({ ...f, applicable_axles: v }))} />
+          </div>
+        </>
       )}
     </div>
   );
 }
+
 
