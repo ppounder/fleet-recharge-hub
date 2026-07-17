@@ -205,9 +205,18 @@ export default function SMR() {
   const { data: vatBands = [] } = useQuery({
     queryKey: ["all_vat_bands"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("vat_bands").select("id, name, percentage").order("name");
+      const { data, error } = await supabase.from("vat_bands").select("id, name, percentage").order("percentage", { ascending: false });
       if (error) throw error;
-      return data as { id: string; name: string; percentage: number }[];
+      // Dedupe across providers by (name, percentage) — keep first occurrence
+      const seen = new Set<string>();
+      const unique: { id: string; name: string; percentage: number }[] = [];
+      for (const b of (data ?? []) as any[]) {
+        const key = `${b.name.toLowerCase()}|${b.percentage}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(b);
+      }
+      return unique;
     },
   });
 
