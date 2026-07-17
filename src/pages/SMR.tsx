@@ -548,7 +548,7 @@ export default function SMR() {
               <CollapsibleCard title="SMR Details" defaultOpen>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label>SMR name</Label>
+                    <Label>SMR name *</Label>
                     <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={errCls("name")} />
                     {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
                   </div>
