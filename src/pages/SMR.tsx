@@ -765,7 +765,7 @@ export default function SMR() {
                 </div>
               </div>
             </div>
-            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0">
+            <DialogFooter className="px-6 py-4 border-t bg-background shrink-0">
               <Button variant="outline" onClick={() => setWdDialogOpen(false)}>Cancel</Button>
               <Button onClick={saveWdDraft}>Save</Button>
             </DialogFooter>
