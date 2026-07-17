@@ -825,40 +825,190 @@ export default function SMR() {
   );
 }
 
-function MultiCheckField({
-  label, options, value, onChange,
+function MultiSelectChips({
+  label,
+  options,
+  value,
+  onChange,
+  placeholder,
 }: {
   label: string;
   options: string[];
   value: string[];
   onChange: (v: string[]) => void;
+  placeholder?: string;
 }) {
+  const [open, setOpen] = useState(false);
   const allSelected = options.length > 0 && value.length === options.length;
   const toggle = (opt: string) => {
     if (value.includes(opt)) onChange(value.filter((v) => v !== opt));
     else onChange([...value, opt]);
   };
-  const toggleAll = () => onChange(allSelected ? [] : [...options]);
   return (
-    <div className="border rounded-md p-3 bg-card">
-      <div className="flex items-center justify-between mb-2">
-        <Label className="text-sm font-medium">{label}</Label>
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">{label}</Label>
         {options.length > 0 && (
-          <button type="button" className="text-xs text-primary hover:underline" onClick={toggleAll}>
+          <button
+            type="button"
+            className="text-[11px] text-primary hover:underline"
+            onClick={() => onChange(allSelected ? [] : [...options])}
+          >
             {allSelected ? "Clear" : "Select all"}
           </button>
         )}
       </div>
-      <div className="max-h-40 overflow-y-auto space-y-1.5">
-        {options.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No options available</p>
-        ) : options.map((opt) => (
-          <label key={opt} className="flex items-center gap-2 text-sm cursor-pointer">
-            <Checkbox checked={value.includes(opt)} onCheckedChange={() => toggle(opt)} />
-            <span>{opt}</span>
-          </label>
-        ))}
-      </div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            disabled={options.length === 0}
+            className={cn(
+              "w-full min-h-9 rounded-md border border-input bg-background px-2 py-1.5 text-left text-sm flex items-center gap-1 flex-wrap",
+              "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
+          >
+            {value.length === 0 ? (
+              <span className="text-muted-foreground text-xs">
+                {options.length === 0 ? "No options available" : placeholder ?? `Select ${label.toLowerCase()}…`}
+              </span>
+            ) : allSelected ? (
+              <Badge variant="secondary" className="text-[11px]">All {label.toLowerCase()} ({value.length})</Badge>
+            ) : (
+              <>
+                {value.slice(0, 4).map((v) => (
+                  <Badge key={v} variant="secondary" className="text-[11px] gap-1 pl-2 pr-1">
+                    {v}
+                    <span
+                      role="button"
+                      tabIndex={-1}
+                      onClick={(e) => { e.stopPropagation(); toggle(v); }}
+                      className="hover:bg-background/60 rounded-sm p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </span>
+                  </Badge>
+                ))}
+                {value.length > 4 && (
+                  <Badge variant="outline" className="text-[11px]">+{value.length - 4}</Badge>
+                )}
+              </>
+            )}
+            <ChevronDown className="h-4 w-4 opacity-50 ml-auto shrink-0" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[280px] p-0" align="start">
+          <Command>
+            <CommandInput placeholder={`Search ${label.toLowerCase()}…`} />
+            <CommandList>
+              <CommandEmpty>No matches.</CommandEmpty>
+              <CommandGroup>
+                {options.map((opt) => {
+                  const checked = value.includes(opt);
+                  return (
+                    <CommandItem key={opt} value={opt} onSelect={() => toggle(opt)}>
+                      <div className={cn(
+                        "mr-2 h-4 w-4 rounded-sm border flex items-center justify-center",
+                        checked ? "bg-primary border-primary text-primary-foreground" : "border-input"
+                      )}>
+                        {checked && <Check className="h-3 w-3" />}
+                      </div>
+                      {opt}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
+
+function ApplicableVehiclesEditor({
+  assetTypeOptions, makeOptions, modelOptions, derivativeOptions, weightBandOptions, axleOptions,
+  form, setForm,
+}: {
+  assetTypeOptions: string[];
+  makeOptions: string[];
+  modelOptions: string[];
+  derivativeOptions: string[];
+  weightBandOptions: string[];
+  axleOptions: string[];
+  form: SMRForm;
+  setForm: React.Dispatch<React.SetStateAction<SMRForm>>;
+}) {
+  const isAllOf = (val: string[], opts: string[]) => opts.length > 0 && val.length === opts.length;
+  const applyAll =
+    isAllOf(form.applicable_asset_types, assetTypeOptions) &&
+    isAllOf(form.applicable_makes, makeOptions) &&
+    isAllOf(form.applicable_models, modelOptions) &&
+    isAllOf(form.applicable_derivatives, derivativeOptions) &&
+    isAllOf(form.applicable_weight_bands, weightBandOptions) &&
+    isAllOf(form.applicable_axles, axleOptions);
+
+  const setApplyAll = (on: boolean) => {
+    if (on) {
+      setForm((f) => ({
+        ...f,
+        applicable_asset_types: [...assetTypeOptions],
+        applicable_makes: [...makeOptions],
+        applicable_models: [...modelOptions],
+        applicable_derivatives: [...derivativeOptions],
+        applicable_weight_bands: [...weightBandOptions],
+        applicable_axles: [...axleOptions],
+      }));
+    } else {
+      setForm((f) => ({
+        ...f,
+        applicable_asset_types: [],
+        applicable_makes: [],
+        applicable_models: [],
+        applicable_derivatives: [],
+        applicable_weight_bands: [],
+        applicable_axles: [],
+      }));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4 rounded-md border bg-muted/30 px-3 py-2">
+        <div>
+          <Label className="text-sm font-medium">Apply to all vehicles</Label>
+          <p className="text-xs text-muted-foreground">
+            {applyAll
+              ? "This SMR applies to every vehicle in the fleet."
+              : "Narrow down which vehicles this SMR applies to."}
+          </p>
+        </div>
+        <LabeledSwitch checked={applyAll} onCheckedChange={setApplyAll} aria-label="Apply to all vehicles" />
+      </div>
+
+      {!applyAll && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+          <MultiSelectChips label="Asset type" options={assetTypeOptions}
+            value={form.applicable_asset_types}
+            onChange={(v) => setForm((f) => ({ ...f, applicable_asset_types: v }))} />
+          <MultiSelectChips label="Make" options={makeOptions}
+            value={form.applicable_makes}
+            onChange={(v) => setForm((f) => ({ ...f, applicable_makes: v }))} />
+          <MultiSelectChips label="Model" options={modelOptions}
+            value={form.applicable_models}
+            onChange={(v) => setForm((f) => ({ ...f, applicable_models: v }))} />
+          <MultiSelectChips label="Derivative" options={derivativeOptions}
+            value={form.applicable_derivatives}
+            onChange={(v) => setForm((f) => ({ ...f, applicable_derivatives: v }))} />
+          <MultiSelectChips label="Weight band" options={weightBandOptions}
+            value={form.applicable_weight_bands}
+            onChange={(v) => setForm((f) => ({ ...f, applicable_weight_bands: v }))} />
+          <MultiSelectChips label="No of axles" options={axleOptions}
+            value={form.applicable_axles}
+            onChange={(v) => setForm((f) => ({ ...f, applicable_axles: v }))} />
+        </div>
+      )}
+    </div>
+  );
+}
+
