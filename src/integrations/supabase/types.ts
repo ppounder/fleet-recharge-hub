@@ -1041,6 +1041,71 @@ export type Database = {
           },
         ]
       }
+      smr_part_details: {
+        Row: {
+          created_at: string
+          id: string
+          part_id: string
+          quantity: number
+          smr_item_id: string
+          smr_work_detail_id: string
+          sort_order: number
+          updated_at: string
+          vat_band_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          part_id: string
+          quantity?: number
+          smr_item_id: string
+          smr_work_detail_id: string
+          sort_order?: number
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          part_id?: string
+          quantity?: number
+          smr_item_id?: string
+          smr_work_detail_id?: string
+          sort_order?: number
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smr_part_details_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smr_part_details_smr_item_id_fkey"
+            columns: ["smr_item_id"]
+            isOneToOne: false
+            referencedRelation: "smr_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smr_part_details_smr_work_detail_id_fkey"
+            columns: ["smr_work_detail_id"]
+            isOneToOne: false
+            referencedRelation: "smr_work_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smr_part_details_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smr_work_details: {
         Row: {
           checklist_id: string | null
