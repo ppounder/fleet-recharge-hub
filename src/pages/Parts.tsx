@@ -461,6 +461,8 @@ export default function Parts() {
   // -----------------------------------
   const [stockDialog, setStockDialog] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
   const [stockDraft, setStockDraft] = useState<StockItem | null>(null);
+  const [stockCostStr, setStockCostStr] = useState("0.00");
+  const [stockRrpStr, setStockRrpStr] = useState("0.00");
 
   const openAddStock = () => {
     setStockDraft({
