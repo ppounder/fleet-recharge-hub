@@ -738,35 +738,113 @@ export type Database = {
           },
         ]
       }
-      parts: {
+      part_manufacturers: {
         Row: {
           created_at: string
-          description: string
           id: string
-          part_number: string
+          name: string
           provider_id: string
           updated_at: string
-          vat_band_id: string | null
         }
         Insert: {
           created_at?: string
-          description: string
           id?: string
-          part_number?: string
+          name: string
           provider_id: string
           updated_at?: string
-          vat_band_id?: string | null
         }
         Update: {
           created_at?: string
-          description?: string
           id?: string
-          part_number?: string
+          name?: string
           provider_id?: string
           updated_at?: string
-          vat_band_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "part_manufacturers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parts: {
+        Row: {
+          alternative_part_id: string | null
+          applicable_asset_types: string[]
+          applicable_axles: number[]
+          applicable_derivatives: string[]
+          applicable_makes: string[]
+          applicable_models: string[]
+          applicable_weight_bands: string[]
+          created_at: string
+          description: string
+          id: string
+          manufacturer_id: string | null
+          part_number: string
+          part_type: string | null
+          provider_id: string
+          superseded_by_id: string | null
+          supersedes_id: string | null
+          updated_at: string
+          vat_band_id: string | null
+          warranty_unit: string | null
+          warranty_value: number | null
+        }
+        Insert: {
+          alternative_part_id?: string | null
+          applicable_asset_types?: string[]
+          applicable_axles?: number[]
+          applicable_derivatives?: string[]
+          applicable_makes?: string[]
+          applicable_models?: string[]
+          applicable_weight_bands?: string[]
+          created_at?: string
+          description: string
+          id?: string
+          manufacturer_id?: string | null
+          part_number?: string
+          part_type?: string | null
+          provider_id: string
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          updated_at?: string
+          vat_band_id?: string | null
+          warranty_unit?: string | null
+          warranty_value?: number | null
+        }
+        Update: {
+          alternative_part_id?: string | null
+          applicable_asset_types?: string[]
+          applicable_axles?: number[]
+          applicable_derivatives?: string[]
+          applicable_makes?: string[]
+          applicable_models?: string[]
+          applicable_weight_bands?: string[]
+          created_at?: string
+          description?: string
+          id?: string
+          manufacturer_id?: string | null
+          part_number?: string
+          part_type?: string | null
+          provider_id?: string
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          updated_at?: string
+          vat_band_id?: string | null
+          warranty_unit?: string | null
+          warranty_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parts_alternative_part_id_fkey"
+            columns: ["alternative_part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "parts_provider_id_fkey"
             columns: ["provider_id"]
@@ -775,10 +853,139 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "parts_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "parts_vat_band_id_fkey"
             columns: ["vat_band_id"]
             isOneToOne: false
             referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parts_stock_items: {
+        Row: {
+          bin_location: string | null
+          bin_number: string | null
+          cost: number
+          created_at: string
+          id: string
+          pack_size: number | null
+          part_id: string
+          parts_supplier_id: string | null
+          posting_definition_id: string | null
+          quantity: number
+          rrp: number
+          stock_category: string
+          unit: string
+          updated_at: string
+          vat_band_id: string | null
+        }
+        Insert: {
+          bin_location?: string | null
+          bin_number?: string | null
+          cost?: number
+          created_at?: string
+          id?: string
+          pack_size?: number | null
+          part_id: string
+          parts_supplier_id?: string | null
+          posting_definition_id?: string | null
+          quantity?: number
+          rrp?: number
+          stock_category?: string
+          unit?: string
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Update: {
+          bin_location?: string | null
+          bin_number?: string | null
+          cost?: number
+          created_at?: string
+          id?: string
+          pack_size?: number | null
+          part_id?: string
+          parts_supplier_id?: string | null
+          posting_definition_id?: string | null
+          quantity?: number
+          rrp?: number
+          stock_category?: string
+          unit?: string
+          updated_at?: string
+          vat_band_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parts_stock_items_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_stock_items_parts_supplier_id_fkey"
+            columns: ["parts_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_stock_items_posting_definition_id_fkey"
+            columns: ["posting_definition_id"]
+            isOneToOne: false
+            referencedRelation: "posting_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_stock_items_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posting_definitions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posting_definitions_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]

@@ -34,6 +34,7 @@ import Technicians from "./pages/Technicians";
 import Customers from "./pages/Customers";
 import AdminPasswordReset from "./pages/AdminPasswordReset";
 import SMR from "./pages/SMR";
+import Parts from "./pages/Parts";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const AppRoutes = () => (
     <Route path="/supplier-networks" element={<ProtectedRoute><SupplierNetworks /></ProtectedRoute>} />
     <Route path="/admin/reset-password" element={<ProtectedRoute><AdminPasswordReset /></ProtectedRoute>} />
     <Route path="/smr" element={<ProtectedRoute><SMR /></ProtectedRoute>} />
+    <Route path="/parts" element={<ProtectedRoute><Parts /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
