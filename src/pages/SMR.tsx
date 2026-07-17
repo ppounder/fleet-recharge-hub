@@ -916,6 +916,7 @@ export default function SMR() {
                       {REASONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {wdDraftErrors.reason_for_work && <p className="text-xs text-destructive mt-1">{wdDraftErrors.reason_for_work}</p>}
                 </div>
                 <div>
                   <Label>Work type *</Label>
