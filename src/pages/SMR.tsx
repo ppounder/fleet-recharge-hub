@@ -180,6 +180,18 @@ export default function SMR() {
   const [confirmDeleteWdId, setConfirmDeleteWdId] = useState<string | null>(null);
   const [wdLabourHoursText, setWdLabourHoursText] = useState("0.00");
 
+  // Parts
+  const [partDetails, setPartDetails] = useState<PartDetail[]>([]);
+  const [deletedPartIds, setDeletedPartIds] = useState<string[]>([]);
+  const [partDialogOpen, setPartDialogOpen] = useState(false);
+  const [editingPartId, setEditingPartId] = useState<string | null>(null);
+  const [partDraft, setPartDraft] = useState<PartDetail>({
+    id: "", smr_work_detail_local_id: "", part_id: "", quantity: 0, vat_band_id: null, _isNew: true,
+  });
+  const [partQtyText, setPartQtyText] = useState("0.00");
+  const [partDraftErrors, setPartDraftErrors] = useState<Record<string, string>>({});
+  const [confirmDeletePartId, setConfirmDeletePartId] = useState<string | null>(null);
+
   // Data
   const { data: smrItems = [], isLoading } = useQuery({
     queryKey: ["smr_items"],
