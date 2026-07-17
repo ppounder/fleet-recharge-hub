@@ -985,6 +985,156 @@ export default function SMR() {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Part draft dialog */}
+        <Dialog open={partDialogOpen} onOpenChange={setPartDialogOpen}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{editingPartId ? "Edit part" : "Add part"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Work Item *</Label>
+                <Select
+                  value={partDraft.smr_work_detail_local_id || "__none__"}
+                  onValueChange={(v) => setPartDraft((d) => ({ ...d, smr_work_detail_local_id: v === "__none__" ? "" : v }))}
+                >
+                  <SelectTrigger className={cn(partDraftErrors.smr_work_detail_local_id && "border-destructive")}>
+                    <SelectValue placeholder="Select work item" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— Select —</SelectItem>
+                    {workDetails.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Part number *</Label>
+                  <Select
+                    value={partDraft.part_id || "__none__"}
+                    onValueChange={(v) => {
+                      if (v === "__none__") { setPartDraft((d) => ({ ...d, part_id: "" })); return; }
+                      const part = partsCatalogue.find((p) => p.id === v);
+                      setPartDraft((d) => ({ ...d, part_id: v, vat_band_id: part?.vat_band_id ?? d.vat_band_id }));
+                    }}
+                  >
+                    <SelectTrigger className={cn(partDraftErrors.part_id && "border-destructive")}>
+                      <SelectValue placeholder="Select part number" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— Select —</SelectItem>
+                      {partsCatalogue.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.part_number || "—"} — {p.description}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Part description *</Label>
+                  <Select
+                    value={partDraft.part_id || "__none__"}
+                    onValueChange={(v) => {
+                      if (v === "__none__") { setPartDraft((d) => ({ ...d, part_id: "" })); return; }
+                      const part = partsCatalogue.find((p) => p.id === v);
+                      setPartDraft((d) => ({ ...d, part_id: v, vat_band_id: part?.vat_band_id ?? d.vat_band_id }));
+                    }}
+                  >
+                    <SelectTrigger className={cn(partDraftErrors.part_id && "border-destructive")}>
+                      <SelectValue placeholder="Select part description" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— Select —</SelectItem>
+                      {partsCatalogue.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.description} — {p.part_number || "—"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Quantity *</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={partQtyText}
+                    onChange={(e) => /^[0-9]*\.?[0-9]*$/.test(e.target.value) && setPartQtyText(e.target.value)}
+                    onBlur={() => {
+                      const n = parseFloat(partQtyText);
+                      const v = isNaN(n) ? 0 : n;
+                      setPartQtyText(v.toFixed(2));
+                      setPartDraft((d) => ({ ...d, quantity: v }));
+                    }}
+                    className={cn(partDraftErrors.quantity && "border-destructive")}
+                  />
+                </div>
+                <div>
+                  <Label>VAT Band *</Label>
+                  <Select
+                    value={partDraft.vat_band_id || "__none__"}
+                    onValueChange={(v) => setPartDraft((d) => ({ ...d, vat_band_id: v === "__none__" ? null : v }))}
+                  >
+                    <SelectTrigger className={cn(partDraftErrors.vat_band_id && "border-destructive")}>
+                      <SelectValue placeholder="Select VAT band" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— Select —</SelectItem>
+                      {vatBands.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>{v.name} ({v.percentage}%)</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setPartDialogOpen(false)}>Cancel</Button>
+              <Button
+                onClick={() => {
+                  const errs: Record<string, string> = {};
+                  if (!partDraft.smr_work_detail_local_id) errs.smr_work_detail_local_id = "required";
+                  if (!partDraft.part_id) errs.part_id = "required";
+                  const qn = parseFloat(partQtyText);
+                  if (isNaN(qn) || qn <= 0) errs.quantity = "required";
+                  if (!partDraft.vat_band_id) errs.vat_band_id = "required";
+                  if (Object.keys(errs).length) {
+                    setPartDraftErrors(errs);
+                    return;
+                  }
+                  const finalDraft = { ...partDraft, quantity: qn };
+                  if (editingPartId) {
+                    setPartDetails((prev) => prev.map((p) => (p.id === editingPartId ? { ...p, ...finalDraft, id: p.id, db_id: p.db_id } : p)));
+                  } else {
+                    setPartDetails((prev) => [...prev, finalDraft]);
+                  }
+                  setPartDialogOpen(false);
+                }}
+              >
+                Save
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={!!confirmDeletePartId} onOpenChange={(o) => !o && setConfirmDeletePartId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete part?</AlertDialogTitle>
+              <AlertDialogDescription>This will remove the part from this SMR.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                if (!confirmDeletePartId) return;
+                const p = partDetails.find((x) => x.id === confirmDeletePartId);
+                if (p?.db_id) setDeletedPartIds((prev) => [...prev, p.db_id!]);
+                setPartDetails((prev) => prev.filter((x) => x.id !== confirmDeletePartId));
+                setConfirmDeletePartId(null);
+              }}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
