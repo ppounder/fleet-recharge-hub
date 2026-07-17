@@ -1106,6 +1106,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {partDraftErrors.vat_band_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.vat_band_id}</p>}
                 </div>
               </div>
             </div>
