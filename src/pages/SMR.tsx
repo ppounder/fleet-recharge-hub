@@ -676,11 +676,11 @@ export default function SMR() {
 
         {/* Work detail draft dialog */}
         <Dialog open={wdDialogOpen} onOpenChange={setWdDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] !grid-rows-[auto_1fr_auto] grid-cols-1 p-0 gap-0">
-            <DialogHeader className="px-6 pt-6">
+          <DialogContent className="max-w-2xl h-[90vh] !flex flex-col p-0 gap-0 overflow-hidden">
+            <DialogHeader className="px-6 pt-6 shrink-0">
               <DialogTitle>{editingWdId ? "Edit work item" : "Add work item"}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-2 px-6 overflow-y-auto min-h-0">
+            <div className="flex-1 space-y-4 py-2 px-6 overflow-y-auto min-h-0">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Work item name *</Label>
