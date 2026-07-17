@@ -1088,6 +1088,7 @@ export default function SMR() {
                     }}
                     className={cn(partDraftErrors.quantity && "border-destructive")}
                   />
+                  {partDraftErrors.quantity && <p className="text-xs text-destructive mt-1">{partDraftErrors.quantity}</p>}
                 </div>
                 <div>
                   <Label>VAT Band *</Label>
