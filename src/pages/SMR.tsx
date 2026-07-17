@@ -680,7 +680,7 @@ export default function SMR() {
             <DialogHeader className="px-6 pt-6">
               <DialogTitle>{editingWdId ? "Edit work item" : "Add work item"}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-2 px-6 overflow-y-auto flex-1">
+            <div className="space-y-4 py-2 px-6 overflow-y-auto min-h-0">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Work item name *</Label>
