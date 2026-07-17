@@ -33,6 +33,7 @@ import Workshops from "./pages/Workshops";
 import Technicians from "./pages/Technicians";
 import Customers from "./pages/Customers";
 import AdminPasswordReset from "./pages/AdminPasswordReset";
+import SMR from "./pages/SMR";
 
 const queryClient = new QueryClient();
 
