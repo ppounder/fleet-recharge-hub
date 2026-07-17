@@ -1002,37 +1002,6 @@ function ApplicableVehiclesEditor({
     }
   };
 
-  const CascadeField = ({
-    label, step, options, value, onChange, parentEmpty, parentLabel,
-  }: {
-    label: string;
-    step: number;
-    options: string[];
-    value: string[];
-    onChange: (v: string[]) => void;
-    parentEmpty?: boolean;
-    parentLabel?: string;
-  }) => (
-    <div className="relative">
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold">
-          {step}
-        </span>
-        <Label className="text-xs font-medium">{label}</Label>
-        {value.length > 0 && (
-          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{value.length}</Badge>
-        )}
-      </div>
-      <MultiSelectChips
-        label={label}
-        options={options}
-        value={value}
-        onChange={onChange}
-        placeholder={parentEmpty ? `Select ${parentLabel?.toLowerCase()} first (optional)` : `All ${label.toLowerCase()}`}
-      />
-    </div>
-  );
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 rounded-md border bg-muted/30 px-3 py-2">
@@ -1041,7 +1010,7 @@ function ApplicableVehiclesEditor({
           <p className="text-xs text-muted-foreground">
             {applyAll
               ? "This SMR applies to every vehicle in the fleet."
-              : "Narrow down by asset type, then make, model, and derivative."}
+              : "Expand each asset type, make and model to pick the exact vehicles."}
           </p>
         </div>
         <LabeledSwitch checked={applyAll} onCheckedChange={setApplyAll} aria-label="Apply to all vehicles" />
@@ -1049,34 +1018,7 @@ function ApplicableVehiclesEditor({
 
       {!applyAll && (
         <>
-          <div className="rounded-md border bg-card p-3">
-            <div className="flex items-center justify-between mb-3">
-              <Label className="text-sm font-semibold">Vehicle scope</Label>
-              <span className="text-[11px] text-muted-foreground">Leave a level empty to include all</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-              <CascadeField
-                step={1} label="Asset type" options={assetTypeOptions}
-                value={form.applicable_asset_types}
-                onChange={(v) => setForm((f) => ({ ...f, applicable_asset_types: v }))}
-              />
-              <CascadeField
-                step={2} label="Make" options={makeOptions}
-                value={form.applicable_makes}
-                onChange={(v) => setForm((f) => ({ ...f, applicable_makes: v }))}
-              />
-              <CascadeField
-                step={3} label="Model" options={modelOptions}
-                value={form.applicable_models}
-                onChange={(v) => setForm((f) => ({ ...f, applicable_models: v }))}
-              />
-              <CascadeField
-                step={4} label="Derivative" options={derivativeOptions}
-                value={form.applicable_derivatives}
-                onChange={(v) => setForm((f) => ({ ...f, applicable_derivatives: v }))}
-              />
-            </div>
-          </div>
+          <VehicleScopeTree vehicles={vehicles} form={form} setForm={setForm} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
             <MultiSelectChips label="Weight band" options={weightBandOptions}
@@ -1091,5 +1033,286 @@ function ApplicableVehiclesEditor({
     </div>
   );
 }
+
+// ---------- Vehicle scope tree ----------
+type VTree = Record<string, Record<string, Record<string, Set<string>>>>;
+
+function buildVehicleTree(vehicles: any[]): VTree {
+  const t: VTree = {};
+  for (const v of vehicles) {
+    const at = String(v.asset_type ?? "").trim();
+    const mk = String(v.make ?? "").trim();
+    const md = String(v.model ?? "").trim();
+    const dv = String(v.derivative ?? "").trim();
+    if (!at) continue;
+    (t[at] ??= {});
+    if (!mk) continue;
+    (t[at][mk] ??= {});
+    if (!md) continue;
+    (t[at][mk][md] ??= new Set());
+    if (dv) t[at][mk][md].add(dv);
+  }
+  return t;
+}
+
+const leafKey = (at: string, mk: string, md: string, dv: string) =>
+  `${at}\u0001${mk}\u0001${md}\u0001${dv}`;
+
+function collectLeaves(tree: VTree): string[] {
+  const out: string[] = [];
+  for (const at of Object.keys(tree)) {
+    for (const mk of Object.keys(tree[at])) {
+      for (const md of Object.keys(tree[at][mk])) {
+        const derivs = tree[at][mk][md];
+        if (derivs.size === 0) out.push(leafKey(at, mk, md, ""));
+        else for (const dv of derivs) out.push(leafKey(at, mk, md, dv));
+      }
+    }
+  }
+  return out;
+}
+
+function VehicleScopeTree({
+  vehicles, form, setForm,
+}: {
+  vehicles: any[];
+  form: SMRForm;
+  setForm: React.Dispatch<React.SetStateAction<SMRForm>>;
+}) {
+  const tree = useMemo(() => buildVehicleTree(vehicles), [vehicles]);
+  const allLeaves = useMemo(() => collectLeaves(tree), [tree]);
+
+  // Selection = Set of leaf keys. Derive initial from form filters.
+  const [selected, setSelected] = useState<Set<string>>(() => {
+    const at = new Set(form.applicable_asset_types);
+    const mk = new Set(form.applicable_makes);
+    const md = new Set(form.applicable_models);
+    const dv = new Set(form.applicable_derivatives);
+    const s = new Set<string>();
+    for (const key of allLeaves) {
+      const [a, m, mo, d] = key.split("\u0001");
+      if ((at.size === 0 || at.has(a)) &&
+          (mk.size === 0 || mk.has(m)) &&
+          (md.size === 0 || md.has(mo)) &&
+          (dv.size === 0 || !d || dv.has(d))) s.add(key);
+    }
+    return s;
+  });
+
+  // Re-derive selected when tree changes and current selected is empty (vehicles loaded async)
+  useEffect(() => {
+    if (allLeaves.length && selected.size === 0) {
+      const at = new Set(form.applicable_asset_types);
+      const mk = new Set(form.applicable_makes);
+      const md = new Set(form.applicable_models);
+      const dv = new Set(form.applicable_derivatives);
+      // Only auto-seed if form has some filters (otherwise leave empty)
+      if (at.size || mk.size || md.size || dv.size) {
+        const s = new Set<string>();
+        for (const key of allLeaves) {
+          const [a, m, mo, d] = key.split("\u0001");
+          if ((at.size === 0 || at.has(a)) &&
+              (mk.size === 0 || mk.has(m)) &&
+              (md.size === 0 || md.has(mo)) &&
+              (dv.size === 0 || !d || dv.has(d))) s.add(key);
+        }
+        setSelected(s);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allLeaves.length]);
+
+  // Push selection back into form arrays
+  useEffect(() => {
+    const at = new Set<string>();
+    const mk = new Set<string>();
+    const md = new Set<string>();
+    const dv = new Set<string>();
+    for (const key of selected) {
+      const [a, m, mo, d] = key.split("\u0001");
+      at.add(a); mk.add(m); md.add(mo); if (d) dv.add(d);
+    }
+    setForm((f) => ({
+      ...f,
+      applicable_asset_types: Array.from(at).sort(),
+      applicable_makes: Array.from(mk).sort(),
+      applicable_models: Array.from(md).sort(),
+      applicable_derivatives: Array.from(dv).sort(),
+    }));
+  }, [selected, setForm]);
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExp = (k: string) => setExpanded((s) => {
+    const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n;
+  });
+
+  const [search, setSearch] = useState("");
+  const q = search.trim().toLowerCase();
+  const matches = (s: string) => !q || s.toLowerCase().includes(q);
+
+  const selectLeaves = (leaves: string[], on: boolean) => {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      for (const k of leaves) on ? n.add(k) : n.delete(k);
+      return n;
+    });
+  };
+
+  const leavesUnder = (at?: string, mk?: string, md?: string): string[] => {
+    const out: string[] = [];
+    for (const k of allLeaves) {
+      const [a, m, mo] = k.split("\u0001");
+      if (at && a !== at) continue;
+      if (mk && m !== mk) continue;
+      if (md && mo !== md) continue;
+      out.push(k);
+    }
+    return out;
+  };
+
+  const stateOf = (leaves: string[]): "checked" | "unchecked" | "indeterminate" => {
+    if (!leaves.length) return "unchecked";
+    let c = 0;
+    for (const k of leaves) if (selected.has(k)) c++;
+    if (c === 0) return "unchecked";
+    if (c === leaves.length) return "checked";
+    return "indeterminate";
+  };
+
+  const TreeCheckbox = ({ state, onChange }: { state: "checked" | "unchecked" | "indeterminate"; onChange: (v: boolean) => void }) => (
+    <Checkbox
+      checked={state === "checked" ? true : state === "indeterminate" ? "indeterminate" : false}
+      onCheckedChange={(v) => onChange(!!v)}
+      className="h-4 w-4"
+    />
+  );
+
+  const Chevron = ({ open, onClick, hidden }: { open: boolean; onClick: () => void; hidden?: boolean }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn("inline-flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground", hidden && "invisible")}
+      tabIndex={hidden ? -1 : 0}
+      aria-label={open ? "Collapse" : "Expand"}
+    >
+      <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", !open && "-rotate-90")} />
+    </button>
+  );
+
+  const rootLeaves = leavesUnder();
+  const rootState = stateOf(rootLeaves);
+  const selCount = selected.size;
+  const totalCount = allLeaves.length;
+
+  const assetTypes = Object.keys(tree).sort();
+
+  return (
+    <div className="rounded-md border bg-card">
+      <div className="flex items-center justify-between gap-2 border-b p-2">
+        <div className="flex items-center gap-2">
+          <TreeCheckbox state={rootState} onChange={(v) => selectLeaves(rootLeaves, v)} />
+          <span className="text-sm font-semibold">All vehicles</span>
+          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{selCount}/{totalCount}</Badge>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-7 pl-7 w-48 text-xs" />
+          </div>
+          <Button type="button" variant="ghost" size="sm" className="h-7 text-xs"
+            onClick={() => setExpanded(new Set(assetTypes.flatMap((at) => [at, ...Object.keys(tree[at]).map((mk) => `${at}\u0001${mk}`), ...Object.keys(tree[at]).flatMap((mk) => Object.keys(tree[at][mk]).map((md) => `${at}\u0001${mk}\u0001${md}`))])))}>
+            Expand all
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setExpanded(new Set())}>Collapse all</Button>
+        </div>
+      </div>
+
+      <div className="max-h-[320px] overflow-auto p-1 text-sm">
+        {assetTypes.length === 0 && (
+          <div className="p-3 text-xs text-muted-foreground">No vehicles available.</div>
+        )}
+        {assetTypes.map((at) => {
+          const atLeaves = leavesUnder(at);
+          const atState = stateOf(atLeaves);
+          const atOpen = expanded.has(at);
+          const makes = Object.keys(tree[at]).sort();
+          const atMatch = matches(at);
+          const anyMakeMatches = makes.some((mk) => matches(mk) || Object.keys(tree[at][mk]).some((md) => matches(md) || Array.from(tree[at][mk][md]).some(matches)));
+          if (q && !atMatch && !anyMakeMatches) return null;
+          const forceOpen = q && anyMakeMatches;
+          const open = atOpen || !!forceOpen;
+          return (
+            <div key={at}>
+              <div className="flex items-center gap-1.5 rounded px-1 py-1 hover:bg-muted/50">
+                <Chevron open={open} onClick={() => toggleExp(at)} />
+                <TreeCheckbox state={atState} onChange={(v) => selectLeaves(atLeaves, v)} />
+                <span className="text-sm font-medium">{at}</span>
+              </div>
+              {open && makes.map((mk) => {
+                const mkKey = `${at}\u0001${mk}`;
+                const mkLeaves = leavesUnder(at, mk);
+                const mkState = stateOf(mkLeaves);
+                const mkOpen = expanded.has(mkKey);
+                const models = Object.keys(tree[at][mk]).sort();
+                const mkMatch = matches(mk);
+                const anyChildMatch = models.some((md) => matches(md) || Array.from(tree[at][mk][md]).some(matches));
+                if (q && !atMatch && !mkMatch && !anyChildMatch) return null;
+                const mkForceOpen = q && (anyChildMatch || (atMatch && !mkMatch));
+                const mkOpenFinal = mkOpen || !!mkForceOpen;
+                return (
+                  <div key={mkKey}>
+                    <div className="flex items-center gap-1.5 rounded px-1 py-1 hover:bg-muted/50" style={{ paddingLeft: 20 }}>
+                      <Chevron open={mkOpenFinal} onClick={() => toggleExp(mkKey)} />
+                      <TreeCheckbox state={mkState} onChange={(v) => selectLeaves(mkLeaves, v)} />
+                      <span>{mk}</span>
+                    </div>
+                    {mkOpenFinal && models.map((md) => {
+                      const mdKey = `${at}\u0001${mk}\u0001${md}`;
+                      const mdLeaves = leavesUnder(at, mk, md);
+                      const mdState = stateOf(mdLeaves);
+                      const mdOpen = expanded.has(mdKey);
+                      const derivs = Array.from(tree[at][mk][md]).sort();
+                      const mdMatch = matches(md);
+                      const anyDvMatch = derivs.some(matches);
+                      if (q && !atMatch && !mkMatch && !mdMatch && !anyDvMatch) return null;
+                      const mdForceOpen = q && anyDvMatch;
+                      const mdOpenFinal = mdOpen || !!mdForceOpen;
+                      const hasDerivs = derivs.length > 0;
+                      return (
+                        <div key={mdKey}>
+                          <div className="flex items-center gap-1.5 rounded px-1 py-1 hover:bg-muted/50" style={{ paddingLeft: 40 }}>
+                            <Chevron open={mdOpenFinal} onClick={() => toggleExp(mdKey)} hidden={!hasDerivs} />
+                            <TreeCheckbox state={mdState} onChange={(v) => selectLeaves(mdLeaves, v)} />
+                            <span>{md}</span>
+                          </div>
+                          {mdOpenFinal && derivs.map((dv) => {
+                            if (q && !atMatch && !mkMatch && !mdMatch && !matches(dv)) return null;
+                            const dvKey = leafKey(at, mk, md, dv);
+                            const dvChecked = selected.has(dvKey);
+                            return (
+                              <div key={dvKey} className="flex items-center gap-1.5 rounded px-1 py-1 hover:bg-muted/50" style={{ paddingLeft: 60 }}>
+                                <span className="inline-block h-4 w-4" />
+                                <TreeCheckbox
+                                  state={dvChecked ? "checked" : "unchecked"}
+                                  onChange={(v) => selectLeaves([dvKey], v)}
+                                />
+                                <span className="text-muted-foreground">{dv}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 
 
