@@ -355,7 +355,17 @@ export default function SMR() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const rows = q
-      ? smrItems.filter((s) => s.name?.toLowerCase().includes(q))
+      ? smrItems.filter((s) => {
+          if (s.name?.toLowerCase().includes(q)) return true;
+          const wds = workDetailsBySmr.get(s.id) ?? [];
+          if (wds.some((w) => w.name?.toLowerCase().includes(q))) return true;
+          const pds = partDetailsBySmr.get(s.id) ?? [];
+          if (pds.some((p) => {
+            const info = partById.get(p.part_id);
+            return info && (info.description?.toLowerCase().includes(q) || info.part_number?.toLowerCase().includes(q));
+          })) return true;
+          return false;
+        })
       : smrItems;
     return [...rows].sort((a, b) => {
       const av = (a as any)[sortKey] ?? "";
@@ -363,7 +373,7 @@ export default function SMR() {
       const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [smrItems, search, sortKey, sortDir]);
+  }, [smrItems, search, sortKey, sortDir, workDetailsBySmr, partDetailsBySmr, partById]);
 
   const toggleSort = (k: string) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
