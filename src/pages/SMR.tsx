@@ -356,6 +356,25 @@ export default function SMR() {
     } else {
       setWorkDetails([]);
     }
+    // Load parts for this SMR
+    setDeletedPartIds([]);
+    const { data: partsData } = await supabase
+      .from("smr_part_details")
+      .select("*")
+      .eq("smr_item_id", s.id)
+      .order("sort_order");
+    if (partsData) {
+      setPartDetails(partsData.map((r: any) => ({
+        id: r.id,
+        db_id: r.id,
+        smr_work_detail_local_id: r.smr_work_detail_id,
+        part_id: r.part_id,
+        quantity: Number(r.quantity ?? 0),
+        vat_band_id: r.vat_band_id ?? null,
+      })));
+    } else {
+      setPartDetails([]);
+    }
   };
 
   const totalCalc = useMemo(() => {
