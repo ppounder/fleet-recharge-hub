@@ -82,6 +82,7 @@ const AppRoutes = () => (
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
     <Route path="/supplier-networks" element={<ProtectedRoute><SupplierNetworks /></ProtectedRoute>} />
     <Route path="/admin/reset-password" element={<ProtectedRoute><AdminPasswordReset /></ProtectedRoute>} />
+    <Route path="/smr" element={<ProtectedRoute><SMR /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
