@@ -607,12 +607,14 @@ export default function SMR() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search SMR..." className="pl-9" />
               </div>
-              <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add SMR</Button>
-              <ManageColumnsDialog
-                visibleCols={visibleCols}
-                columnOrder={columnOrder}
-                onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
-              />
+              <div className="flex items-center gap-2 ml-auto">
+                <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add SMR</Button>
+                <ManageColumnsDialog
+                  visibleCols={visibleCols}
+                  columnOrder={columnOrder}
+                  onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+                />
+              </div>
             </div>
 
             <div className="rounded-md border">
