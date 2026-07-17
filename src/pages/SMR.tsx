@@ -182,6 +182,12 @@ export default function SMR() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
   const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) => setExpandedRows((prev) => {
+    const n = new Set(prev);
+    if (n.has(id)) n.delete(id); else n.add(id);
+    return n;
+  });
 
 
   const [dialogOpen, setDialogOpen] = useState(false);
