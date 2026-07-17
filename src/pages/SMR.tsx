@@ -535,7 +535,7 @@ export default function SMR() {
 
         {/* Add/Edit dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-4xl max-h-[90vh] !grid-rows-[auto_1fr_auto] grid-cols-1 p-0 gap-0">
             <DialogHeader className="px-6 pt-6 pb-2">
               <DialogTitle>{editingId ? "Edit SMR" : "Add SMR"}</DialogTitle>
               <DialogDescription>Configure a Service, Maintenance & Repair work item.</DialogDescription>
