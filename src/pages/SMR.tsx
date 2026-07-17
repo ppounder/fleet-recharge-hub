@@ -150,11 +150,11 @@ const emptyWorkDetail = (): WorkDetail => ({
 });
 
 const wdSchema = z.object({
-  name: z.string().trim().min(1),
-  reason_for_work: z.string().min(1),
-  work_type: z.string().min(1),
-  labour_hours: z.number().min(0),
-  vat_band_id: z.string().min(1),
+  name: z.string().trim().min(1, { message: "Work item name is required" }),
+  reason_for_work: z.string().min(1, { message: "Reason for work is required" }),
+  work_type: z.string().min(1, { message: "Work type is required" }),
+  labour_hours: z.number().min(0, { message: "Labour hours must be 0 or greater" }),
+  vat_band_id: z.string().min(1, { message: "VAT band is required" }),
 });
 
 export default function SMR() {
