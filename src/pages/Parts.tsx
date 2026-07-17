@@ -526,17 +526,6 @@ export default function Parts() {
           <h1 className="text-2xl font-bold">Parts</h1>
         </div>
 
-        {!currentSupplier && suppliers && suppliers.length > 0 && (
-          <div className="flex items-center gap-2">
-            <Label className="text-xs">Supplier catalog</Label>
-            <Select value={providerId} onValueChange={setProviderId}>
-              <SelectTrigger className="w-64 h-9"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {suppliers.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
 
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-sm">
