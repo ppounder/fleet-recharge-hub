@@ -407,12 +407,14 @@ export default function SMR() {
   const openAddWd = () => {
     setEditingWdId(null);
     setWdDraft(emptyWorkDetail());
+    setWdLabourHoursText("0.00");
     setWdDraftErrors({});
     setWdDialogOpen(true);
   };
   const openEditWd = (wd: WorkDetail) => {
     setEditingWdId(wd.id);
     setWdDraft({ ...wd });
+    setWdLabourHoursText(Number(wd.labour_hours).toFixed(2));
     setWdDraftErrors({});
     setWdDialogOpen(true);
   };
