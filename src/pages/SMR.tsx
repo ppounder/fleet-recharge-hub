@@ -56,6 +56,16 @@ type SMRItem = {
   total: number | null;
 };
 
+type PartDetail = {
+  id: string; // local id
+  db_id?: string; // real db id if loaded/saved
+  smr_work_detail_local_id: string; // references WorkDetail.id (local)
+  part_id: string;
+  quantity: number;
+  vat_band_id: string | null;
+  _isNew?: boolean;
+};
+
 type WorkDetail = {
   id: string;
   smr_item_id?: string;
