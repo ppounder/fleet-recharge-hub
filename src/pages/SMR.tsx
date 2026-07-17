@@ -307,6 +307,8 @@ export default function SMR() {
     setErrors({});
     setWorkDetails([]);
     setDeletedWdIds([]);
+    setPartDetails([]);
+    setDeletedPartIds([]);
     setDialogOpen(true);
   };
 
