@@ -26,17 +26,31 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Check, X, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, ArrowUp, ArrowDown, ChevronsUpDown, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, ArrowUp, ArrowDown, ChevronsUpDown, Pencil, Trash2, Columns3, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isValid } from "date-fns";
 import { taxonomyAsVehicles } from "@/lib/vehicle-taxonomy";
 
 const REASONS = ["Routine", "Damage", "Repair", "Warranty"] as const;
 const WORK_TYPES = ["Safety Inspection", "Service", "MOT", "Maintenance", "LOLER", "Tacho", "Other"] as const;
+
+type ColKey = "name" | "valid_from" | "valid_to" | "fixed_price" | "total";
+const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
+  { key: "name", label: "Name", sortable: true },
+  { key: "valid_from", label: "Valid from", sortable: true },
+  { key: "valid_to", label: "Valid to", sortable: true },
+  { key: "fixed_price", label: "Fixed price", sortable: false },
+  { key: "total", label: "Total", sortable: false },
+];
+const LOCKED_COLS: ColKey[] = ["name"];
+const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
+
 
 type SMRItem = {
   id: string;
@@ -164,6 +178,9 @@ export default function SMR() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -581,7 +598,6 @@ export default function SMR() {
             <h1 className="text-2xl font-bold">SMR</h1>
             <p className="text-sm text-muted-foreground">Service, Maintenance and Repair work items</p>
           </div>
-          <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add SMR</Button>
         </div>
 
         <Card>
@@ -591,39 +607,60 @@ export default function SMR() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search SMR..." className="pl-9" />
               </div>
+              <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add SMR</Button>
+              <ManageColumnsDialog
+                visibleCols={visibleCols}
+                columnOrder={columnOrder}
+                onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+              />
             </div>
 
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("name")}>
-                      <div className="flex items-center gap-1">Name <SortIcon col="name" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("valid_from")}>
-                      <div className="flex items-center gap-1">Valid from <SortIcon col="valid_from" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("valid_to")}>
-                      <div className="flex items-center gap-1">Valid to <SortIcon col="valid_to" /></div>
-                    </TableHead>
-                    <TableHead>Fixed price</TableHead>
-                    <TableHead>Total</TableHead>
+                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                      const c = COLUMNS.find((col) => col.key === k)!;
+                      return (
+                        <TableHead
+                          key={k}
+                          className={c.sortable ? "cursor-pointer" : ""}
+                          onClick={c.sortable ? () => toggleSort(k) : undefined}
+                        >
+                          <div className="flex items-center gap-1">
+                            {c.label}
+                            {c.sortable && <SortIcon col={k} />}
+                          </div>
+                        </TableHead>
+                      );
+                    })}
                     <TableHead className="w-24 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={visibleCols.length + 1} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                   ) : filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No SMR items</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={visibleCols.length + 1} className="text-center py-8 text-muted-foreground">No SMR items</TableCell></TableRow>
                   ) : (
                     filtered.map((s) => (
                       <TableRow key={s.id} className="cursor-pointer h-11" onClick={() => openEdit(s)}>
-                        <TableCell className="font-medium">{s.name}</TableCell>
-                        <TableCell>{dispDate(s.valid_from)}</TableCell>
-                        <TableCell>{dispDate(s.valid_to)}</TableCell>
-                        <TableCell>{s.fixed_price ? <Badge>Yes</Badge> : <Badge variant="outline">No</Badge>}</TableCell>
-                        <TableCell>{s.fixed_price && s.total != null ? `£${Number(s.total).toFixed(2)}` : "—"}</TableCell>
+                        {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                          switch (k) {
+                            case "name":
+                              return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
+                            case "valid_from":
+                              return <TableCell key={k}>{dispDate(s.valid_from)}</TableCell>;
+                            case "valid_to":
+                              return <TableCell key={k}>{dispDate(s.valid_to)}</TableCell>;
+                            case "fixed_price":
+                              return <TableCell key={k}>{s.fixed_price ? <Badge>Yes</Badge> : <Badge variant="outline">No</Badge>}</TableCell>;
+                            case "total":
+                              return <TableCell key={k}>{s.fixed_price && s.total != null ? `£${Number(s.total).toFixed(2)}` : "—"}</TableCell>;
+                            default:
+                              return null;
+                          }
+                        })}
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
                             <Tooltip>
@@ -1670,3 +1707,100 @@ function VehicleScopeTree({
 
 
 
+
+function ManageColumnsDialog({
+  visibleCols, columnOrder, onApply,
+}: {
+  visibleCols: ColKey[];
+  columnOrder: ColKey[];
+  onApply: (order: ColKey[], visible: ColKey[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftOrder, setDraftOrder] = useState<ColKey[]>(columnOrder);
+  const [draftVisible, setDraftVisible] = useState<ColKey[]>(visibleCols);
+  const [dragKey, setDragKey] = useState<ColKey | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setDraftOrder(columnOrder);
+      setDraftVisible(visibleCols);
+    }
+  }, [open, columnOrder, visibleCols]);
+
+  const toggle = (k: ColKey, checked: boolean) => {
+    if (LOCKED_COLS.includes(k)) return;
+    if (checked) setDraftVisible([...draftVisible, k]);
+    else setDraftVisible(draftVisible.filter((c) => c !== k));
+  };
+
+  const handleDrop = (target: ColKey) => {
+    if (!dragKey || dragKey === target) return;
+    const next = draftOrder.filter((k) => k !== dragKey);
+    const idx = next.indexOf(target);
+    next.splice(idx, 0, dragKey);
+    setDraftOrder(next);
+    setDragKey(null);
+  };
+
+  const handleReset = () => {
+    setDraftOrder(DEFAULT_ORDER);
+    setDraftVisible(DEFAULT_VISIBLE);
+  };
+
+  const handleApply = () => {
+    onApply(draftOrder, draftVisible);
+    setOpen(false);
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <Button variant="outline" size="sm" className="gap-2 h-10" onClick={() => setOpen(true)}>
+        <Columns3 className="w-4 h-4" />
+        Manage columns
+      </Button>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Manage columns</SheetTitle>
+          <SheetDescription>
+            Select the columns you most want to see. Drag the items into the order you want them shown in the table.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="rounded-md border divide-y flex-1 overflow-y-auto mt-4">
+          {draftOrder.map((k) => {
+            const col = COLUMNS.find((c) => c.key === k)!;
+            const locked = LOCKED_COLS.includes(k);
+            const checked = draftVisible.includes(k);
+            return (
+              <div
+                key={k}
+                draggable
+                onDragStart={() => setDragKey(k)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(k)}
+                onDragEnd={() => setDragKey(null)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-muted/50 cursor-grab active:cursor-grabbing",
+                  dragKey === k && "opacity-50"
+                )}
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-sm font-medium">{col.label}</span>
+                <Checkbox
+                  checked={checked}
+                  disabled={locked}
+                  onCheckedChange={(v) => toggle(k, !!v)}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <SheetFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={handleReset}>Reset</Button>
+          <Button onClick={handleApply}>Save</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
