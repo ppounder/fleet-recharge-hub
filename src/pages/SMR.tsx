@@ -746,7 +746,7 @@ export default function SMR() {
                 </div>
                 <div>
                   <Label>Labour hours *</Label>
-                  <Input type="text" inputMode="decimal" value={String(wdDraft.labour_hours)}
+                  <Input type="text" inputMode="decimal" value={Number(wdDraft.labour_hours).toFixed(2)}
                     onChange={(e) => /^[0-9]*\.?[0-9]{0,2}$/.test(e.target.value) && setWdDraft((d) => ({ ...d, labour_hours: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div>
