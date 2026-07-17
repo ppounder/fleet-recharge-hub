@@ -939,14 +939,16 @@ function ApplicableVehiclesEditor({
   form: SMRForm;
   setForm: React.Dispatch<React.SetStateAction<SMRForm>>;
 }) {
-  const isAllOf = (val: string[], opts: string[]) => opts.length > 0 && val.length === opts.length;
-  const applyAll =
+  const isAllOf = (val: string[], opts: string[]) => opts.length === 0 || val.length === opts.length;
+  const derivedApplyAll =
     isAllOf(form.applicable_asset_types, assetTypeOptions) &&
     isAllOf(form.applicable_makes, makeOptions) &&
     isAllOf(form.applicable_models, modelOptions) &&
     isAllOf(form.applicable_derivatives, derivativeOptions) &&
     isAllOf(form.applicable_weight_bands, weightBandOptions) &&
     isAllOf(form.applicable_axles, axleOptions);
+  const [applyAllOverride, setApplyAllOverride] = useState<boolean | null>(null);
+  const applyAll = applyAllOverride ?? derivedApplyAll;
 
   const setApplyAll = (on: boolean) => {
     if (on) {
