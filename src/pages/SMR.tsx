@@ -882,6 +882,7 @@ export default function SMR() {
                   <Label>Work item name *</Label>
                   <Input value={wdDraft.name} onChange={(e) => setWdDraft((d) => ({ ...d, name: e.target.value }))}
                     className={cn(wdDraftErrors.name && "border-destructive")} />
+                  {wdDraftErrors.name && <p className="text-xs text-destructive mt-1">{wdDraftErrors.name}</p>}
                 </div>
                 <div>
                   <Label>Code</Label>
