@@ -771,6 +771,83 @@ export default function SMR() {
                   </Table>
                 </div>
               </CollapsibleCard>
+
+              <CollapsibleCard title="Part Details" defaultOpen>
+                <div className="flex justify-end mb-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (workDetails.length === 0) {
+                        toast({ title: "Add a work item first", description: "Parts must be linked to a work item.", variant: "destructive" });
+                        return;
+                      }
+                      setEditingPartId(null);
+                      setPartDraft({
+                        id: (crypto as any).randomUUID?.() ?? String(Math.random()),
+                        smr_work_detail_local_id: "",
+                        part_id: "",
+                        quantity: 0,
+                        vat_band_id: null,
+                        _isNew: true,
+                      });
+                      setPartQtyText("0.00");
+                      setPartDraftErrors({});
+                      setPartDialogOpen(true);
+                    }}
+                    className="gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add part
+                  </Button>
+                </div>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Work item</TableHead>
+                        <TableHead>Part number</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>VAT</TableHead>
+                        <TableHead className="w-24 text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {partDetails.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-4 text-sm text-muted-foreground">No parts</TableCell></TableRow>
+                      ) : partDetails.map((p) => {
+                        const wd = workDetails.find((w) => w.id === p.smr_work_detail_local_id);
+                        const part = partsCatalogue.find((c) => c.id === p.part_id);
+                        return (
+                          <TableRow key={p.id} className="h-10">
+                            <TableCell className="font-medium">{wd?.name ?? "—"}</TableCell>
+                            <TableCell>{part?.part_number || "—"}</TableCell>
+                            <TableCell>{part?.description || "—"}</TableCell>
+                            <TableCell>{p.quantity.toFixed(2)}</TableCell>
+                            <TableCell>{vatName(p.vat_band_id)}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
+                                  setEditingPartId(p.id);
+                                  setPartDraft({ ...p });
+                                  setPartQtyText(Number(p.quantity).toFixed(2));
+                                  setPartDraftErrors({});
+                                  setPartDialogOpen(true);
+                                }}>
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setConfirmDeletePartId(p.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CollapsibleCard>
             </div>
 
             <DialogFooter className="px-6 py-4 border-t bg-background shrink-0">
