@@ -33,6 +33,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, ArrowUp, ArrowDown, ChevronsUpDown, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isValid } from "date-fns";
+import { taxonomyAsVehicles } from "@/lib/vehicle-taxonomy";
 
 const REASONS = ["Routine", "Damage", "Repair", "Warranty"] as const;
 const WORK_TYPES = ["Safety Inspection", "Service", "MOT", "Maintenance", "LOLER", "Tacho", "Other"] as const;
