@@ -1110,6 +1110,7 @@ export default function SMR() {
                   if (!partDraft.vat_band_id) errs.vat_band_id = "required";
                   if (Object.keys(errs).length) {
                     setPartDraftErrors(errs);
+                    toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
                     return;
                   }
                   const finalDraft = { ...partDraft, quantity: qn };
