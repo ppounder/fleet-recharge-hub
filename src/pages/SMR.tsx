@@ -882,6 +882,7 @@ export default function SMR() {
                   <Label>Work item name *</Label>
                   <Input value={wdDraft.name} onChange={(e) => setWdDraft((d) => ({ ...d, name: e.target.value }))}
                     className={cn(wdDraftErrors.name && "border-destructive")} />
+                  {wdDraftErrors.name && <p className="text-xs text-destructive mt-1">{wdDraftErrors.name}</p>}
                 </div>
                 <div>
                   <Label>Code</Label>
@@ -915,6 +916,7 @@ export default function SMR() {
                       {REASONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {wdDraftErrors.reason_for_work && <p className="text-xs text-destructive mt-1">{wdDraftErrors.reason_for_work}</p>}
                 </div>
                 <div>
                   <Label>Work type *</Label>
@@ -927,12 +929,14 @@ export default function SMR() {
                       {WORK_TYPES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {wdDraftErrors.work_type && <p className="text-xs text-destructive mt-1">{wdDraftErrors.work_type}</p>}
                 </div>
                 {wdDraft.work_type === "Other" && (
                   <div className="col-span-2">
                     <Label>Specify work type *</Label>
                     <Input value={wdDraft.work_type_other} onChange={(e) => setWdDraft((d) => ({ ...d, work_type_other: e.target.value }))}
                       className={cn(wdDraftErrors.work_type_other && "border-destructive")} />
+                    {wdDraftErrors.work_type_other && <p className="text-xs text-destructive mt-1">{wdDraftErrors.work_type_other}</p>}
                   </div>
                 )}
                 <div>
@@ -947,6 +951,7 @@ export default function SMR() {
                 <div>
                   <Label>Labour hours *</Label>
                   <Input type="text" inputMode="decimal" value={wdLabourHoursText}
+                    className={cn(wdDraftErrors.labour_hours && "border-destructive")}
                     onChange={(e) => {
                       const v = e.target.value;
                       if (/^[0-9]*\.?[0-9]{0,2}$/.test(v)) {
@@ -959,6 +964,7 @@ export default function SMR() {
                       setWdLabourHoursText(n.toFixed(2));
                       setWdDraft((d) => ({ ...d, labour_hours: n }));
                     }} />
+                  {wdDraftErrors.labour_hours && <p className="text-xs text-destructive mt-1">{wdDraftErrors.labour_hours}</p>}
                 </div>
                 <div>
                   <Label>VAT Band *</Label>
@@ -973,6 +979,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {wdDraftErrors.vat_band_id && <p className="text-xs text-destructive mt-1">{wdDraftErrors.vat_band_id}</p>}
                 </div>
               </div>
             </div>
@@ -1019,6 +1026,7 @@ export default function SMR() {
                     ))}
                   </SelectContent>
                 </Select>
+                {partDraftErrors.smr_work_detail_local_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.smr_work_detail_local_id}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1041,6 +1049,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {partDraftErrors.part_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.part_id}</p>}
                 </div>
                 <div>
                   <Label>Part description *</Label>
@@ -1062,6 +1071,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {partDraftErrors.part_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.part_id}</p>}
                 </div>
                 <div>
                   <Label>Quantity *</Label>
@@ -1078,6 +1088,7 @@ export default function SMR() {
                     }}
                     className={cn(partDraftErrors.quantity && "border-destructive")}
                   />
+                  {partDraftErrors.quantity && <p className="text-xs text-destructive mt-1">{partDraftErrors.quantity}</p>}
                 </div>
                 <div>
                   <Label>VAT Band *</Label>
@@ -1095,6 +1106,7 @@ export default function SMR() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {partDraftErrors.vat_band_id && <p className="text-xs text-destructive mt-1">{partDraftErrors.vat_band_id}</p>}
                 </div>
               </div>
             </div>
@@ -1103,11 +1115,11 @@ export default function SMR() {
               <Button
                 onClick={() => {
                   const errs: Record<string, string> = {};
-                  if (!partDraft.smr_work_detail_local_id) errs.smr_work_detail_local_id = "required";
-                  if (!partDraft.part_id) errs.part_id = "required";
+                  if (!partDraft.smr_work_detail_local_id) errs.smr_work_detail_local_id = "Work item is required";
+                  if (!partDraft.part_id) errs.part_id = "Part is required";
                   const qn = parseFloat(partQtyText);
-                  if (isNaN(qn) || qn <= 0) errs.quantity = "required";
-                  if (!partDraft.vat_band_id) errs.vat_band_id = "required";
+                  if (isNaN(qn) || qn <= 0) errs.quantity = "Quantity must be greater than 0";
+                  if (!partDraft.vat_band_id) errs.vat_band_id = "VAT band is required";
                   if (Object.keys(errs).length) {
                     setPartDraftErrors(errs);
                     toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
