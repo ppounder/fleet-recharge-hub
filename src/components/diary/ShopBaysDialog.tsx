@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Trash2, Plus, GripVertical } from "lucide-react";
+import { Trash2, Plus, GripVertical, Pencil, Check, X } from "lucide-react";
 import { useBays, useUpsertBay, useDeleteBay } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +29,33 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const [name, setName] = useState("");
   const [color, setColor] = useState("#0ea5e9");
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const startEdit = (b: any) => {
+    setEditingId(b.id);
+    setEditName(b.name);
+  };
+  const cancelEdit = () => setEditingId(null);
+  const saveEdit = async (b: any) => {
+    const n = editName.trim();
+    if (!n) {
+      toast({ title: "Bay name is required", variant: "destructive" });
+      return;
+    }
+    try {
+      await upsert.mutateAsync({
+        id: b.id,
+        name: n,
+        color: b.color,
+        active: b.active,
+        sort_order: b.sort_order,
+      });
+      setEditingId(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e?.message ?? String(e), variant: "destructive" });
+    }
+  };
 
   const sorted = [...bays].sort((a, b) => a.sort_order - b.sort_order);
 
