@@ -33,6 +33,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, ArrowUp, ArrowDown, ChevronsUpDown, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isValid } from "date-fns";
+import { taxonomyAsVehicles } from "@/lib/vehicle-taxonomy";
 
 const REASONS = ["Routine", "Damage", "Repair", "Warranty"] as const;
 const WORK_TYPES = ["Safety Inspection", "Service", "MOT", "Maintenance", "LOLER", "Tacho", "Other"] as const;
@@ -188,16 +189,32 @@ export default function SMR() {
     },
   });
 
-  const { data: vehicles = [] } = useQuery({
+  const { data: dbVehicles = [] } = useQuery({
     queryKey: ["vehicles_for_smr"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicles")
-        .select("asset_type, make, model, derivative, weight_band, no_axles");
+        .select("asset_type, make, model, derivative");
       if (error) throw error;
       return (data ?? []) as any[];
     },
   });
+
+  // Merge fleet vehicles with the example taxonomy so the scope tree always
+  // has a rich set of asset types / makes / models / derivatives to pick from.
+  const vehicles = useMemo(() => {
+    const seen = new Set<string>();
+    const out: any[] = [];
+    const push = (v: any) => {
+      const k = `${v.asset_type ?? ""}|${v.make ?? ""}|${v.model ?? ""}|${v.derivative ?? ""}`;
+      if (seen.has(k)) return;
+      seen.add(k);
+      out.push(v);
+    };
+    dbVehicles.forEach(push);
+    taxonomyAsVehicles().forEach(push);
+    return out;
+  }, [dbVehicles]);
 
   const distinct = (key: string) => {
     const s = new Set<string>();
@@ -212,8 +229,9 @@ export default function SMR() {
   const makeOptions = useMemo(() => distinct("make"), [vehicles]);
   const modelOptions = useMemo(() => distinct("model"), [vehicles]);
   const derivativeOptions = useMemo(() => distinct("derivative"), [vehicles]);
-  const weightBandOptions = useMemo(() => distinct("weight_band"), [vehicles]);
-  const axleOptions = useMemo(() => distinct("no_axles"), [vehicles]);
+  const weightBandOptions: string[] = useMemo(() => [], []);
+  const axleOptions: string[] = useMemo(() => [], []);
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

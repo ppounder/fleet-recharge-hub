@@ -39,6 +39,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { ASSET_TYPES, getMakesFor, getModelsFor, getDerivativesFor } from "@/lib/vehicle-taxonomy";
 
 type EditableFields = {
   status: string;
@@ -580,10 +581,37 @@ export default function CustomerVehicles() {
                         <div key={k} className="space-y-1.5">
                           <Label htmlFor={k}>{labels[k]}</Label>
                           {k === "asset_type" ? (
-                          <Select value={form.asset_type || ""} onValueChange={(v) => { setForm((f) => ({ ...f, asset_type: v })); if (errors.asset_type) setErrors((p) => ({ ...p, asset_type: undefined })); }}>
+                          <Select value={form.asset_type || ""} onValueChange={(v) => { setForm((f) => ({ ...f, asset_type: v, make: "", model: "", derivative: "" })); if (errors.asset_type) setErrors((p) => ({ ...p, asset_type: undefined })); }}>
                               <SelectTrigger id={k} className={cn("bg-card", errors.asset_type && "border-destructive focus-visible:ring-destructive")}><SelectValue placeholder="Select asset type" /></SelectTrigger>
                               <SelectContent>
-                                {["Car", "Van", "HGV", "Trailer", "Plant", "Tail Lift"].map((opt) => (
+                                {ASSET_TYPES.map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : k === "make" ? (
+                            <Select value={form.make || ""} onValueChange={(v) => { setForm((f) => ({ ...f, make: v, model: "", derivative: "" })); if (errors.make) setErrors((p) => ({ ...p, make: undefined })); }}>
+                              <SelectTrigger id={k} className={cn("bg-card", errors.make && "border-destructive focus-visible:ring-destructive")}><SelectValue placeholder={form.asset_type ? "Select make" : "Select asset type first"} /></SelectTrigger>
+                              <SelectContent>
+                                {getMakesFor(form.asset_type).map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : k === "model" ? (
+                            <Select value={form.model || ""} onValueChange={(v) => { setForm((f) => ({ ...f, model: v, derivative: "" })); if (errors.model) setErrors((p) => ({ ...p, model: undefined })); }}>
+                              <SelectTrigger id={k} className={cn("bg-card", errors.model && "border-destructive focus-visible:ring-destructive")}><SelectValue placeholder={form.make ? "Select model" : "Select make first"} /></SelectTrigger>
+                              <SelectContent>
+                                {getModelsFor(form.asset_type, form.make).map((opt) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : k === "derivative" ? (
+                            <Select value={form.derivative || ""} onValueChange={(v) => setForm((f) => ({ ...f, derivative: v }))}>
+                              <SelectTrigger id={k} className="bg-card"><SelectValue placeholder={form.model ? "Select derivative" : "Select model first"} /></SelectTrigger>
+                              <SelectContent>
+                                {getDerivativesFor(form.asset_type, form.make, form.model).map((opt) => (
                                   <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -624,6 +652,7 @@ export default function CustomerVehicles() {
                               )}
                             </div>
                           ) : (
+
                             <Input
                               id={k}
                               value={form[k]}
