@@ -707,8 +707,8 @@ export default function SMR() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Document upload required</Label>
+                <div>
+                  <Label>Document upload required</Label>
                   <LabeledSwitch
                     checked={wdDraft.document_required}
                     onCheckedChange={(v) => setWdDraft((d) => ({ ...d, document_required: v }))}
