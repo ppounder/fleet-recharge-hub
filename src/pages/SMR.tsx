@@ -1115,11 +1115,11 @@ export default function SMR() {
               <Button
                 onClick={() => {
                   const errs: Record<string, string> = {};
-                  if (!partDraft.smr_work_detail_local_id) errs.smr_work_detail_local_id = "required";
-                  if (!partDraft.part_id) errs.part_id = "required";
+                  if (!partDraft.smr_work_detail_local_id) errs.smr_work_detail_local_id = "Work item is required";
+                  if (!partDraft.part_id) errs.part_id = "Part is required";
                   const qn = parseFloat(partQtyText);
-                  if (isNaN(qn) || qn <= 0) errs.quantity = "required";
-                  if (!partDraft.vat_band_id) errs.vat_band_id = "required";
+                  if (isNaN(qn) || qn <= 0) errs.quantity = "Quantity must be greater than 0";
+                  if (!partDraft.vat_band_id) errs.vat_band_id = "VAT band is required";
                   if (Object.keys(errs).length) {
                     setPartDraftErrors(errs);
                     toast({ title: "Please fix the errors below", description: "Some fields are invalid.", variant: "destructive" });
