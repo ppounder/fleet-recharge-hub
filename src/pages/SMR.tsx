@@ -535,13 +535,13 @@ export default function SMR() {
 
         {/* Add/Edit dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] !grid-rows-[auto_1fr_auto] grid-cols-1 p-0 gap-0">
+          <DialogContent className="max-w-4xl h-[90vh] !flex flex-col p-0 gap-0 overflow-hidden">
             <DialogHeader className="px-6 pt-6 pb-2">
               <DialogTitle>{editingId ? "Edit SMR" : "Add SMR"}</DialogTitle>
               <DialogDescription>Configure a Service, Maintenance & Repair work item.</DialogDescription>
             </DialogHeader>
 
-            <div className="min-h-0 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
               <CollapsibleCard title="SMR Details" defaultOpen>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
@@ -665,7 +665,7 @@ export default function SMR() {
               </CollapsibleCard>
             </div>
 
-            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0">
+            <DialogFooter className="px-6 py-4 border-t bg-background shrink-0">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? "Saving..." : "Save"}
@@ -676,11 +676,11 @@ export default function SMR() {
 
         {/* Work detail draft dialog */}
         <Dialog open={wdDialogOpen} onOpenChange={setWdDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] !grid-rows-[auto_1fr_auto] grid-cols-1 p-0 gap-0">
-            <DialogHeader className="px-6 pt-6">
+          <DialogContent className="max-w-2xl h-[90vh] !flex flex-col p-0 gap-0 overflow-hidden">
+            <DialogHeader className="px-6 pt-6 shrink-0">
               <DialogTitle>{editingWdId ? "Edit work item" : "Add work item"}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-2 px-6 overflow-y-auto min-h-0">
+            <div className="flex-1 space-y-4 py-2 px-6 overflow-y-auto min-h-0">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Work item name *</Label>
@@ -765,7 +765,7 @@ export default function SMR() {
                 </div>
               </div>
             </div>
-            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0">
+            <DialogFooter className="px-6 py-4 border-t bg-background shrink-0">
               <Button variant="outline" onClick={() => setWdDialogOpen(false)}>Cancel</Button>
               <Button onClick={saveWdDraft}>Save</Button>
             </DialogFooter>
