@@ -690,6 +690,7 @@ export default function SMR() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]" />
                     {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
                       const c = COLUMNS.find((col) => col.key === k)!;
                       return (
@@ -710,50 +711,144 @@ export default function SMR() {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={visibleCols.length + 1} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={visibleCols.length + 2} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                   ) : filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={visibleCols.length + 1} className="text-center py-8 text-muted-foreground">No SMR items</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={visibleCols.length + 2} className="text-center py-8 text-muted-foreground">No SMR items</TableCell></TableRow>
                   ) : (
-                    filtered.map((s) => (
-                      <TableRow key={s.id} className="cursor-pointer h-11" onClick={() => openEdit(s)}>
-                        {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
-                          switch (k) {
-                            case "name":
-                              return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
-                            case "valid_from":
-                              return <TableCell key={k}>{dispDate(s.valid_from)}</TableCell>;
-                            case "valid_to":
-                              return <TableCell key={k}>{dispDate(s.valid_to)}</TableCell>;
-                            case "fixed_price":
-                              return <TableCell key={k}>{s.fixed_price ? <Badge>Yes</Badge> : <Badge variant="outline">No</Badge>}</TableCell>;
-                            case "total":
-                              return <TableCell key={k}>{s.fixed_price && s.total != null ? `£${Number(s.total).toFixed(2)}` : "—"}</TableCell>;
-                            default:
-                              return null;
-                          }
-                        })}
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(s)}>
-                                  <Pencil className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit SMR</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setDeleteId(s.id)}>
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete SMR</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    filtered.map((s) => {
+                      const wds = workDetailsBySmr.get(s.id) ?? [];
+                      const pds = partDetailsBySmr.get(s.id) ?? [];
+                      const isOpen = expandedRows.has(s.id);
+                      return (
+                        <Fragment key={s.id}>
+                          <TableRow className="cursor-pointer h-11" onClick={() => openEdit(s)}>
+                            <TableCell className="w-[40px] p-0 text-center" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                aria-label={isOpen ? "Hide work items and parts" : "Show work items and parts"}
+                                title={isOpen ? "Hide work items and parts" : "Show work items and parts"}
+                                onClick={() => toggleExpand(s.id)}
+                              >
+                                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                              </Button>
+                            </TableCell>
+                            {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                              switch (k) {
+                                case "name":
+                                  return <TableCell key={k} className="font-medium">{s.name}</TableCell>;
+                                case "valid_from":
+                                  return <TableCell key={k}>{dispDate(s.valid_from)}</TableCell>;
+                                case "valid_to":
+                                  return <TableCell key={k}>{dispDate(s.valid_to)}</TableCell>;
+                                case "fixed_price":
+                                  return <TableCell key={k}>{s.fixed_price ? <Badge>Yes</Badge> : <Badge variant="outline">No</Badge>}</TableCell>;
+                                case "total":
+                                  return <TableCell key={k}>{s.fixed_price && s.total != null ? `£${Number(s.total).toFixed(2)}` : "—"}</TableCell>;
+                                case "work_items":
+                                  return <TableCell key={k} className="text-sm text-muted-foreground max-w-[280px] truncate">{wds.length ? wds.map((w) => w.name).join(", ") : "—"}</TableCell>;
+                                case "parts":
+                                  return <TableCell key={k} className="text-sm text-muted-foreground max-w-[280px] truncate">{pds.length ? pds.map((p) => partById.get(p.part_id)?.description ?? partById.get(p.part_id)?.part_number ?? "—").join(", ") : "—"}</TableCell>;
+                                default:
+                                  return null;
+                              }
+                            })}
+                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-end gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(s)}>
+                                      <Pencil className="w-4 h-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Edit SMR</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white" onClick={() => setDeleteId(s.id)}>
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete SMR</TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {isOpen && (
+                            <TableRow className="bg-muted/30 hover:bg-muted/30">
+                              <TableCell />
+                              <TableCell colSpan={visibleCols.length + 1} className="py-3">
+                                <div className="space-y-4">
+                                  <div className="space-y-1.5">
+                                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Work items</div>
+                                    {wds.length === 0 ? (
+                                      <div className="text-sm text-muted-foreground italic">No work items.</div>
+                                    ) : (
+                                      <div className="rounded-md border bg-background">
+                                        <Table>
+                                          <TableHeader>
+                                            <TableRow>
+                                              <TableHead>Name</TableHead>
+                                              <TableHead>Work type</TableHead>
+                                              <TableHead>Reason</TableHead>
+                                              <TableHead className="text-right">Labour hrs</TableHead>
+                                            </TableRow>
+                                          </TableHeader>
+                                          <TableBody>
+                                            {wds.map((w) => (
+                                              <TableRow key={w.id} className="h-9">
+                                                <TableCell className="font-medium">{w.name}</TableCell>
+                                                <TableCell>{w.work_type || "—"}</TableCell>
+                                                <TableCell>{w.reason_for_work || "—"}</TableCell>
+                                                <TableCell className="text-right font-mono">{Number(w.labour_hours ?? 0).toFixed(2)}</TableCell>
+                                              </TableRow>
+                                            ))}
+                                          </TableBody>
+                                        </Table>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Parts</div>
+                                    {pds.length === 0 ? (
+                                      <div className="text-sm text-muted-foreground italic">No parts.</div>
+                                    ) : (
+                                      <div className="rounded-md border bg-background">
+                                        <Table>
+                                          <TableHeader>
+                                            <TableRow>
+                                              <TableHead>Part number</TableHead>
+                                              <TableHead>Description</TableHead>
+                                              <TableHead>Work item</TableHead>
+                                              <TableHead className="text-right">Quantity</TableHead>
+                                            </TableRow>
+                                          </TableHeader>
+                                          <TableBody>
+                                            {pds.map((p) => {
+                                              const info = partById.get(p.part_id);
+                                              const wd = wds.find((w) => w.id === p.smr_work_detail_id);
+                                              return (
+                                                <TableRow key={p.id} className="h-9">
+                                                  <TableCell className="font-mono text-xs">{info?.part_number ?? "—"}</TableCell>
+                                                  <TableCell>{info?.description ?? "—"}</TableCell>
+                                                  <TableCell>{wd?.name ?? "—"}</TableCell>
+                                                  <TableCell className="text-right font-mono">{Number(p.quantity ?? 0).toFixed(2)}</TableCell>
+                                                </TableRow>
+                                              );
+                                            })}
+                                          </TableBody>
+                                        </Table>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
