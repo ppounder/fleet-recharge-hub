@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Trash2, Plus, GripVertical } from "lucide-react";
+import { Trash2, Plus, GripVertical, Pencil, Check, X } from "lucide-react";
 import { useBays, useUpsertBay, useDeleteBay } from "@/hooks/useDiary";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +29,33 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const [name, setName] = useState("");
   const [color, setColor] = useState("#0ea5e9");
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const startEdit = (b: any) => {
+    setEditingId(b.id);
+    setEditName(b.name);
+  };
+  const cancelEdit = () => setEditingId(null);
+  const saveEdit = async (b: any) => {
+    const n = editName.trim();
+    if (!n) {
+      toast({ title: "Bay name is required", variant: "destructive" });
+      return;
+    }
+    try {
+      await upsert.mutateAsync({
+        id: b.id,
+        name: n,
+        color: b.color,
+        active: b.active,
+        sort_order: b.sort_order,
+      });
+      setEditingId(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e?.message ?? String(e), variant: "destructive" });
+    }
+  };
 
   const sorted = [...bays].sort((a, b) => a.sort_order - b.sort_order);
 
@@ -146,13 +173,53 @@ export function ShopBaysDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                     <GripVertical className="h-4 w-4" />
                   </button>
                   <span className="inline-block w-5 h-5 rounded shrink-0" style={{ background: b.color }} />
-                  <Input
-                    defaultValue={b.name}
-                    onBlur={(e) => e.target.value !== b.name && upsert.mutate({ ...b, name: e.target.value })}
-                    className="flex-1"
-                  />
+                  {editingId === b.id ? (
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Bay name"
+                      className="flex-1"
+                    />
+                  ) : (
+                    <Input value={b.name} readOnly className="flex-1 bg-muted/50" />
+                  )}
                   <div className="flex items-center gap-2 shrink-0">
                     <Switch checked={b.active} onCheckedChange={(v) => upsert.mutate({ ...b, active: v })} />
+                    {editingId === b.id ? (
+                      <>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => saveEdit(b)}>
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Save</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={cancelEdit}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Cancel</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </>
+                    ) : (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => startEdit(b)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit name</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
                         <TooltipTrigger asChild>
