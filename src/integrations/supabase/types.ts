@@ -973,6 +973,143 @@ export type Database = {
         }
         Relationships: []
       }
+      smr_items: {
+        Row: {
+          applicable_asset_types: string[]
+          applicable_axles: number[]
+          applicable_derivatives: string[]
+          applicable_makes: string[]
+          applicable_models: string[]
+          applicable_weight_bands: string[]
+          created_at: string
+          fixed_price: boolean
+          id: string
+          labour_net: number | null
+          name: string
+          parts_net: number | null
+          total: number | null
+          updated_at: string
+          valid_from: string
+          valid_to: string | null
+          vat_band_id: string | null
+        }
+        Insert: {
+          applicable_asset_types?: string[]
+          applicable_axles?: number[]
+          applicable_derivatives?: string[]
+          applicable_makes?: string[]
+          applicable_models?: string[]
+          applicable_weight_bands?: string[]
+          created_at?: string
+          fixed_price?: boolean
+          id?: string
+          labour_net?: number | null
+          name: string
+          parts_net?: number | null
+          total?: number | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+          vat_band_id?: string | null
+        }
+        Update: {
+          applicable_asset_types?: string[]
+          applicable_axles?: number[]
+          applicable_derivatives?: string[]
+          applicable_makes?: string[]
+          applicable_models?: string[]
+          applicable_weight_bands?: string[]
+          created_at?: string
+          fixed_price?: boolean
+          id?: string
+          labour_net?: number | null
+          name?: string
+          parts_net?: number | null
+          total?: number | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+          vat_band_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smr_items_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smr_work_details: {
+        Row: {
+          checklist_id: string | null
+          code: string | null
+          created_at: string
+          document_required: boolean
+          id: string
+          labour_hours: number
+          name: string
+          posting_definition_id: string | null
+          reason_for_work: string
+          smr_item_id: string
+          sort_order: number
+          updated_at: string
+          vat_band_id: string | null
+          work_type: string
+          work_type_other: string | null
+        }
+        Insert: {
+          checklist_id?: string | null
+          code?: string | null
+          created_at?: string
+          document_required?: boolean
+          id?: string
+          labour_hours?: number
+          name: string
+          posting_definition_id?: string | null
+          reason_for_work: string
+          smr_item_id: string
+          sort_order?: number
+          updated_at?: string
+          vat_band_id?: string | null
+          work_type: string
+          work_type_other?: string | null
+        }
+        Update: {
+          checklist_id?: string | null
+          code?: string | null
+          created_at?: string
+          document_required?: boolean
+          id?: string
+          labour_hours?: number
+          name?: string
+          posting_definition_id?: string | null
+          reason_for_work?: string
+          smr_item_id?: string
+          sort_order?: number
+          updated_at?: string
+          vat_band_id?: string | null
+          work_type?: string
+          work_type_other?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smr_work_details_smr_item_id_fkey"
+            columns: ["smr_item_id"]
+            isOneToOne: false
+            referencedRelation: "smr_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smr_work_details_vat_band_id_fkey"
+            columns: ["vat_band_id"]
+            isOneToOne: false
+            referencedRelation: "vat_bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_contacts: {
         Row: {
           created_at: string

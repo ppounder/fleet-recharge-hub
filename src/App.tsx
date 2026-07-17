@@ -33,6 +33,7 @@ import Workshops from "./pages/Workshops";
 import Technicians from "./pages/Technicians";
 import Customers from "./pages/Customers";
 import AdminPasswordReset from "./pages/AdminPasswordReset";
+import SMR from "./pages/SMR";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const AppRoutes = () => (
     <Route path="/commercial-terms" element={<ProtectedRoute><CommercialTerms /></ProtectedRoute>} />
     <Route path="/supplier-networks" element={<ProtectedRoute><SupplierNetworks /></ProtectedRoute>} />
     <Route path="/admin/reset-password" element={<ProtectedRoute><AdminPasswordReset /></ProtectedRoute>} />
+    <Route path="/smr" element={<ProtectedRoute><SMR /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
