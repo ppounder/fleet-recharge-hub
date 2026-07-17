@@ -39,6 +39,19 @@ import { taxonomyAsVehicles } from "@/lib/vehicle-taxonomy";
 const REASONS = ["Routine", "Damage", "Repair", "Warranty"] as const;
 const WORK_TYPES = ["Safety Inspection", "Service", "MOT", "Maintenance", "LOLER", "Tacho", "Other"] as const;
 
+type ColKey = "name" | "valid_from" | "valid_to" | "fixed_price" | "total";
+const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
+  { key: "name", label: "Name", sortable: true },
+  { key: "valid_from", label: "Valid from", sortable: true },
+  { key: "valid_to", label: "Valid to", sortable: true },
+  { key: "fixed_price", label: "Fixed price", sortable: false },
+  { key: "total", label: "Total", sortable: false },
+];
+const LOCKED_COLS: ColKey[] = ["name"];
+const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
+
+
 type SMRItem = {
   id: string;
   name: string;
