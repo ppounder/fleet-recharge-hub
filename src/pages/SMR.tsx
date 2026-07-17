@@ -164,6 +164,7 @@ export default function SMR() {
   const [wdDraftErrors, setWdDraftErrors] = useState<Record<string, string>>({});
   const [editingWdId, setEditingWdId] = useState<string | null>(null);
   const [confirmDeleteWdId, setConfirmDeleteWdId] = useState<string | null>(null);
+  const [wdLabourHoursText, setWdLabourHoursText] = useState("0.00");
 
   // Data
   const { data: smrItems = [], isLoading } = useQuery({
@@ -406,12 +407,14 @@ export default function SMR() {
   const openAddWd = () => {
     setEditingWdId(null);
     setWdDraft(emptyWorkDetail());
+    setWdLabourHoursText("0.00");
     setWdDraftErrors({});
     setWdDialogOpen(true);
   };
   const openEditWd = (wd: WorkDetail) => {
     setEditingWdId(wd.id);
     setWdDraft({ ...wd });
+    setWdLabourHoursText(Number(wd.labour_hours).toFixed(2));
     setWdDraftErrors({});
     setWdDialogOpen(true);
   };
@@ -746,8 +749,19 @@ export default function SMR() {
                 </div>
                 <div>
                   <Label>Labour hours *</Label>
-                  <Input type="text" inputMode="decimal" value={String(wdDraft.labour_hours)}
-                    onChange={(e) => /^[0-9]*\.?[0-9]{0,2}$/.test(e.target.value) && setWdDraft((d) => ({ ...d, labour_hours: parseFloat(e.target.value) || 0 }))} />
+                  <Input type="text" inputMode="decimal" value={wdLabourHoursText}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (/^[0-9]*\.?[0-9]{0,2}$/.test(v)) {
+                        setWdLabourHoursText(v);
+                        setWdDraft((d) => ({ ...d, labour_hours: parseFloat(v) || 0 }));
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const n = parseFloat(e.target.value) || 0;
+                      setWdLabourHoursText(n.toFixed(2));
+                      setWdDraft((d) => ({ ...d, labour_hours: n }));
+                    }} />
                 </div>
                 <div>
                   <Label>VAT Band *</Label>
