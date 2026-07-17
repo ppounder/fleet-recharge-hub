@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { LabeledSwitch } from "@/components/ui/labeled-switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -582,9 +583,13 @@ export default function SMR() {
               </CollapsibleCard>
 
               <CollapsibleCard title="Fixed Price Details" defaultOpen>
-                <div className="flex items-center gap-3 mb-4">
-                  <Switch checked={form.fixed_price} onCheckedChange={(v) => setForm((f) => ({ ...f, fixed_price: v }))} />
-                  <Label>Fixed price</Label>
+                <div className="space-y-1.5 mb-4">
+                  <Label className="text-xs">Fixed price</Label>
+                  <LabeledSwitch
+                    checked={form.fixed_price}
+                    onCheckedChange={(v) => setForm((f) => ({ ...f, fixed_price: v }))}
+                    aria-label="Fixed price"
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
@@ -703,12 +708,13 @@ export default function SMR() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-base font-semibold">Document upload required</Label>
-                  <div className="flex items-center gap-3 mt-2">
-                    <Switch checked={wdDraft.document_required} onCheckedChange={(v) => setWdDraft((d) => ({ ...d, document_required: v }))} />
-                    <span className="text-sm text-muted-foreground">{wdDraft.document_required ? "Yes" : "No"}</span>
-                  </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Document upload required</Label>
+                  <LabeledSwitch
+                    checked={wdDraft.document_required}
+                    onCheckedChange={(v) => setWdDraft((d) => ({ ...d, document_required: v }))}
+                    aria-label="Document upload required"
+                  />
                 </div>
                 <div>
                   <Label>Reason for work *</Label>
