@@ -178,6 +178,9 @@ export default function SMR() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
