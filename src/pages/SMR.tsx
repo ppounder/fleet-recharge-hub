@@ -951,6 +951,7 @@ function ApplicableVehiclesEditor({
   const applyAll = applyAllOverride ?? derivedApplyAll;
 
   const setApplyAll = (on: boolean) => {
+    setApplyAllOverride(on);
     if (on) {
       setForm((f) => ({
         ...f,
