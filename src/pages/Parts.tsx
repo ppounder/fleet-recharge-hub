@@ -544,15 +544,20 @@ export default function Parts() {
         </div>
 
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search parts..." className="pl-8 h-10" />
           </div>
-          <div className="ml-auto flex gap-2">
+          <div className="flex items-center gap-2">
             <Button onClick={openCreate} disabled={!providerId} className="h-10 gap-2">
               <Plus className="w-4 h-4" /> Add part
             </Button>
+            <ManageColumnsDialog
+              visibleCols={visibleCols}
+              columnOrder={columnOrder}
+              onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+            />
           </div>
         </div>
 
