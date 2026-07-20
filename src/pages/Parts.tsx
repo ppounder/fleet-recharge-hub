@@ -21,7 +21,9 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Package, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, ArrowUp, ArrowDown, ChevronsUpDown, Check, X } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Package, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, ArrowUp, ArrowDown, ChevronsUpDown, Check, X, Columns3, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,6 +39,19 @@ const PART_TYPES = ["Part", "Oils & Fluids"] as const;
 const UNITS = ["Each", "Pack"] as const;
 const STOCK_CATEGORIES = ["Own stock", "Impress stock"] as const;
 const WARRANTY_UNITS = ["Days", "Weeks", "Months", "Years"] as const;
+
+type ColKey = "part_number" | "description" | "part_type" | "manufacturer" | "stock_items";
+const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
+  { key: "part_number", label: "Part number", sortable: true },
+  { key: "description", label: "Description", sortable: true },
+  { key: "part_type", label: "Type", sortable: true },
+  { key: "manufacturer", label: "Manufacturer" },
+  { key: "stock_items", label: "Stock items" },
+];
+const LOCKED_COLS: ColKey[] = ["part_number"];
+const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
+
 
 type PartRow = {
   id: string;
@@ -391,6 +406,8 @@ export default function Parts() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<"part_number" | "description" | "part_type">("part_number");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
 
   const filtered = useMemo(() => {
     let rows = parts ?? [];
@@ -527,15 +544,20 @@ export default function Parts() {
         </div>
 
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search parts..." className="pl-8 h-10" />
           </div>
-          <div className="ml-auto flex gap-2">
+          <div className="flex items-center gap-2">
             <Button onClick={openCreate} disabled={!providerId} className="h-10 gap-2">
               <Plus className="w-4 h-4" /> Add part
             </Button>
+            <ManageColumnsDialog
+              visibleCols={visibleCols}
+              columnOrder={columnOrder}
+              onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+            />
           </div>
         </div>
 
@@ -550,11 +572,19 @@ export default function Parts() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-8" />
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("part_number")}>Part number<SortIcon k="part_number" /></TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("description")}>Description<SortIcon k="description" /></TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("part_type")}>Type<SortIcon k="part_type" /></TableHead>
-                    <TableHead>Manufacturer</TableHead>
-                    <TableHead>Stock items</TableHead>
+                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                      const c = COLUMNS.find((x) => x.key === k)!;
+                      const sortable = c.sortable;
+                      return (
+                        <TableHead
+                          key={k}
+                          className={cn(sortable && "cursor-pointer")}
+                          onClick={sortable ? () => toggleSort(k as any) : undefined}
+                        >
+                          {c.label}{sortable && <SortIcon k={k as any} />}
+                        </TableHead>
+                      );
+                    })}
                     <TableHead className="w-[100px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -562,17 +592,23 @@ export default function Parts() {
                   {filtered.map((p) => {
                     const isOpen = expanded.has(p.id);
                     const items = stockItemsFor(p.id);
+                    const visible = columnOrder.filter((k) => visibleCols.includes(k));
                     return (
                       <Fragment key={p.id}>
                         <TableRow className="cursor-pointer" onClick={() => openEdit(p)}>
                           <TableCell onClick={(e) => { e.stopPropagation(); setExpanded((s) => { const n = new Set(s); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n; }); }} className="text-muted-foreground">
                             {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                           </TableCell>
-                          <TableCell className="font-medium">{p.part_number}</TableCell>
-                          <TableCell>{p.description}</TableCell>
-                          <TableCell className="text-muted-foreground">{p.part_type || "—"}</TableCell>
-                          <TableCell className="text-muted-foreground">{(manufacturers ?? []).find((m: any) => m.id === p.manufacturer_id)?.name || "—"}</TableCell>
-                          <TableCell className="text-muted-foreground">{items.length}</TableCell>
+                          {visible.map((k) => {
+                            switch (k) {
+                              case "part_number": return <TableCell key={k} className="font-medium">{p.part_number}</TableCell>;
+                              case "description": return <TableCell key={k}>{p.description}</TableCell>;
+                              case "part_type": return <TableCell key={k} className="text-muted-foreground">{p.part_type || "—"}</TableCell>;
+                              case "manufacturer": return <TableCell key={k} className="text-muted-foreground">{(manufacturers ?? []).find((m: any) => m.id === p.manufacturer_id)?.name || "—"}</TableCell>;
+                              case "stock_items": return <TableCell key={k} className="text-muted-foreground">{items.length}</TableCell>;
+                              default: return null;
+                            }
+                          })}
                           <TableCell onClick={(e) => e.stopPropagation()}>
                             <TooltipProvider>
                               <div className="flex gap-1">
@@ -592,7 +628,7 @@ export default function Parts() {
                         </TableRow>
                         {isOpen && (
                           <TableRow>
-                            <TableCell colSpan={7} className="bg-muted/30 p-3">
+                            <TableCell colSpan={visible.length + 2} className="bg-muted/30 p-3">
                               {items.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No stock items.</div>
                               ) : (
@@ -923,3 +959,101 @@ export default function Parts() {
     </AppLayout>
   );
 }
+
+function ManageColumnsDialog({
+  visibleCols, columnOrder, onApply,
+}: {
+  visibleCols: ColKey[];
+  columnOrder: ColKey[];
+  onApply: (order: ColKey[], visible: ColKey[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftOrder, setDraftOrder] = useState<ColKey[]>(columnOrder);
+  const [draftVisible, setDraftVisible] = useState<ColKey[]>(visibleCols);
+  const [dragKey, setDragKey] = useState<ColKey | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setDraftOrder(columnOrder);
+      setDraftVisible(visibleCols);
+    }
+  }, [open, columnOrder, visibleCols]);
+
+  const toggle = (k: ColKey, checked: boolean) => {
+    if (LOCKED_COLS.includes(k)) return;
+    if (checked) setDraftVisible([...draftVisible, k]);
+    else setDraftVisible(draftVisible.filter((c) => c !== k));
+  };
+
+  const handleDrop = (target: ColKey) => {
+    if (!dragKey || dragKey === target) return;
+    const next = draftOrder.filter((k) => k !== dragKey);
+    const idx = next.indexOf(target);
+    next.splice(idx, 0, dragKey);
+    setDraftOrder(next);
+    setDragKey(null);
+  };
+
+  const handleReset = () => {
+    setDraftOrder(DEFAULT_ORDER);
+    setDraftVisible(DEFAULT_VISIBLE);
+  };
+
+  const handleApply = () => {
+    onApply(draftOrder, draftVisible);
+    setOpen(false);
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <Button variant="outline" size="sm" className="gap-2 h-10" onClick={() => setOpen(true)}>
+        <Columns3 className="w-4 h-4" />
+        Manage columns
+      </Button>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Manage columns</SheetTitle>
+          <SheetDescription>
+            Select the columns you most want to see. Drag the items into the order you want them shown in the table.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="rounded-md border divide-y flex-1 overflow-y-auto mt-4">
+          {draftOrder.map((k) => {
+            const col = COLUMNS.find((c) => c.key === k)!;
+            const locked = LOCKED_COLS.includes(k);
+            const checked = draftVisible.includes(k);
+            return (
+              <div
+                key={k}
+                draggable
+                onDragStart={() => setDragKey(k)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(k)}
+                onDragEnd={() => setDragKey(null)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-muted/50 cursor-grab active:cursor-grabbing",
+                  dragKey === k && "opacity-50"
+                )}
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-sm font-medium">{col.label}</span>
+                <Checkbox
+                  checked={checked}
+                  disabled={locked}
+                  onCheckedChange={(v) => toggle(k, !!v)}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <SheetFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={handleReset}>Reset</Button>
+          <Button onClick={handleApply}>Save</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
