@@ -572,12 +572,6 @@ export default function Parts() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-8" />
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("part_number")}>Part number<SortIcon k="part_number" /></TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("description")}>Description<SortIcon k="description" /></TableHead>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-8" />
                     {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
                       const c = COLUMNS.find((x) => x.key === k)!;
                       const sortable = c.sortable;
