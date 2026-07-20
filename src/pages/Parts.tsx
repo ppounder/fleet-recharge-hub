@@ -40,6 +40,19 @@ const UNITS = ["Each", "Pack"] as const;
 const STOCK_CATEGORIES = ["Own stock", "Impress stock"] as const;
 const WARRANTY_UNITS = ["Days", "Weeks", "Months", "Years"] as const;
 
+type ColKey = "part_number" | "description" | "part_type" | "manufacturer" | "stock_items";
+const COLUMNS: { key: ColKey; label: string; sortable?: boolean }[] = [
+  { key: "part_number", label: "Part number", sortable: true },
+  { key: "description", label: "Description", sortable: true },
+  { key: "part_type", label: "Type", sortable: true },
+  { key: "manufacturer", label: "Manufacturer" },
+  { key: "stock_items", label: "Stock items" },
+];
+const LOCKED_COLS: ColKey[] = ["part_number"];
+const DEFAULT_ORDER: ColKey[] = COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE: ColKey[] = COLUMNS.map((c) => c.key);
+
+
 type PartRow = {
   id: string;
   provider_id: string;
