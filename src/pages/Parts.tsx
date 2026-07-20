@@ -406,6 +406,8 @@ export default function Parts() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<"part_number" | "description" | "part_type">("part_number");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_ORDER);
 
   const filtered = useMemo(() => {
     let rows = parts ?? [];
