@@ -574,9 +574,23 @@ export default function Parts() {
                     <TableHead className="w-8" />
                     <TableHead className="cursor-pointer" onClick={() => toggleSort("part_number")}>Part number<SortIcon k="part_number" /></TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort("description")}>Description<SortIcon k="description" /></TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort("part_type")}>Type<SortIcon k="part_type" /></TableHead>
-                    <TableHead>Manufacturer</TableHead>
-                    <TableHead>Stock items</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-8" />
+                    {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
+                      const c = COLUMNS.find((x) => x.key === k)!;
+                      const sortable = c.sortable;
+                      return (
+                        <TableHead
+                          key={k}
+                          className={cn(sortable && "cursor-pointer")}
+                          onClick={sortable ? () => toggleSort(k as any) : undefined}
+                        >
+                          {c.label}{sortable && <SortIcon k={k as any} />}
+                        </TableHead>
+                      );
+                    })}
                     <TableHead className="w-[100px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -584,17 +598,23 @@ export default function Parts() {
                   {filtered.map((p) => {
                     const isOpen = expanded.has(p.id);
                     const items = stockItemsFor(p.id);
+                    const visible = columnOrder.filter((k) => visibleCols.includes(k));
                     return (
                       <Fragment key={p.id}>
                         <TableRow className="cursor-pointer" onClick={() => openEdit(p)}>
                           <TableCell onClick={(e) => { e.stopPropagation(); setExpanded((s) => { const n = new Set(s); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n; }); }} className="text-muted-foreground">
                             {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                           </TableCell>
-                          <TableCell className="font-medium">{p.part_number}</TableCell>
-                          <TableCell>{p.description}</TableCell>
-                          <TableCell className="text-muted-foreground">{p.part_type || "—"}</TableCell>
-                          <TableCell className="text-muted-foreground">{(manufacturers ?? []).find((m: any) => m.id === p.manufacturer_id)?.name || "—"}</TableCell>
-                          <TableCell className="text-muted-foreground">{items.length}</TableCell>
+                          {visible.map((k) => {
+                            switch (k) {
+                              case "part_number": return <TableCell key={k} className="font-medium">{p.part_number}</TableCell>;
+                              case "description": return <TableCell key={k}>{p.description}</TableCell>;
+                              case "part_type": return <TableCell key={k} className="text-muted-foreground">{p.part_type || "—"}</TableCell>;
+                              case "manufacturer": return <TableCell key={k} className="text-muted-foreground">{(manufacturers ?? []).find((m: any) => m.id === p.manufacturer_id)?.name || "—"}</TableCell>;
+                              case "stock_items": return <TableCell key={k} className="text-muted-foreground">{items.length}</TableCell>;
+                              default: return null;
+                            }
+                          })}
                           <TableCell onClick={(e) => e.stopPropagation()}>
                             <TooltipProvider>
                               <div className="flex gap-1">
@@ -614,7 +634,7 @@ export default function Parts() {
                         </TableRow>
                         {isOpen && (
                           <TableRow>
-                            <TableCell colSpan={7} className="bg-muted/30 p-3">
+                            <TableCell colSpan={visible.length + 2} className="bg-muted/30 p-3">
                               {items.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No stock items.</div>
                               ) : (
