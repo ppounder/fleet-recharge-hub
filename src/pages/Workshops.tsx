@@ -608,7 +608,9 @@ export default function Workshops() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </TooltipProvider>
+
             )}
           </CardContent>
         </Card>

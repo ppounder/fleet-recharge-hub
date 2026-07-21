@@ -800,7 +800,9 @@ export default function Technicians() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </TooltipProvider>
+
             )}
           </CardContent>
         </Card>
