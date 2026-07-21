@@ -970,7 +970,7 @@ export default function Parts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </TooltipProvider></AppLayout>
   );
 }
 
