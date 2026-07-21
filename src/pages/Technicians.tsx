@@ -690,37 +690,39 @@ export default function Technicians() {
           <p className="text-muted-foreground text-sm">Manage technicians and their allocated workshops.</p>
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <div className="relative max-w-sm flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search technicians..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 bg-card"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={openAdd}>
-              <Plus className="w-4 h-4 mr-1" /> Add technician
-            </Button>
-            <ManageColumnsDialog
-              visibleCols={visibleCols}
-              columnOrder={columnOrder}
-              onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
-            />
-          </div>
-        </div>
-
         <Card>
-          <CardContent className="p-0">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="relative max-w-sm flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search technicians..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8 bg-card"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button onClick={openAdd}>
+                  <Plus className="w-4 h-4 mr-1" /> Add technician
+                </Button>
+                <ManageColumnsDialog
+                  visibleCols={visibleCols}
+                  columnOrder={columnOrder}
+                  onApply={(order, visible) => { setColumnOrder(order); setVisibleCols(visible); }}
+                />
+              </div>
+            </div>
+
             {isLoading ? (
               <div className="p-6 text-center text-muted-foreground">Loading...</div>
             ) : filtered.length === 0 ? (
               <div className="p-6 text-center text-muted-foreground">No technicians found.</div>
             ) : (
               <TooltipProvider delayDuration={200}>
+                <div className="rounded-md border">
                 <Table>
+
                   <TableHeader>
                     <TableRow>
                       {columnOrder.filter((k) => visibleCols.includes(k)).map((k) => {
@@ -798,7 +800,9 @@ export default function Technicians() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </TooltipProvider>
+
             )}
           </CardContent>
         </Card>
