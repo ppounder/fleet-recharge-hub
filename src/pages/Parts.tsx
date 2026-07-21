@@ -682,7 +682,9 @@ export default function Parts() {
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
+
           </CardContent>
         </Card>
       </div>
