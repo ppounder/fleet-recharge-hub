@@ -680,7 +680,9 @@ export default function Suppliers() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </TooltipProvider>
+
 
             )}
           </CardContent>
