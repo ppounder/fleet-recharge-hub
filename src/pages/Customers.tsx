@@ -544,7 +544,9 @@ export default function Customers() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </TooltipProvider>
+
             )}
           </CardContent>
         </Card>
