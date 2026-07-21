@@ -537,7 +537,7 @@ export default function Parts() {
 
   return (
     <AppLayout>
-      <div className="space-y-4">
+      <TooltipProvider><div className="space-y-4">
         <div className="flex items-center gap-2">
           <Package className="w-6 h-6" />
           <h1 className="text-2xl font-bold">Parts</h1>
@@ -585,7 +585,7 @@ export default function Parts() {
                         </TableHead>
                       );
                     })}
-                    <TableHead className="w-[100px]">Actions</TableHead>
+                    <TableHead className="w-24 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -609,21 +609,35 @@ export default function Parts() {
                               default: return null;
                             }
                           })}
-                          <TableCell onClick={(e) => e.stopPropagation()}>
-                            <TooltipProvider>
-                              <div className="flex gap-1">
-                                <Tooltip><TooltipTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(p)}>
-                                    <Pencil className="w-3.5 h-3.5" />
+                          <TableCell className="w-24 text-right" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={(e) => { e.stopPropagation(); openEdit(p); }}
+                                  >
+                                    <Pencil className="w-4 h-4" />
                                   </Button>
-                                </TooltipTrigger><TooltipContent>Edit</TooltipContent></Tooltip>
-                                <Tooltip><TooltipTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => setDeleteId(p.id)}>
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                </TooltipTrigger>
+                                <TooltipContent>Edit part</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:bg-destructive hover:text-white"
+                                    onClick={(e) => { e.stopPropagation(); setDeleteId(p.id); }}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
                                   </Button>
-                                </TooltipTrigger><TooltipContent>Delete</TooltipContent></Tooltip>
-                              </div>
-                            </TooltipProvider>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete part</TooltipContent>
+                              </Tooltip>
+                            </div>
                           </TableCell>
                         </TableRow>
                         {isOpen && (
@@ -956,7 +970,7 @@ export default function Parts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </TooltipProvider></AppLayout>
   );
 }
 
