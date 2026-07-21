@@ -585,7 +585,7 @@ export default function Parts() {
                         </TableHead>
                       );
                     })}
-                    <TableHead className="w-[100px]">Actions</TableHead>
+                    <TableHead className="w-24 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
